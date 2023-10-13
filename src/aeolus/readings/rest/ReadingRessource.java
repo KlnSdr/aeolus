@@ -9,9 +9,10 @@ import dobby.io.HttpContext;
 import dobby.io.response.ResponseCodes;
 import dobby.util.Json;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Date;
+
+import static aeolus.util.IsoDate.parseIsoDate;
+import static aeolus.util.IsoDate.toIsoDateString;
 
 public class ReadingRessource {
 
@@ -70,8 +71,26 @@ public class ReadingRessource {
         context.getResponse().setCode(ResponseCodes.CREATED);
     }
 
-    private Date parseIsoDate(String isoDate) {
-        LocalDate localDate = LocalDate.parse(isoDate);
-        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    @Get("/readings")
+    public void getReadingsInterval(HttpContext context) {
+        String fromIsoDate = context.getRequest().getQuery("from").get(0);
+        String toIsoDate = context.getRequest().getQuery("to").get(0);
+
+        Json json = new Json();
+
+        Reading[] readings = ReadingService.getInstance().find(fromIsoDate, toIsoDate);
+        int index = 0;
+
+        for (Reading reading : readings) {
+            Json readingJson = new Json();
+            readingJson.setString("value", Float.toString(reading.getValue()));
+            readingJson.setString("date", toIsoDateString(reading.getDate()));
+            json.setJson(Integer.toString(index), readingJson);
+            index++;
+        }
+
+        context.getResponse().setBody(json.toString());
     }
+
+
 }
