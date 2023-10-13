@@ -1,4 +1,4 @@
-package aeolus;
+package aeolus.application;
 
 import dobby.Dobby;
 
