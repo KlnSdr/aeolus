@@ -3,6 +3,7 @@ package aeolus.readings.service;
 import aeolus.exceptions.DuplicateEntryException;
 import aeolus.readings.Reading;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,6 +12,7 @@ import static aeolus.util.IsoDate.*;
 public class ReadingService {
     private static ReadingService instance;
     private final ConcurrentHashMap<String, Reading> readings = new ConcurrentHashMap<>();
+    private static final String bucketName = "temperatureReadings";
 
     private ReadingService() {
     }
@@ -26,7 +28,7 @@ public class ReadingService {
         if (!isValidIsoDate(isoDate)) {
             throw new IllegalArgumentException("Invalid ISO date: " + isoDate);
         }
-        Reading reading = readings.get(isoDate);
+        Reading reading = thot.connector.Connector.read(bucketName, isoDate, Reading.class);
         if (reading == null) {
             throw new NullPointerException("No reading found for date: " + isoDate);
         }
@@ -43,8 +45,8 @@ public class ReadingService {
     }
 
     public void add(Reading reading) throws DuplicateEntryException {
-        Reading savedReading = readings.putIfAbsent(toIsoDateString(reading.getDate()), reading);
-        if (savedReading != null) {
+        boolean wasSaved = thot.connector.Connector.write(bucketName, toIsoDateString(reading.getDate()), reading);
+        if (!wasSaved) {
             throw new DuplicateEntryException("Reading for date " + toIsoDateString(reading.getDate()) + " already " + "exists");
         }
     }

@@ -4,6 +4,7 @@
     <root id="archive" name="aeolus.jar">
       <element id="module-output" name="aeolus" />
       <element id="extracted-dir" path="$USER_HOME$/dev/customJars/dobby.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/dev/customJars/thot.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

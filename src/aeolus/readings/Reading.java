@@ -1,8 +1,9 @@
 package aeolus.readings;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Reading {
+public class Reading implements Serializable {
     private final float value;
     private final Date date;
 

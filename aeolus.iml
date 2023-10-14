@@ -9,5 +9,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="dobby" level="project" />
+    <orderEntry type="library" name="thot" level="project" />
   </component>
 </module>
