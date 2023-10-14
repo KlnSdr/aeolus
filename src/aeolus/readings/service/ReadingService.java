@@ -3,16 +3,15 @@ package aeolus.readings.service;
 import aeolus.exceptions.DuplicateEntryException;
 import aeolus.readings.Reading;
 
-import java.io.Serializable;
-import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static aeolus.util.IsoDate.*;
+import static aeolus.util.IsoDate.isValidIsoDate;
+import static aeolus.util.IsoDate.toIsoDateString;
 
 public class ReadingService {
+    private static final String bucketName = "temperatureReadings";
     private static ReadingService instance;
     private final ConcurrentHashMap<String, Reading> readings = new ConcurrentHashMap<>();
-    private static final String bucketName = "temperatureReadings";
 
     private ReadingService() {
     }
@@ -24,24 +23,46 @@ public class ReadingService {
         return instance;
     }
 
-    public Reading find(String isoDate) throws IllegalArgumentException, NullPointerException {
-        if (!isValidIsoDate(isoDate)) {
-            throw new IllegalArgumentException("Invalid ISO date: " + isoDate);
+    public Reading[] find(int year) {
+        return find(year + "-[0-9][0-9]-[0-9][0-9]");
+    }
+
+    public Reading[] find(int year, int month) throws IllegalArgumentException {
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("Invalid month: " + month);
         }
-        Reading reading = thot.connector.Connector.read(bucketName, isoDate, Reading.class);
+
+        if (month < 10) {
+            return find(year + "-0" + month + "-[0-9][0-9]");
+        }
+        return find(year + "-" + month + "-[0-9][0-9]");
+    }
+
+    public Reading find(int year, int month, int day) throws IllegalArgumentException, NullPointerException {
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("Invalid month: " + month);
+        }
+        if (day < 1 || day > 31) {
+            throw new IllegalArgumentException("Invalid day: " + day);
+        }
+        String yearString = Integer.toString(year);
+        String monthString = month < 10 ? "0" + month : Integer.toString(month);
+        String dayString = day < 10 ? "0" + day : Integer.toString(day);
+
+        String key = yearString + "-" + monthString + "-" + dayString;
+        Reading reading = thot.connector.Connector.read(bucketName, key, Reading.class);
         if (reading == null) {
-            throw new NullPointerException("No reading found for date: " + isoDate);
+            throw new NullPointerException("No reading found for date: " + key);
         }
         return reading;
     }
 
-    public Reading[] find(String from, String to) throws IllegalArgumentException {
-        if (!isValidIsoDate(from) || !isValidIsoDate(to)) {
-            throw new IllegalArgumentException("Invalid ISO date");
+    private Reading[] find(String pattern) {
+        Reading[] reading = thot.connector.Connector.readPattern(bucketName, pattern, Reading.class);
+        if (reading == null) {
+            return new Reading[0];
         }
-        Date fromDate = parseIsoDate(from);
-        Date toDate = parseIsoDate(to);
-        return readings.values().stream().filter(reading -> (reading.getDate().after(fromDate) || reading.getDate().equals(fromDate)) && (reading.getDate().before(toDate) || reading.getDate().equals(toDate))).toArray(Reading[]::new);
+        return reading;
     }
 
     public void add(Reading reading) throws DuplicateEntryException {

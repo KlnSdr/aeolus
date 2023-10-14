@@ -16,19 +16,99 @@ import static aeolus.util.IsoDate.toIsoDateString;
 
 public class ReadingRessource {
 
-    @Get("/readings/{isoDate}")
-    public void getReading(HttpContext context) {
-        String isoDate = context.getRequest().getParam("isodate");
+    @Get("/readings/{year}")
+    public void getReadingsForYear(HttpContext context) {
+        int year;
+        try {
+            year = Integer.parseInt(context.getRequest().getParam("year"));
+        } catch (NumberFormatException e) {
+            context.getResponse().setCode(ResponseCodes.BAD_REQUEST);
 
-        Reading reading;
+            Json message = new Json();
+            message.setString("msg", "Invalid year: " + context.getRequest().getParam("year"));
+
+            context.getResponse().setBody(message.toString());
+            return;
+        }
+
+        Reading[] readings = ReadingService.getInstance().find(year);
+
+        Json json = new Json();
+        int index = 0;
+        for (Reading reading : readings) {
+            json.setJson(Integer.toString(index++), map(reading));
+        }
+
+        context.getResponse().setBody(json.toString());
+    }
+
+    @Get("/readings/{year}/{month}")
+    public void getReadingsForYearAndMonth(HttpContext context) {
+        int year, month;
 
         try {
-            reading = ReadingService.getInstance().find(isoDate);
+            year = Integer.parseInt(context.getRequest().getParam("year"));
+            month = Integer.parseInt(context.getRequest().getParam("month"));
+        } catch (NumberFormatException e) {
+            context.getResponse().setCode(ResponseCodes.BAD_REQUEST);
+
+            Json message = new Json();
+            message.setString("msg",
+                    "Invalid year or month: " + context.getRequest().getParam("year") + "-" + context.getRequest().getParam("month"));
+
+            context.getResponse().setBody(message.toString());
+            return;
+        }
+
+        Reading[] readings;
+        try {
+            readings = ReadingService.getInstance().find(year, month);
         } catch (IllegalArgumentException e) {
             context.getResponse().setCode(ResponseCodes.BAD_REQUEST);
 
             Json message = new Json();
-            message.setString("msg", "Invalid ISO date: " + isoDate);
+            message.setString("msg", "Invalid month: " + month);
+
+            context.getResponse().setBody(message.toString());
+            return;
+        }
+
+        Json json = new Json();
+        int index = 0;
+        for (Reading reading : readings) {
+            json.setJson(Integer.toString(index++), map(reading));
+        }
+
+        context.getResponse().setBody(json.toString());
+    }
+
+    @Get("/readings/{year}/{month}/{day}")
+    public void getReadingsForYearMonthDay(HttpContext context) {
+        int year, month, day;
+
+        try {
+            year = Integer.parseInt(context.getRequest().getParam("year"));
+            month = Integer.parseInt(context.getRequest().getParam("month"));
+            day = Integer.parseInt(context.getRequest().getParam("day"));
+        } catch (NumberFormatException e) {
+            context.getResponse().setCode(ResponseCodes.BAD_REQUEST);
+
+            Json message = new Json();
+            message.setString("msg",
+                    "Invalid year, month or day: " + context.getRequest().getParam("year") + "-" + context.getRequest().getParam("month") + "-" + context.getRequest().getParam("day"));
+
+            context.getResponse().setBody(message.toString());
+            return;
+        }
+
+        Reading reading;
+        try {
+            reading = ReadingService.getInstance().find(year, month, day);
+        } catch (IllegalArgumentException e) {
+            context.getResponse().setCode(ResponseCodes.BAD_REQUEST);
+
+            Json message = new Json();
+            message.setString("msg", "Invalid date: " + year + "-" + month + "-" + day);
 
             context.getResponse().setBody(message.toString());
             return;
@@ -36,16 +116,13 @@ public class ReadingRessource {
             context.getResponse().setCode(ResponseCodes.NOT_FOUND);
 
             Json message = new Json();
-            message.setString("msg", "No reading found for date: " + isoDate);
+            message.setString("msg", "No reading found for date: " + year + "-" + month + "-" + day);
 
             context.getResponse().setBody(message.toString());
             return;
         }
 
-        Json json = new Json();
-        json.setString("value", Float.toString(reading.getValue()));
-
-        context.getResponse().setBody(json.toString());
+        context.getResponse().setBody(map(reading).toString());
     }
 
     @Post("/readings")
@@ -71,26 +148,10 @@ public class ReadingRessource {
         context.getResponse().setCode(ResponseCodes.CREATED);
     }
 
-    @Get("/readings")
-    public void getReadingsInterval(HttpContext context) {
-        String fromIsoDate = context.getRequest().getQuery("from").get(0);
-        String toIsoDate = context.getRequest().getQuery("to").get(0);
-
+    private Json map(Reading reading) {
         Json json = new Json();
-
-        Reading[] readings = ReadingService.getInstance().find(fromIsoDate, toIsoDate);
-        int index = 0;
-
-        for (Reading reading : readings) {
-            Json readingJson = new Json();
-            readingJson.setString("value", Float.toString(reading.getValue()));
-            readingJson.setString("date", toIsoDateString(reading.getDate()));
-            json.setJson(Integer.toString(index), readingJson);
-            index++;
-        }
-
-        context.getResponse().setBody(json.toString());
+        json.setString("value", Float.toString(reading.getValue()));
+        json.setString("date", toIsoDateString(reading.getDate()));
+        return json;
     }
-
-
 }
