@@ -133,8 +133,9 @@ public class ReadingRessource {
         Date date = parseIsoDate(isoDate);
 
         Reading reading = new Reading(value, date);
+        boolean wasAdded;
         try {
-            ReadingService.getInstance().add(reading);
+            wasAdded = ReadingService.getInstance().add(reading);
         } catch (DuplicateEntryException e) {
             context.getResponse().setCode(ResponseCodes.BAD_REQUEST); // todo use conflict once implemented
 
@@ -145,7 +146,7 @@ public class ReadingRessource {
             return;
         }
 
-        context.getResponse().setCode(ResponseCodes.CREATED);
+        context.getResponse().setCode(wasAdded ? ResponseCodes.CREATED : ResponseCodes.INTERNAL_SERVER_ERROR);
     }
 
     private Json map(Reading reading) {

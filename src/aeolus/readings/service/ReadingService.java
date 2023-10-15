@@ -65,11 +65,13 @@ public class ReadingService {
         return reading;
     }
 
-    public void add(Reading reading) throws DuplicateEntryException {
-        boolean wasSaved = thot.connector.Connector.write(bucketName, toIsoDateString(reading.getDate()), reading);
-        if (!wasSaved) {
+    public boolean add(Reading reading) throws DuplicateEntryException {
+        Reading existingReading = thot.connector.Connector.read(bucketName, toIsoDateString(reading.getDate()), Reading.class);
+        if (existingReading != null) {
             throw new DuplicateEntryException("Reading for date " + toIsoDateString(reading.getDate()) + " already " + "exists");
         }
+
+        return thot.connector.Connector.write(bucketName, toIsoDateString(reading.getDate()), reading);
     }
 
 }
