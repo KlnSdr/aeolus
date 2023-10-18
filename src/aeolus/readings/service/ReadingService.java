@@ -3,9 +3,6 @@ package aeolus.readings.service;
 import aeolus.exceptions.DuplicateEntryException;
 import aeolus.readings.Reading;
 
-import java.util.concurrent.ConcurrentHashMap;
-
-import static aeolus.util.IsoDate.isValidIsoDate;
 import static aeolus.util.IsoDate.toIsoDateString;
 
 public class ReadingService {
@@ -65,7 +62,8 @@ public class ReadingService {
     }
 
     public boolean add(Reading reading) throws DuplicateEntryException {
-        Reading existingReading = thot.connector.Connector.read(bucketName, toIsoDateString(reading.getDate()), Reading.class);
+        Reading existingReading = thot.connector.Connector.read(bucketName, toIsoDateString(reading.getDate()),
+                Reading.class);
         if (existingReading != null) {
             throw new DuplicateEntryException("Reading for date " + toIsoDateString(reading.getDate()) + " already " + "exists");
         }

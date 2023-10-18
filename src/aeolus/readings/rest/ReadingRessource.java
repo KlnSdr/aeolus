@@ -24,12 +24,7 @@ public class ReadingRessource {
         try {
             year = Integer.parseInt(context.getRequest().getParam("year"));
         } catch (NumberFormatException e) {
-            context.getResponse().setCode(ResponseCodes.BAD_REQUEST);
-
-            Json message = new Json();
-            message.setString("msg", "Invalid year: " + context.getRequest().getParam("year"));
-
-            context.getResponse().setBody(message);
+            sendBadRequest(context, "Invalid year: " + context.getRequest().getParam("year"));
             return;
         }
 
@@ -50,13 +45,8 @@ public class ReadingRessource {
             year = Integer.parseInt(context.getRequest().getParam("year"));
             month = Integer.parseInt(context.getRequest().getParam("month"));
         } catch (NumberFormatException e) {
-            context.getResponse().setCode(ResponseCodes.BAD_REQUEST);
-
-            Json message = new Json();
-            message.setString("msg",
+            sendBadRequest(context,
                     "Invalid year or month: " + context.getRequest().getParam("year") + "-" + context.getRequest().getParam("month"));
-
-            context.getResponse().setBody(message);
             return;
         }
 
@@ -64,12 +54,7 @@ public class ReadingRessource {
         try {
             readings = ReadingService.getInstance().find(year, month);
         } catch (IllegalArgumentException e) {
-            context.getResponse().setCode(ResponseCodes.BAD_REQUEST);
-
-            Json message = new Json();
-            message.setString("msg", "Invalid month: " + month);
-
-            context.getResponse().setBody(message);
+            sendBadRequest(context, "Invalid month: " + month);
             return;
         }
 
@@ -89,13 +74,8 @@ public class ReadingRessource {
             month = Integer.parseInt(context.getRequest().getParam("month"));
             day = Integer.parseInt(context.getRequest().getParam("day"));
         } catch (NumberFormatException e) {
-            context.getResponse().setCode(ResponseCodes.BAD_REQUEST);
-
-            Json message = new Json();
-            message.setString("msg",
+            sendBadRequest(context,
                     "Invalid year, month or day: " + context.getRequest().getParam("year") + "-" + context.getRequest().getParam("month") + "-" + context.getRequest().getParam("day"));
-
-            context.getResponse().setBody(message);
             return;
         }
 
@@ -103,20 +83,10 @@ public class ReadingRessource {
         try {
             reading = ReadingService.getInstance().find(year, month, day);
         } catch (IllegalArgumentException e) {
-            context.getResponse().setCode(ResponseCodes.BAD_REQUEST);
-
-            Json message = new Json();
-            message.setString("msg", "Invalid date: " + year + "-" + month + "-" + day);
-
-            context.getResponse().setBody(message);
+            sendBadRequest(context, "Invalid date: " + year + "-" + month + "-" + day);
             return;
         } catch (NullPointerException e) {
-            context.getResponse().setCode(ResponseCodes.NOT_FOUND);
-
-            Json message = new Json();
-            message.setString("msg", "No reading found for date: " + year + "-" + month + "-" + day);
-
-            context.getResponse().setBody(message);
+            sendNotFound(context, "No reading found for date: " + year + "-" + month + "-" + day);
             return;
         }
 
@@ -152,5 +122,23 @@ public class ReadingRessource {
         json.setString("value", Float.toString(reading.getValue()));
         json.setString("date", toIsoDateString(reading.getDate()));
         return json;
+    }
+
+    private void sendNotFound(HttpContext ctx, String message) {
+        ctx.getResponse().setCode(ResponseCodes.NOT_FOUND);
+
+        Json json = new Json();
+        json.setString("msg", message);
+
+        ctx.getResponse().setBody(json);
+    }
+
+    private void sendBadRequest(HttpContext ctx, String message) {
+        ctx.getResponse().setCode(ResponseCodes.BAD_REQUEST);
+
+        Json json = new Json();
+        json.setString("msg", message);
+
+        ctx.getResponse().setBody(json);
     }
 }
