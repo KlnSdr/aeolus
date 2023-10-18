@@ -11,7 +11,6 @@ import static aeolus.util.IsoDate.toIsoDateString;
 public class ReadingService {
     private static final String bucketName = "temperatureReadings";
     private static ReadingService instance;
-    private final ConcurrentHashMap<String, Reading> readings = new ConcurrentHashMap<>();
 
     private ReadingService() {
     }

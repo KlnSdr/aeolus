@@ -3,16 +3,11 @@ package aeolus.readings.filter;
 import dobby.filter.Filter;
 import dobby.filter.FilterType;
 import dobby.io.HttpContext;
-import dobby.io.request.Request;
 import dobby.io.request.RequestTypes;
 import dobby.io.response.ResponseCodes;
 import dobby.util.Json;
 
-import java.time.format.DateTimeParseException;
-import java.util.List;
-
 import static aeolus.util.IsoDate.isValidIsoDate;
-import static aeolus.util.IsoDate.parseIsoDate;
 
 public class DatePreFilter implements Filter {
     @Override
@@ -51,7 +46,7 @@ public class DatePreFilter implements Filter {
             message.setString("msg", "Missing value or date");
 
             httpContext.getResponse().setCode(ResponseCodes.BAD_REQUEST);
-            httpContext.getResponse().setBody(message.toString());
+            httpContext.getResponse().setBody(message);
             return false;
         }
 
@@ -65,7 +60,7 @@ public class DatePreFilter implements Filter {
             message.setString("msg", "Invalid value: " + valueString);
 
             httpContext.getResponse().setCode(ResponseCodes.BAD_REQUEST);
-            httpContext.getResponse().setBody(message.toString());
+            httpContext.getResponse().setBody(message);
             return false;
         }
 
@@ -74,7 +69,7 @@ public class DatePreFilter implements Filter {
             message.setString("msg", "Invalid ISO date: " + isoDateString);
 
             httpContext.getResponse().setCode(ResponseCodes.BAD_REQUEST);
-            httpContext.getResponse().setBody(message.toString());
+            httpContext.getResponse().setBody(message);
             return false;
         }
 

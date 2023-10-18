@@ -9,7 +9,9 @@ import dobby.io.HttpContext;
 import dobby.io.response.ResponseCodes;
 import dobby.util.Json;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import static aeolus.util.IsoDate.parseIsoDate;
 import static aeolus.util.IsoDate.toIsoDateString;
@@ -27,19 +29,17 @@ public class ReadingRessource {
             Json message = new Json();
             message.setString("msg", "Invalid year: " + context.getRequest().getParam("year"));
 
-            context.getResponse().setBody(message.toString());
+            context.getResponse().setBody(message);
             return;
         }
 
         Reading[] readings = ReadingService.getInstance().find(year);
 
         Json json = new Json();
-        int index = 0;
-        for (Reading reading : readings) {
-            json.setJson(Integer.toString(index++), map(reading));
-        }
+        List<Object> readingsList = List.of(Arrays.stream(readings).map(this::map).toArray(Json[]::new));
+        json.setList("readings", readingsList);
 
-        context.getResponse().setBody(json.toString());
+        context.getResponse().setBody(json);
     }
 
     @Get("/readings/{year}/{month}")
@@ -56,7 +56,7 @@ public class ReadingRessource {
             message.setString("msg",
                     "Invalid year or month: " + context.getRequest().getParam("year") + "-" + context.getRequest().getParam("month"));
 
-            context.getResponse().setBody(message.toString());
+            context.getResponse().setBody(message);
             return;
         }
 
@@ -69,17 +69,15 @@ public class ReadingRessource {
             Json message = new Json();
             message.setString("msg", "Invalid month: " + month);
 
-            context.getResponse().setBody(message.toString());
+            context.getResponse().setBody(message);
             return;
         }
 
         Json json = new Json();
-        int index = 0;
-        for (Reading reading : readings) {
-            json.setJson(Integer.toString(index++), map(reading));
-        }
+        List<Object> readingsList = List.of(Arrays.stream(readings).map(this::map).toArray(Json[]::new));
+        json.setList("readings", readingsList);
 
-        context.getResponse().setBody(json.toString());
+        context.getResponse().setBody(json);
     }
 
     @Get("/readings/{year}/{month}/{day}")
@@ -97,7 +95,7 @@ public class ReadingRessource {
             message.setString("msg",
                     "Invalid year, month or day: " + context.getRequest().getParam("year") + "-" + context.getRequest().getParam("month") + "-" + context.getRequest().getParam("day"));
 
-            context.getResponse().setBody(message.toString());
+            context.getResponse().setBody(message);
             return;
         }
 
@@ -110,7 +108,7 @@ public class ReadingRessource {
             Json message = new Json();
             message.setString("msg", "Invalid date: " + year + "-" + month + "-" + day);
 
-            context.getResponse().setBody(message.toString());
+            context.getResponse().setBody(message);
             return;
         } catch (NullPointerException e) {
             context.getResponse().setCode(ResponseCodes.NOT_FOUND);
@@ -118,11 +116,11 @@ public class ReadingRessource {
             Json message = new Json();
             message.setString("msg", "No reading found for date: " + year + "-" + month + "-" + day);
 
-            context.getResponse().setBody(message.toString());
+            context.getResponse().setBody(message);
             return;
         }
 
-        context.getResponse().setBody(map(reading).toString());
+        context.getResponse().setBody(map(reading));
     }
 
     @Post("/readings")
@@ -137,12 +135,12 @@ public class ReadingRessource {
         try {
             wasAdded = ReadingService.getInstance().add(reading);
         } catch (DuplicateEntryException e) {
-            context.getResponse().setCode(ResponseCodes.BAD_REQUEST); // todo use conflict once implemented
+            context.getResponse().setCode(ResponseCodes.CONFLICT);
 
             Json message = new Json();
             message.setString("msg", "Reading for date " + isoDate + " already exists");
 
-            context.getResponse().setBody(message.toString());
+            context.getResponse().setBody(message);
             return;
         }
 
