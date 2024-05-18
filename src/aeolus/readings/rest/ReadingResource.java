@@ -9,16 +9,40 @@ import dobby.io.HttpContext;
 import dobby.io.response.ResponseCodes;
 import dobby.util.json.NewJson;
 import hades.annotations.AuthorizedOnly;
+import hades.common.ErrorResponses;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.time.Year;
+import java.util.*;
 
 import static aeolus.util.IsoDate.parseIsoDate;
 
 public class ReadingResource {
     private static final String BASE_PATH = "/rest/readings";
+
+    @AuthorizedOnly
+    @Get(BASE_PATH + "/last")
+    public void getLastReading(HttpContext context) {
+        int year = Year.now().getValue();
+        Reading[] readings = ReadingService.getInstance().find(getUserId(context), year);
+
+        if (readings.length == 0) {
+            readings = ReadingService.getInstance().find(getUserId(context), year - 1);
+        }
+
+        if (readings.length == 0) {
+            readings = ReadingService.getInstance().find(getUserId(context), year - 2);
+        }
+
+        if (readings.length == 0) {
+            ErrorResponses.notFound(context.getResponse(), "Could not find the last reading");
+            return;
+        }
+
+        Arrays.sort(readings, Comparator.comparing(Reading::getDate));
+
+        final Reading lastReading = readings[readings.length - 1];
+        context.getResponse().setBody(lastReading.toJson());
+    }
 
     @AuthorizedOnly
     @Get(BASE_PATH + "/{year}")
@@ -32,6 +56,7 @@ public class ReadingResource {
         }
 
         Reading[] readings = ReadingService.getInstance().find(getUserId(context), year);
+        Arrays.sort(readings, Comparator.comparing(Reading::getDate));
 
         final NewJson json = new NewJson();
         List<Object> readingsList = List.of(Arrays.stream(readings).map(this::map).toArray(NewJson[]::new));
@@ -57,6 +82,7 @@ public class ReadingResource {
         Reading[] readings;
         try {
             readings = ReadingService.getInstance().find(getUserId(context), year, month);
+            Arrays.sort(readings, Comparator.comparing(Reading::getDate));
         } catch (IllegalArgumentException e) {
             sendBadRequest(context, "Invalid month: " + month);
             return;
