@@ -18,9 +18,10 @@ import java.util.UUID;
 import static aeolus.util.IsoDate.parseIsoDate;
 
 public class ReadingResource {
+    private static final String BASE_PATH = "/rest/readings";
 
     @AuthorizedOnly
-    @Get("/readings/{year}")
+    @Get(BASE_PATH + "/{year}")
     public void getReadingsForYear(HttpContext context) {
         int year;
         try {
@@ -40,7 +41,7 @@ public class ReadingResource {
     }
 
     @AuthorizedOnly
-    @Get("/readings/{year}/{month}")
+    @Get(BASE_PATH + "/{year}/{month}")
     public void getReadingsForYearAndMonth(HttpContext context) {
         int year, month;
 
@@ -69,7 +70,7 @@ public class ReadingResource {
     }
 
     @AuthorizedOnly
-    @Get("/readings/{year}/{month}/{day}")
+    @Get(BASE_PATH + "/{year}/{month}/{day}")
     public void getReadingsForYearMonthDay(HttpContext context) {
         int year, month, day;
 
@@ -98,7 +99,7 @@ public class ReadingResource {
     }
 
     @AuthorizedOnly
-    @Post("/readings")
+    @Post(BASE_PATH)
     public void addReading(HttpContext context) {
         final NewJson json = context.getRequest().getBody();
         float value = Float.parseFloat(json.getString("value"));
