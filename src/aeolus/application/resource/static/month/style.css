@@ -1,0 +1,10 @@
+.calender {
+    margin-left: 25%;
+    width: 50%;
+    box-shadow: 0 0 5px 0 black;
+    border-radius: 1em;
+    padding: 1em;
+}
+
+.calenderDiagram {
+}

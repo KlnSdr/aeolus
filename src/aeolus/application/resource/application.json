@@ -5,7 +5,7 @@
   },
   "dobby": {
     "staticContent": {
-      "directory": "static/docs"
+      "directory": "static"
     },
     "port": 3333,
     "threads": 10,
@@ -17,7 +17,7 @@
       "maxAttempts": 5,
       "redirect":{
         "success": "/",
-        "successAdmin": "/hades"
+        "successAdmin": "/"
       }
     }
   }
