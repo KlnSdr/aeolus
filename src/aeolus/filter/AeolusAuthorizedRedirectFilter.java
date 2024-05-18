@@ -13,7 +13,12 @@ import hades.user.service.UserService;
 import java.util.List;
 
 public class AeolusAuthorizedRedirectFilter implements Filter {
-    private static final List<String> pathsToIgnore = List.of("/", "/index.html", "/month", "/month/", "/month/index.html", "/year", "/year/", "/year/index.html");
+    private static final List<String> pathsToIgnore = List.of(
+            "/", "/index.html",
+            "/month", "/month/", "/month/index.html",
+            "/year", "/year/", "/year/index.html",
+            "/compare", "/compare/", "/compare/index.html"
+    );
 
     @Override
     public String getName() {

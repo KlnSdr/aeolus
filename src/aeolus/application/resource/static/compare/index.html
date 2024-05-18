@@ -5,13 +5,19 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Aeolus</title>
+    <title>Aeolus - Vergleichen</title>
 
     <link rel="stylesheet" href="{{CONTEXT}}/style.css">
+    <link rel="stylesheet" href="{{CONTEXT}}/month/style.css">
+    <link rel="stylesheet" href="{{CONTEXT}}/lib/Chart.min.css">
+
+    <script src="{{CONTEXT}}/lib/Chart.min.js"></script>
     <script src="{{CONTEXT}}/hades/logout.js"></script>
     <script src="{{CONTEXT}}/index.js"></script>
+    <script src="{{CONTEXT}}/compare/index.js"></script>
+    <script src="{{CONTEXT}}/lib/Chart.min.js"></script>
 </head>
-<body onload="startup()">
+<body onload="startup(); initCalender()">
 <nav>
     <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}')">Aeolus</a></h1>
     <div class="navButtons">
@@ -25,8 +31,22 @@
     </div>
 </nav>
 <div class="center">
-    <h1 id="lastValue" class="huge">18.9 °C</h1>
-    <p id="lastValueFrom">vom: 18.05.2024</p>
+    <div class="calender">
+        <div class="monthSelector">
+            <label for="selectYearA">Vergleiche</label>
+            <select id="selectYearA">
+            </select>
+
+            <label for="selectYearB">mit</label>
+            <select id="selectYearB">
+            </select>
+
+            <button id="bttnShowDiagram" onclick="showCompareYears()">anzeigen</button>
+        </div>
+        <div class="calenderDiagram">
+            <canvas id="myChart" width="400" height="200"></canvas>
+        </div>
+    </div>
 </div>
 </body>
 </html>
