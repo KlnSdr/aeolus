@@ -6,7 +6,10 @@ import dobby.util.json.NewJson;
 import janus.Janus;
 import thot.connector.Connector;
 
+import java.util.UUID;
+
 import static aeolus.util.IsoDate.toIsoDateString;
+import static hades.common.Util.prependZero;
 
 public class ReadingService {
     public static final String bucketName = "aeolus_temperatureReadings";
@@ -22,22 +25,19 @@ public class ReadingService {
         return instance;
     }
 
-    public Reading[] find(int year) {
-        return find(year + "-[0-9][0-9]-[0-9][0-9]");
+    public Reading[] find(UUID owner, int year) {
+        return find(owner, year + "-[0-9][0-9]-[0-9][0-9]");
     }
 
-    public Reading[] find(int year, int month) throws IllegalArgumentException {
+    public Reading[] find(UUID owner, int year, int month) throws IllegalArgumentException {
         if (month < 1 || month > 12) {
             throw new IllegalArgumentException("Invalid month: " + month);
         }
 
-        if (month < 10) {
-            return find(year + "-0" + month + "-[0-9][0-9]");
-        }
-        return find(year + "-" + month + "-[0-9][0-9]");
+        return find(owner, year + "-" + prependZero(month) + "-[0-9][0-9]");
     }
 
-    public Reading find(int year, int month, int day) throws IllegalArgumentException, NullPointerException {
+    public Reading find(UUID owner, int year, int month, int day) throws IllegalArgumentException, NullPointerException {
         if (month < 1 || month > 12) {
             throw new IllegalArgumentException("Invalid month: " + month);
         }
@@ -45,10 +45,10 @@ public class ReadingService {
             throw new IllegalArgumentException("Invalid day: " + day);
         }
         String yearString = Integer.toString(year);
-        String monthString = month < 10 ? "0" + month : Integer.toString(month);
-        String dayString = day < 10 ? "0" + day : Integer.toString(day);
+        String monthString = prependZero(month);
+        String dayString = prependZero(day);
 
-        String key = yearString + "-" + monthString + "-" + dayString;
+        String key = owner + "_" + yearString + "-" + monthString + "-" + dayString;
 
         final Reading reading = Janus.parse(Connector.read(bucketName, key, NewJson.class), Reading.class);
 
@@ -58,8 +58,8 @@ public class ReadingService {
         return reading;
     }
 
-    private Reading[] find(String pattern) {
-        final NewJson[] readingsJson = Connector.readPattern(bucketName, pattern, NewJson.class);
+    private Reading[] find(UUID owner, String pattern) {
+        final NewJson[] readingsJson = Connector.readPattern(bucketName, owner + "_" + pattern, NewJson.class);
 
         if (readingsJson == null) {
             return new Reading[0];

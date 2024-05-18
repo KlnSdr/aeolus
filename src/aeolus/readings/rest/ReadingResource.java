@@ -8,16 +8,18 @@ import dobby.annotations.Post;
 import dobby.io.HttpContext;
 import dobby.io.response.ResponseCodes;
 import dobby.util.json.NewJson;
+import hades.annotations.AuthorizedOnly;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static aeolus.util.IsoDate.parseIsoDate;
-import static aeolus.util.IsoDate.toIsoDateString;
 
 public class ReadingResource {
 
+    @AuthorizedOnly
     @Get("/readings/{year}")
     public void getReadingsForYear(HttpContext context) {
         int year;
@@ -28,7 +30,7 @@ public class ReadingResource {
             return;
         }
 
-        Reading[] readings = ReadingService.getInstance().find(year);
+        Reading[] readings = ReadingService.getInstance().find(getUserId(context), year);
 
         final NewJson json = new NewJson();
         List<Object> readingsList = List.of(Arrays.stream(readings).map(this::map).toArray(NewJson[]::new));
@@ -37,6 +39,7 @@ public class ReadingResource {
         context.getResponse().setBody(json);
     }
 
+    @AuthorizedOnly
     @Get("/readings/{year}/{month}")
     public void getReadingsForYearAndMonth(HttpContext context) {
         int year, month;
@@ -52,7 +55,7 @@ public class ReadingResource {
 
         Reading[] readings;
         try {
-            readings = ReadingService.getInstance().find(year, month);
+            readings = ReadingService.getInstance().find(getUserId(context), year, month);
         } catch (IllegalArgumentException e) {
             sendBadRequest(context, "Invalid month: " + month);
             return;
@@ -65,6 +68,7 @@ public class ReadingResource {
         context.getResponse().setBody(json);
     }
 
+    @AuthorizedOnly
     @Get("/readings/{year}/{month}/{day}")
     public void getReadingsForYearMonthDay(HttpContext context) {
         int year, month, day;
@@ -81,7 +85,7 @@ public class ReadingResource {
 
         Reading reading;
         try {
-            reading = ReadingService.getInstance().find(year, month, day);
+            reading = ReadingService.getInstance().find(getUserId(context), year, month, day);
         } catch (IllegalArgumentException e) {
             sendBadRequest(context, "Invalid date: " + year + "-" + month + "-" + day);
             return;
@@ -93,6 +97,7 @@ public class ReadingResource {
         context.getResponse().setBody(map(reading));
     }
 
+    @AuthorizedOnly
     @Post("/readings")
     public void addReading(HttpContext context) {
         final NewJson json = context.getRequest().getBody();
@@ -100,7 +105,7 @@ public class ReadingResource {
         String isoDate = json.getString("date");
         Date date = parseIsoDate(isoDate);
 
-        Reading reading = new Reading(value, date);
+        Reading reading = new Reading(value, date, getUserId(context));
         boolean wasAdded;
         try {
             wasAdded = ReadingService.getInstance().add(reading);
@@ -115,6 +120,10 @@ public class ReadingResource {
         }
 
         context.getResponse().setCode(wasAdded ? ResponseCodes.CREATED : ResponseCodes.INTERNAL_SERVER_ERROR);
+    }
+
+    private UUID getUserId(HttpContext context) {
+        return UUID.fromString(context.getSession().get("userId"));
     }
 
     private NewJson map(Reading reading) {

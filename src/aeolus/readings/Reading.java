@@ -4,9 +4,11 @@ import aeolus.util.IsoDate;
 import dobby.util.json.NewJson;
 import janus.DataClass;
 import janus.annotations.JanusString;
+import janus.annotations.JanusUUID;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.UUID;
 
 public class Reading implements DataClass {
     // TODO change correct types once janus supports them
@@ -14,10 +16,13 @@ public class Reading implements DataClass {
     private String value;
     @JanusString("date")
     private String date;
+    @JanusUUID("owner")
+    private UUID owner;
 
-    public Reading(float value, Date date) {
+    public Reading(float value, Date date, UUID owner) {
         this.value = Double.toString(value);
         this.date = IsoDate.toIsoDateString(date);
+        this.owner = owner;
     }
 
     public Reading() {
@@ -34,7 +39,11 @@ public class Reading implements DataClass {
 
     @Override
     public String getKey() {
-        return date;
+        return owner + "_" + date;
+    }
+
+    public UUID getOwner() {
+        return owner;
     }
 
     @Override
@@ -49,6 +58,7 @@ public class Reading implements DataClass {
         final NewJson json = new NewJson();
         json.setString("date", date);
         json.setString("value", value);
+        json.setString("owner", owner.toString());
         return json;
     }
 }
