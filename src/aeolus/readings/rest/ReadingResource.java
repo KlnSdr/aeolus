@@ -7,7 +7,7 @@ import dobby.annotations.Get;
 import dobby.annotations.Post;
 import dobby.io.HttpContext;
 import dobby.io.response.ResponseCodes;
-import dobby.util.Json;
+import dobby.util.json.NewJson;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -16,7 +16,7 @@ import java.util.List;
 import static aeolus.util.IsoDate.parseIsoDate;
 import static aeolus.util.IsoDate.toIsoDateString;
 
-public class ReadingRessource {
+public class ReadingResource {
 
     @Get("/readings/{year}")
     public void getReadingsForYear(HttpContext context) {
@@ -30,8 +30,8 @@ public class ReadingRessource {
 
         Reading[] readings = ReadingService.getInstance().find(year);
 
-        Json json = new Json();
-        List<Object> readingsList = List.of(Arrays.stream(readings).map(this::map).toArray(Json[]::new));
+        final NewJson json = new NewJson();
+        List<Object> readingsList = List.of(Arrays.stream(readings).map(this::map).toArray(NewJson[]::new));
         json.setList("readings", readingsList);
 
         context.getResponse().setBody(json);
@@ -58,8 +58,8 @@ public class ReadingRessource {
             return;
         }
 
-        Json json = new Json();
-        List<Object> readingsList = List.of(Arrays.stream(readings).map(this::map).toArray(Json[]::new));
+        final NewJson json = new NewJson();
+        List<Object> readingsList = List.of(Arrays.stream(readings).map(this::map).toArray(NewJson[]::new));
         json.setList("readings", readingsList);
 
         context.getResponse().setBody(json);
@@ -95,7 +95,7 @@ public class ReadingRessource {
 
     @Post("/readings")
     public void addReading(HttpContext context) {
-        Json json = context.getRequest().getBody();
+        final NewJson json = context.getRequest().getBody();
         float value = Float.parseFloat(json.getString("value"));
         String isoDate = json.getString("date");
         Date date = parseIsoDate(isoDate);
@@ -107,7 +107,7 @@ public class ReadingRessource {
         } catch (DuplicateEntryException e) {
             context.getResponse().setCode(ResponseCodes.CONFLICT);
 
-            Json message = new Json();
+            final NewJson message = new NewJson();
             message.setString("msg", "Reading for date " + isoDate + " already exists");
 
             context.getResponse().setBody(message);
@@ -117,17 +117,14 @@ public class ReadingRessource {
         context.getResponse().setCode(wasAdded ? ResponseCodes.CREATED : ResponseCodes.INTERNAL_SERVER_ERROR);
     }
 
-    private Json map(Reading reading) {
-        Json json = new Json();
-        json.setString("value", Float.toString(reading.getValue()));
-        json.setString("date", toIsoDateString(reading.getDate()));
-        return json;
+    private NewJson map(Reading reading) {
+        return reading.toJson();
     }
 
     private void sendNotFound(HttpContext ctx, String message) {
         ctx.getResponse().setCode(ResponseCodes.NOT_FOUND);
 
-        Json json = new Json();
+        final NewJson json = new NewJson();
         json.setString("msg", message);
 
         ctx.getResponse().setBody(json);
@@ -136,7 +133,7 @@ public class ReadingRessource {
     private void sendBadRequest(HttpContext ctx, String message) {
         ctx.getResponse().setCode(ResponseCodes.BAD_REQUEST);
 
-        Json json = new Json();
+        final NewJson json = new NewJson();
         json.setString("msg", message);
 
         ctx.getResponse().setBody(json);

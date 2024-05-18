@@ -3,8 +3,7 @@
     <output-path>$PROJECT_DIR$/out/artifacts/aeolus_jar</output-path>
     <root id="archive" name="aeolus.jar">
       <element id="module-output" name="aeolus" />
-      <element id="extracted-dir" path="$USER_HOME$/dev/customJars/dobby/v0.0.2/dobby.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/dev/customJars/thot/v0.0.2/thot.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/dev/customJars/Hades/v0.0.3/hades.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

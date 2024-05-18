@@ -6,6 +6,7 @@ import dobby.io.HttpContext;
 import dobby.io.request.RequestTypes;
 import dobby.io.response.ResponseCodes;
 import dobby.util.Json;
+import dobby.util.json.NewJson;
 
 import static aeolus.util.IsoDate.isValidIsoDate;
 
@@ -39,10 +40,10 @@ public class DatePreFilter implements Filter {
 
     private boolean filterPost(HttpContext httpContext) {
 
-        Json body = httpContext.getRequest().getBody();
+        final NewJson body = httpContext.getRequest().getBody();
 
-        if (!body.hasKeys(new String[]{"value", "date"})) {
-            Json message = new Json();
+        if (!body.hasKeys("value", "date")) {
+            final NewJson message = new NewJson();
             message.setString("msg", "Missing value or date");
 
             httpContext.getResponse().setCode(ResponseCodes.BAD_REQUEST);
@@ -50,13 +51,13 @@ public class DatePreFilter implements Filter {
             return false;
         }
 
-        String isoDateString = httpContext.getRequest().getBody().getString("date");
-        String valueString = httpContext.getRequest().getBody().getString("value");
+        final String isoDateString = httpContext.getRequest().getBody().getString("date");
+        final String valueString = httpContext.getRequest().getBody().getString("value");
 
         try {
             Float.parseFloat(valueString);
         } catch (NumberFormatException e) {
-            Json message = new Json();
+            final NewJson message = new NewJson();
             message.setString("msg", "Invalid value: " + valueString);
 
             httpContext.getResponse().setCode(ResponseCodes.BAD_REQUEST);
@@ -65,7 +66,7 @@ public class DatePreFilter implements Filter {
         }
 
         if (!isValidIsoDate(isoDateString)) {
-            Json message = new Json();
+            final NewJson message = new NewJson();
             message.setString("msg", "Invalid ISO date: " + isoDateString);
 
             httpContext.getResponse().setCode(ResponseCodes.BAD_REQUEST);

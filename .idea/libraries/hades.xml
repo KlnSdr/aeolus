@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="thot">
+  <library name="hades">
     <CLASSES>
-      <root url="jar://$USER_HOME$/dev/customJars/thot/v0.0.2/thot.jar!/" />
+      <root url="jar://$USER_HOME$/dev/customJars/Hades/v0.0.3/hades.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

@@ -2,11 +2,14 @@ package aeolus.readings.service;
 
 import aeolus.exceptions.DuplicateEntryException;
 import aeolus.readings.Reading;
+import dobby.util.json.NewJson;
+import janus.Janus;
+import thot.connector.Connector;
 
 import static aeolus.util.IsoDate.toIsoDateString;
 
 public class ReadingService {
-    private static final String bucketName = "temperatureReadings";
+    public static final String bucketName = "aeolus_temperatureReadings";
     private static ReadingService instance;
 
     private ReadingService() {
@@ -46,7 +49,9 @@ public class ReadingService {
         String dayString = day < 10 ? "0" + day : Integer.toString(day);
 
         String key = yearString + "-" + monthString + "-" + dayString;
-        Reading reading = thot.connector.Connector.read(bucketName, key, Reading.class);
+
+        final Reading reading = Janus.parse(Connector.read(bucketName, key, NewJson.class), Reading.class);
+
         if (reading == null) {
             throw new NullPointerException("No reading found for date: " + key);
         }
@@ -54,21 +59,27 @@ public class ReadingService {
     }
 
     private Reading[] find(String pattern) {
-        Reading[] reading = thot.connector.Connector.readPattern(bucketName, pattern, Reading.class);
-        if (reading == null) {
+        final NewJson[] readingsJson = Connector.readPattern(bucketName, pattern, NewJson.class);
+
+        if (readingsJson == null) {
             return new Reading[0];
         }
-        return reading;
+
+        final Reading[] readings = new Reading[readingsJson.length];
+        for (int i = 0; i < readings.length; i++) {
+            readings[i] = Janus.parse(readingsJson[i], Reading.class);
+        }
+
+        return readings;
     }
 
     public boolean add(Reading reading) throws DuplicateEntryException {
-        Reading existingReading = thot.connector.Connector.read(bucketName, toIsoDateString(reading.getDate()),
-                Reading.class);
+        final NewJson existingReading = Connector.read(bucketName, reading.getKey(), NewJson.class);
         if (existingReading != null) {
             throw new DuplicateEntryException("Reading for date " + toIsoDateString(reading.getDate()) + " already " + "exists");
         }
 
-        return thot.connector.Connector.write(bucketName, toIsoDateString(reading.getDate()), reading);
+        return Connector.write(bucketName, reading.getKey(), reading.toStoreJson());
     }
 
 }

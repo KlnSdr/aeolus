@@ -4,6 +4,21 @@
     "version": "0.0.1"
   },
   "dobby": {
-    "staticContentDir": "static/docs"
+    "staticContent": {
+      "directory": "static/docs"
+    },
+    "port": 3333,
+    "threads": 10,
+    "mode": "http"
+  },
+  "hades": {
+    "context": "/aeolus",
+    "login": {
+      "maxAttempts": 5,
+      "redirect":{
+        "success": "/",
+        "successAdmin": "/hades"
+      }
+    }
   }
 }
