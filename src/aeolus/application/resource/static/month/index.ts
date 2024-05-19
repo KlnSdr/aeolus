@@ -12,7 +12,7 @@ function initCalender() {
     }
 
     const selectMonth = document.getElementById("selectMonth") as HTMLSelectElement;
-    selectMonth.value = prependZero(new Date().getMonth());
+    selectMonth.value = prependZero(new Date().getMonth() + 1);
 
     (document.getElementById("bttnShowDiagram") as HTMLButtonElement).click();
 }

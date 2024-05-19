@@ -1,11 +1,14 @@
 {
   "application": {
     "name": "aeolus",
-    "version": "0.0.1"
+    "version": "0.0.2"
   },
   "dobby": {
     "staticContent": {
       "directory": "static"
+    },
+    "session": {
+      "age": 48
     },
     "port": 3333,
     "threads": 10,
@@ -17,7 +20,7 @@
       "maxAttempts": 5,
       "redirect":{
         "success": "/",
-        "successAdmin": "/"
+        "successAdmin": "/hades"
       }
     }
   }
