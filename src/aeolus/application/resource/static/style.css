@@ -61,3 +61,22 @@ button:hover {
     font-weight: bolder;
     margin: 0;
 }
+
+details {
+    margin-top: 5px;
+    width: 50%;
+    margin-left: 25%;
+}
+
+details table {
+    margin: auto;
+}
+
+table tr:nth-child(even) {
+    background-color: lightgray;
+}
+
+table tr:hover {
+    background-color: darkblue;
+    color: #f9f9f9;
+}

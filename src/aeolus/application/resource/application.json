@@ -1,7 +1,7 @@
 {
   "application": {
     "name": "aeolus",
-    "version": "0.0.2"
+    "version": "0.0.3-SNAPSHOT"
   },
   "dobby": {
     "staticContent": {
@@ -20,7 +20,7 @@
       "maxAttempts": 5,
       "redirect":{
         "success": "/",
-        "successAdmin": "/hades"
+        "successAdmin": "/"
       }
     }
   }

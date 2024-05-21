@@ -31,6 +31,7 @@ function loadNewData() {
     }).then(data => {
         const processedData = preprocessData(data["readings"]);
         displayChart(processedData, "line", darkredRGB, undefined);
+        displayRawData(processedData);
     }).catch(_ => {
         alert("Ein Fehler ist beim Laden der Daten aufgetreten");
     });
