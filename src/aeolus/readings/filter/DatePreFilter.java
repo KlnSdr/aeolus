@@ -28,7 +28,7 @@ public class DatePreFilter implements Filter {
 
     @Override
     public boolean run(HttpContext httpContext) {
-        if (!httpContext.getRequest().getPath().equals("/readings")) {
+        if (!httpContext.getRequest().getPath().equals("/rest/readings")) {
             return true;
         }
 
