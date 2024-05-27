@@ -34,3 +34,17 @@ function displayRawData(data: dataPoint[]) {
         table.appendChild(tr);
     }
 }
+
+function downloadRawData(data: dataPoint[], filename: string) {
+    const blob: Blob = new Blob([rawDataToCsv(data)], {type: "text/plain;charset=utf-8"});
+
+    const downloadLink: HTMLAnchorElement = document.createElement("a") as HTMLAnchorElement;
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = filename + ".csv";
+
+    downloadLink.click();
+}
+
+function rawDataToCsv(data: dataPoint[]): string {
+    return "datum,temperatur\n" + data.map(day => day.date + "," + day.value).join("\n");
+}
