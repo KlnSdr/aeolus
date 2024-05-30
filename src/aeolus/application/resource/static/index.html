@@ -8,7 +8,10 @@
     <title>Aeolus</title>
 
     <link rel="stylesheet" href="{{CONTEXT}}/style.css">
+    <link rel="stylesheet" href="{{CONTEXT}}/common/popup.css">
+
     <script src="{{CONTEXT}}/hades/logout.js"></script>
+    <script src="{{CONTEXT}}/common/popup.js"></script>
     <script src="{{CONTEXT}}/index.js"></script>
 </head>
 <body onload="startup()">
@@ -27,6 +30,7 @@
 <div class="center">
     <h1 id="lastValue" class="huge">XY.Z °C</h1>
     <p id="lastValueFrom">vom: DD.MM.YYYY</p>
+    <button onclick="openAddValueManually()">Daten manuell eintragen</button>
 </div>
 </body>
 </html>
