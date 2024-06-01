@@ -1,7 +1,7 @@
 {
   "application": {
     "name": "aeolus",
-    "version": "0.0.3-SNAPSHOT"
+    "version": "0.0.3"
   },
   "dobby": {
     "staticContent": {
