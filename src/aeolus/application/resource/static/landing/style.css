@@ -1,0 +1,41 @@
+.aeolus_logo {
+    max-width: 20%;
+    max-height: 25%;
+}
+
+.center {
+    margin-top: 5%;
+    width: 50%;
+    margin-left: 25%;
+}
+
+@media (max-width: 800px) {
+    .center {
+        margin-top: 5%;
+        width: 100%;
+        margin-left: 5px;
+    }
+}
+
+.landingTextContainer {
+    text-align: left;
+}
+
+footer {
+    min-height: 50px;
+    background: darkblue;
+    color: #f9f9f9;
+    padding: 10px;
+    margin-top: 5%;
+}
+
+footer .center,
+footer p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+footer a,
+footer a:active {
+    color: #f9f9f9;
+}

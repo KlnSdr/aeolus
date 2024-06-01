@@ -47,7 +47,7 @@ public class AeolusAuthorizedRedirectFilter implements Filter {
         if (pathsToIgnore.contains(path.toLowerCase())) {
             final Response response = httpContext.getResponse();
 
-            response.setHeader("location", Config.getInstance().getString("hades.context", "") + "/hades/login/");
+            response.setHeader("location", Config.getInstance().getString("hades.context", "") + "/landing");
             response.setCode(ResponseCodes.FOUND);
 
             return false;
