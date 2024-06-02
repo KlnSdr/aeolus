@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Aeolus</title>
+
+    <link rel="icon" type="image/png" href="{{CONTEXT}}/favicon.png">
+
+    <link rel="stylesheet" href="{{CONTEXT}}/style.css">
+    <link rel="stylesheet" href="{{CONTEXT}}/landing/style.css">
+
+    <script src="{{CONTEXT}}/landing/index.js"></script>
+    <script src="{{CONTEXT}}/docs/index.js"></script>
+</head>
+<body onload="generateDocs()">
+<nav>
+    <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}')">Aeolus</a></h1>
+    <div class="navbarRight">
+        <button onclick="redirectToLogin()">anmelden</button>
+    </div>
+</nav>
+<div class="center landingTextContainer">
+    <h1>Aeolus API Dokumentation</h1>
+    <p>
+        Willkommen zur API-Dokumentation von Aeolus.
+        Unsere API ermöglicht es Ihnen, Temperaturdaten einfach und flexibel zu erfassen, zu analysieren und in Ihre eigenen Anwendungen zu integrieren.
+        Diese Dokumentation bietet Ihnen alle notwendigen Informationen, um die API optimal zu nutzen.
+    </p>
+    <h2>Authentifizierung</h2>
+    Um die API nutzen zu können, müssen Sie sich authentifizieren.
+    Verwenden Sie hierzu einen API-Schlüssel, den Sie in Ihrem Aeolus-Konto generieren können.
+    <br>
+    Beispiel für die Authentifizierung:
+    <pre><code>GET /rest/readings/2024
+Hades-Login-Token: YOUR_API_KEY</code></pre>
+    <h2>API-Endpunkte</h2>
+    <div id="docOutput"></div>
+</div>
+</body>
+</html>
