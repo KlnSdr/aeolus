@@ -7,12 +7,12 @@ const darkredRGB = 'rgb(139, 0, 0)';
 const darkblueRGB = 'rgb(0, 0, 139)';
 const darkgreenRGB = 'rgb(0, 139, 0)';
 
-let currentChart: Object | null = null;
+let currentChart: {[key: string]: Object} = {};
 
-function preprocessData(data: dataPoint[]) {
+function preprocessData(data: {date: string, value: number}[]): dataPoint[] {
     return data.map(day => {
         return {
-            date: day.date, value: parseFloat(day.value).toFixed(1),
+            date: day.date, value: day.value.toFixed(2),
         };
     }).sort(compareIsoDate);
 }
@@ -43,8 +43,8 @@ function prependZero(val: number) {
     return val > 9 ? val.toString() : "0" + val;
 }
 
-function displayChart(data: dataPoint[], type: string, borderColor: string | string[], backgroundColor: string | string[] | undefined) {
-    const ctx = document.getElementById('myChart') as HTMLCanvasElement;
+function displayChart(data: dataPoint[], type: string, borderColor: string | string[], backgroundColor: string | string[] | undefined, canvasId: string = 'myChart') {
+    const ctx = document.getElementById(canvasId) as HTMLCanvasElement;
     const context = ctx.getContext('2d');
 
     if (!context) {
@@ -77,11 +77,11 @@ function displayChart(data: dataPoint[], type: string, borderColor: string | str
         }
     };
 
-    if (currentChart) {
+    if (currentChart[canvasId] !== undefined) {
         // @ts-ignore
-        currentChart.destroy();
+        currentChart[canvasId].destroy();
     }
 
     // @ts-ignore
-    currentChart = new Chart(context, config);
+    currentChart[canvasId] = new Chart(context, config);
 }

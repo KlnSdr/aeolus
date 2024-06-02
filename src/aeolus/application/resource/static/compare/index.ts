@@ -28,8 +28,15 @@ function showCompareYears() {
             const yearBData = dataB;
 
             const diffData: dataPoint[] = calculateDiff(yearAData, yearBData);
-            const floatData: number[] = diffData.map(day => parseFloat(day.value))
+            const floatData: number[] = diffData.map(day => parseFloat(day.value));
+
+            const percentageData: dataPoint[] = [];
+            percentageData.push({date: "wärmer", value: (floatData.filter(day => day > 0).length / floatData.length * 100).toFixed(2)});
+            percentageData.push({date: "kälter", value: (floatData.filter(day => day < 0).length / floatData.length * 100).toFixed(2)});
+            percentageData.push({date: "gleich", value: (100 - parseFloat(percentageData[0].value) - parseFloat(percentageData[1].value)).toFixed(2)});
+
             displayChart(diffData, "bar", darkredRGB, floatData.map(day => day > 0.0 ? darkredRGB : (day < 0.0 ? darkblueRGB : darkgreenRGB)));
+            displayChart(percentageData, "pie", [darkredRGB, darkblueRGB, darkgreenRGB], [darkredRGB, darkblueRGB, darkgreenRGB], "myChart2");
         })
     })
 }
@@ -51,7 +58,7 @@ function calculateDiff(yearA: any, yearB: any) {
     for (let i = 0; i < filteredArrayB.length; i++) {
         diff.push({
             date: filteredArrayB[i].date.slice(5),
-            value: (parseFloat(filteredArrayA[i].value) - parseFloat(filteredArrayB[i].value)).toFixed(2),
+            value: (filteredArrayA[i].value - filteredArrayB[i].value).toFixed(2),
         });
     }
 
