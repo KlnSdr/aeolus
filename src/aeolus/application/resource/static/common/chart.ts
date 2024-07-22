@@ -67,12 +67,11 @@ function displayChart(data: dataPoint[], type: string, borderColor: string | str
         data: chartData,
         options: {
             scales: {
-                x: {
-                    beginAtZero: true
-                },
-                y: {
-                    beginAtZero: true
-                }
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
             }
         }
     };
