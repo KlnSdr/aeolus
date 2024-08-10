@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="hades">
     <CLASSES>
-      <root url="jar://$USER_HOME$/dev/customJars/Hades/v0.0.4/hades.jar!/" />
+      <root url="jar://$USER_HOME$/dev/customJars/Hades/v0.5/hades.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
