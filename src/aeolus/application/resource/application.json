@@ -26,7 +26,7 @@
         "successAdmin": "/hades"
       }
     },
-    "unauthorizedRedirectTarget": "/hades/login",
+    "unauthorizedRedirectTarget": "/landing",
     "unauthorizedRedirectPaths": [
       "/",
       "/index.html",
