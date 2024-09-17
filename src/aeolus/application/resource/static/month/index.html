@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="{{CONTEXT}}/style.css">
     <link rel="stylesheet" href="{{CONTEXT}}/month/style.css">
     <link rel="stylesheet" href="{{CONTEXT}}/lib/Chart.min.css">
+    <link rel="stylesheet" href="{{CONTEXT}}/hades/messages.css">
+
+    <script src="{{CONTEXT}}/hades/messages.js"></script>
 
     <script src="{{CONTEXT}}/lib/Chart.min.js"></script>
     <script src="{{CONTEXT}}/hades/logout.js"></script>
@@ -19,7 +22,7 @@
     <script src="{{CONTEXT}}/month/index.js"></script>
     <script src="{{CONTEXT}}/lib/Chart.min.js"></script>
 </head>
-<body onload="startup(); initCalender()">
+<body onload="startup(); initCalender(); loadMessages()">
 <nav>
     <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}')">Aeolus</a></h1>
     <div class="navButtons">
@@ -28,6 +31,7 @@
         <button onclick="location.assign('{{CONTEXT}}/compare')">Vergleichen</button>
     </div>
     <div class="navbarRight">
+        <button id="bttnMessages">Nachrichten: 0</button>
         <label id="lblCurrentUser" onclick="window.location.assign('{{CONTEXT}}/me')">(...)</label>
         <button onclick="doLogout()">logout</button>
     </div>
