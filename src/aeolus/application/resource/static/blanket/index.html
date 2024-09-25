@@ -17,9 +17,11 @@
     <script src="{{CONTEXT}}/hades/messages.js"></script>
     <script src="{{CONTEXT}}/hades/logout.js"></script>
     <script src="{{CONTEXT}}/common/popup.js"></script>
+    <script src="{{CONTEXT}}/common/chart.js"></script>
     <script src="{{CONTEXT}}/index.js"></script>
+    <script src="{{CONTEXT}}/blanket/index.js"></script>
 </head>
-<body onload="startup(); loadMessages()">
+<body onload="startup(); initCalender(); loadMessages()">
 <nav>
     <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}')">Aeolus</a></h1>
     <div class="navButtons">
@@ -35,13 +37,9 @@
     </div>
 </nav>
 <div class="center">
-    <select id="selectYear">
-        <option value="2020">2020</option>
-        <option value="2021">2021</option>
-        <option value="2022">2022</option>
-        <option value="2023">2023</option>
-        <option value="2024">2024</option>
-    </select>
+    <label for="selectYear">Jahr:</label>
+    <select id="selectYear"></select>
+    <label for="selectMonth">Monat:</label>
     <select id="selectMonth">
         <option value="01">Januar</option>
         <option value="02">Februar</option>
