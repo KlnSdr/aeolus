@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{{CONTEXT}}/style.css">
     <link rel="stylesheet" href="{{CONTEXT}}/common/popup.css">
     <link rel="stylesheet" href="{{CONTEXT}}/hades/messages.css">
+    <link rel="stylesheet" href="{{CONTEXT}}/blanket/style.css">
 
     <script src="{{CONTEXT}}/hades/messages.js"></script>
     <script src="{{CONTEXT}}/hades/logout.js"></script>
@@ -34,6 +35,34 @@
     </div>
 </nav>
 <div class="center">
+    <select id="selectYear">
+        <option value="2020">2020</option>
+        <option value="2021">2021</option>
+        <option value="2022">2022</option>
+        <option value="2023">2023</option>
+        <option value="2024">2024</option>
+    </select>
+    <select id="selectMonth">
+        <option value="01">Januar</option>
+        <option value="02">Februar</option>
+        <option value="03">März</option>
+        <option value="04">April</option>
+        <option value="05">Mai</option>
+        <option value="06">Juni</option>
+        <option value="07">Juli</option>
+        <option value="08">August</option>
+        <option value="09">September</option>
+        <option value="10">Oktober</option>
+        <option value="11">November</option>
+        <option value="12">Dezember</option>
+    </select>
+    <button id="bttnShowDiagram" onclick="loadNewData()">anzeigen</button>
+    <p>DD.MM.YYYY</p>
+    <div id="outDayColor">
+        <button class="bigButton">&lt;</button>
+        <label>XY.Z°C</label>
+        <button class="bigButton">&gt;</button>
+    </div>
 </div>
 </body>
 </html>

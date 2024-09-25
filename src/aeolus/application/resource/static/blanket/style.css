@@ -1,0 +1,27 @@
+:root {
+    --nNine: red;
+    --nSix: blue;
+    --nThree: green;
+    --zero: orange;
+    --three: purple;
+    --six: lime;
+    --nine: gray;
+    --twelve: yellow;
+    --fifteen: pink;
+    --eighteen: brown;
+    --twentyOne: cyan;
+    --twentyFour: black;
+}
+
+.bigButton {
+    width: 50px;
+    height: 50px;
+}
+
+#outDayColor {
+    background-color: var(--nNine);
+    display: inline-block;
+    padding: 50px;
+    box-shadow: 0 0 10px 5px var(--nNine);
+    border-radius: 5px;
+}
