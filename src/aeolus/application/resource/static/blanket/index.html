@@ -5,24 +5,20 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Aeolus - Jahresübersicht</title>
+    <title>Aeolus - Temperaturdecke</title>
+
+    <link rel="icon" type="image/png" href="{{CONTEXT}}/favicon.png">
 
     <link rel="stylesheet" href="{{CONTEXT}}/style.css">
-    <link rel="stylesheet" href="{{CONTEXT}}/month/style.css">
-    <link rel="stylesheet" href="{{CONTEXT}}/lib/Chart.min.css">
+    <link rel="stylesheet" href="{{CONTEXT}}/common/popup.css">
     <link rel="stylesheet" href="{{CONTEXT}}/hades/messages.css">
 
     <script src="{{CONTEXT}}/hades/messages.js"></script>
-
-    <script src="{{CONTEXT}}/lib/Chart.min.js"></script>
     <script src="{{CONTEXT}}/hades/logout.js"></script>
+    <script src="{{CONTEXT}}/common/popup.js"></script>
     <script src="{{CONTEXT}}/index.js"></script>
-    <script src="{{CONTEXT}}/common/chart.js"></script>
-    <script src="{{CONTEXT}}/common/index.js"></script>
-    <script src="{{CONTEXT}}/year/index.js"></script>
-    <script src="{{CONTEXT}}/lib/Chart.min.js"></script>
 </head>
-<body onload="startup(); initCalender(); loadMessages()">
+<body onload="startup(); loadMessages()">
 <nav>
     <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}')">Aeolus</a></h1>
     <div class="navButtons">
@@ -38,22 +34,6 @@
     </div>
 </nav>
 <div class="center">
-    <div class="calender">
-        <div class="monthSelector">
-            <label for="selectYear">Jahr:</label>
-            <select id="selectYear">
-            </select>
-            <button id="bttnShowDiagram" onclick="loadNewData()">anzeigen</button>
-        </div>
-        <div class="calenderDiagram">
-            <canvas id="myChart" width="400" height="200"></canvas>
-        </div>
-    </div>
-    <details>
-        <summary>Rohdaten</summary>
-        <button id="bttnDownloadRawData">download</button>
-        <table id="tblRawData"></table>
-    </details>
 </div>
 </body>
 </html>
