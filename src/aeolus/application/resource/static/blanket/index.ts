@@ -1,3 +1,6 @@
+let monthData: dataPoint[] = [];
+let dayIndex: number = 0;
+
 // @ts-ignore
 function initCalender() {
     const selectYear = document.getElementById("selectYear") as HTMLSelectElement;
@@ -24,7 +27,8 @@ function loadNewData() {
 
     loadMonthData(year, month)
         .then(data => {
-            console.log(data);
+            monthData = data;
+            dayIndex = 0;
         })
         .catch(displayErrorPopUp);
 }
@@ -53,4 +57,33 @@ function displayErrorPopUp(reason: any) {
     const errorBody: HTMLDivElement = document.createElement("div");
     errorBody.innerText = `Ein Fehler ist aufgetreten: ${reason}`.replace("Error: ", "");
     openPopup(errorBody);
+}
+
+function decreaseDay() {
+    dayIndex--;
+    checkIndex();
+    updateDisplayValue();
+}
+
+function increaseDay() {
+    dayIndex++;
+    checkIndex();
+    updateDisplayValue();
+}
+
+function checkIndex() {
+    if (dayIndex < 0) {
+        dayIndex = 0;
+        // todo load prev month
+    }
+
+    if (dayIndex >= monthData.length) {
+        dayIndex = monthData.length - 1;
+        // todo load next month
+    }
+}
+
+function updateDisplayValue() {
+    (document.getElementById("outTemperature") as HTMLLabelElement).innerText = monthData[dayIndex].value;
+    (document.getElementById("outCurrentDate") as HTMLLabelElement).innerText = monthData[dayIndex].date;
 }

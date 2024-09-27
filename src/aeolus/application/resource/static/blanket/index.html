@@ -55,11 +55,11 @@
         <option value="12">Dezember</option>
     </select>
     <button id="bttnShowDiagram" onclick="loadNewData()">anzeigen</button>
-    <p>DD.MM.YYYY</p>
+    <p id="outCurrentDate">DD.MM.YYYY</p>
     <div id="outDayColor">
-        <button class="bigButton">&lt;</button>
-        <label>XY.Z°C</label>
-        <button class="bigButton">&gt;</button>
+        <button class="bigButton" onclick="decreaseDay()">&lt;</button>
+        <label id="outTemperature">XY.Z°C</label>
+        <button class="bigButton" onclick="increaseDay()">&gt;</button>
     </div>
 </div>
 </body>
