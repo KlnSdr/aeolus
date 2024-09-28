@@ -1,3 +1,11 @@
+function displayCurrentDatasource() {
+    const bttnChangeDataSource: HTMLButtonElement = document.getElementById("bttnDatasource") as HTMLButtonElement;
+
+    const dataSource = localStorage.getItem("aeolus_different_datasource_userName") ?? "default";
+
+    bttnChangeDataSource.textContent = `Datenquelle ändern (${dataSource})`;
+}
+
 function changeDataSource() {
     openPopup(buildChangeDataSourceUI());
 }
