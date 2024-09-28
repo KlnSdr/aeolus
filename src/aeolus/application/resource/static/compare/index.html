@@ -36,7 +36,7 @@
         <div class="navbarRight">
             <button id="bttnMessages">Nachrichten: 0</button>
             <label id="lblCurrentUser" onclick="window.location.assign('{{CONTEXT}}/me')">(...)</label>
-            <button onclick="doLogout()">logout</button>
+            <button onclick="resetDatasource(); doLogout()">logout</button>
         </div>
     </div>
     <button id="bttnOpenMobileMenu" class="bigButton" onclick="toggleMobileMenu()">☰</button>
