@@ -20,6 +20,7 @@
     <script src="{{CONTEXT}}/common/chart.js"></script>
     <script src="{{CONTEXT}}/common/index.js"></script>
     <script src="{{CONTEXT}}/common/mobileNavbar.js"></script>
+    <script src="{{CONTEXT}}/common/changeDataSource.js"></script>
     <script src="{{CONTEXT}}/month/index.js"></script>
     <script src="{{CONTEXT}}/lib/Chart.min.js"></script>
 </head>
@@ -32,6 +33,7 @@
             <button onclick="location.assign('{{CONTEXT}}/year')">Jahresübersicht</button>
             <button onclick="location.assign('{{CONTEXT}}/compare')">Vergleichen</button>
             <button onclick="location.assign('{{CONTEXT}}/blanket')">Temperaturdecke</button>
+            <button onclick="changeDataSource()">Datenquelle ändern</button>
         </div>
         <div class="navbarRight">
             <button id="bttnMessages">Nachrichten: 0</button>

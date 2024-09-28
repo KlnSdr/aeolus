@@ -166,7 +166,7 @@ function loadNewData() {
 
 function loadMonthData(year: string, month: string): Promise<dataPoint[]> {
     return new Promise((resolve, reject) => {
-        fetch(`{{CONTEXT}}/rest/readings/${year}/${month}`, {}).then(res => {
+        fetch(`{{CONTEXT}}/rest/readings/${year}/${month}` + addParamForDifferentDataSource(), {}).then(res => {
             if (!res.ok) {
                 throw new Error(res.statusText);
             }

@@ -18,7 +18,7 @@ function initCalender() {
 function loadNewData() {
     const year = (document.getElementById("selectYear") as HTMLSelectElement).value;
 
-    fetch(`{{CONTEXT}}/rest/readings/${year}`, {}).then(res => {
+    fetch(`{{CONTEXT}}/rest/readings/${year}` + addParamForDifferentDataSource(), {}).then(res => {
         if (!res.ok) {
             throw new Error();
         }

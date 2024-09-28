@@ -22,7 +22,7 @@ function loadNewData() {
     const year = (document.getElementById("selectYear") as HTMLSelectElement).value;
     const month = (document.getElementById("selectMonth") as HTMLSelectElement).value;
 
-    fetch(`{{CONTEXT}}/rest/readings/${year}/${month}`, {}).then(res => {
+    fetch(`{{CONTEXT}}/rest/readings/${year}/${month}` + addParamForDifferentDataSource(), {}).then(res => {
         if (!res.ok) {
             throw new Error();
         }

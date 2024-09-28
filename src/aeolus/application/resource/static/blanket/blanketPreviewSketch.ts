@@ -19,7 +19,7 @@ let p5CurrentYear: string = "";
 let p5ForceRepaint: boolean = false;
 
 async function loadYearData(year: string): Promise<dataPoint[]> {
-    const res = await fetch(`{{CONTEXT}}/rest/readings/${year}`, {});
+    const res = await fetch(`{{CONTEXT}}/rest/readings/${year}` + addParamForDifferentDataSource(), {});
     if (!res.ok) {
         throw new Error();
     }

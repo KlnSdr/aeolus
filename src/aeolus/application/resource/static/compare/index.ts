@@ -67,7 +67,7 @@ function calculateDiff(yearA: any, yearB: any) {
 
 function loadYear(year: string) {
     return new Promise((resolve, reject) => {
-        fetch(`{{CONTEXT}}/rest/readings/${year}`, {}).then(res => {
+        fetch(`{{CONTEXT}}/rest/readings/${year}` + addParamForDifferentDataSource(), {}).then(res => {
             if (!res.ok) {
                 throw new Error();
             }
