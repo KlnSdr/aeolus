@@ -12,7 +12,7 @@ function loadLastReading() {
         if (res.ok) {
             return res.json();
         }
-        throw new Error("Something went wrong");
+        throw new Error("Keine Werte gefunden");
     }).then(data => {
         lastValue.innerText = parseFloat(data["value"]).toFixed(1) + " °C";
         lastValueFrom.innerText = `vom: ${isoToDisplayDate(data["date"])}`;
