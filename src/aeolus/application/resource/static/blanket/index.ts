@@ -1,16 +1,16 @@
 const temperatureColors = [
-    { min: -Infinity, max: -6, cssVar: '--nNine' },
-    { min: -5.9, max: -3, cssVar: '--nSix' },
-    { min: -2.9, max: 0, cssVar: '--nThree' },
-    { min: 0, max: 2.9, cssVar: '--zero' },
-    { min: 3, max: 5.9, cssVar: '--three' },
-    { min: 6, max: 8.9, cssVar: '--six' },
-    { min: 9, max: 11.9, cssVar: '--nine' },
-    { min: 12, max: 14.9, cssVar: '--twelve' },
-    { min: 15, max: 17.9, cssVar: '--fifteen' },
-    { min: 18, max: 20.9, cssVar: '--eighteen' },
-    { min: 21, max: 23.9, cssVar: '--twentyOne' },
-    { min: 24, max: Infinity, cssVar: '--twentyFour' }
+    { min: -Infinity, max: -6, cssVar: 'nNine' },
+    { min: -5.9, max: -3, cssVar: 'nSix' },
+    { min: -2.9, max: 0, cssVar: 'nThree' },
+    { min: 0, max: 2.9, cssVar: 'zero' },
+    { min: 3, max: 5.9, cssVar: 'three' },
+    { min: 6, max: 8.9, cssVar: 'six' },
+    { min: 9, max: 11.9, cssVar: 'nine' },
+    { min: 12, max: 14.9, cssVar: 'twelve' },
+    { min: 15, max: 17.9, cssVar: 'fifteen' },
+    { min: 18, max: 20.9, cssVar: 'eighteen' },
+    { min: 21, max: 23.9, cssVar: 'twentyOne' },
+    { min: 24, max: Infinity, cssVar: 'twentyFour' }
 ];
 
 let monthData: dataPoint[] = [];
@@ -111,8 +111,10 @@ function updateDisplayValue() {
 }
 
 function changeOutputColor() {
-    const color: string = `var(${backgroundColorFromTemperature()})`;
+    const colorKey: string = backgroundColorFromTemperature();
+    const color: string = `var(--${colorKey})`;
     (document.getElementById("outDayColor") as HTMLDivElement).style.backgroundColor = color;
+    (document.getElementById("outTemperature") as HTMLDivElement).style.color = color.replace(")", "") + "FG)";
     (document.getElementById("outDayColor") as HTMLDivElement).style.boxShadow = `0 0 10px 5px ${color}`;
 }
 
