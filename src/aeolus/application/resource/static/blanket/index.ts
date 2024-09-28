@@ -82,6 +82,37 @@ function openDayView() {
 
 function openPreview() {
     clearOutput();
+    const output: HTMLDivElement = document.getElementById("blanketOutput") as HTMLDivElement;
+
+    const container: HTMLDivElement = document.createElement("div");
+
+    const lblYear: HTMLLabelElement = document.createElement("label");
+    lblYear.innerText = "Jahr:";
+    container.appendChild(lblYear);
+
+    const selectYear: HTMLSelectElement = document.createElement("select");
+    selectYear.id = "selectYear";
+    fillYearSelect(selectYear);
+    container.appendChild(selectYear);
+
+    const bttnShowDiagram: HTMLButtonElement = document.createElement("button");
+    bttnShowDiagram.id = "bttnShowDiagram";
+    bttnShowDiagram.innerText = "anzeigen";
+    bttnShowDiagram.onclick = () => {
+        const year = selectYear.value;
+        loadYearData(year).then(data => {
+            yearData = data;
+        })
+        .catch(() => {
+            yearData = [];
+        })
+    };
+    container.appendChild(bttnShowDiagram);
+
+    output.appendChild(container);
+
+    bttnShowDiagram.click();
+
     if (!sketchInstance) {
         // @ts-ignore
         sketchInstance = new p5(sketch); // Create a new p5 instance
@@ -99,6 +130,15 @@ function clearOutput() {
 // @ts-ignore
 function initCalender() {
     const selectYear = document.getElementById("selectYear") as HTMLSelectElement;
+    fillYearSelect(selectYear);
+
+    const selectMonth = document.getElementById("selectMonth") as HTMLSelectElement;
+    selectMonth.value = prependZero(new Date().getMonth() + 1);
+
+    loadNewData();
+}
+
+function fillYearSelect(element: HTMLSelectElement) {
     const currentYear = new Date().getFullYear();
 
     for (let year = currentYear; year > 2000; year--) {
@@ -106,13 +146,8 @@ function initCalender() {
         option.innerText = year.toString();
         option.value = year.toString();
 
-        selectYear.appendChild(option);
+        element.appendChild(option);
     }
-
-    const selectMonth = document.getElementById("selectMonth") as HTMLSelectElement;
-    selectMonth.value = prependZero(new Date().getMonth() + 1);
-
-    loadNewData();
 }
 
 // @ts-ignore

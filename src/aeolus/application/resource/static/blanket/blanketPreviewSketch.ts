@@ -15,9 +15,10 @@ const temperatureColorsP5 = [
 ];
 
 let yearData: dataPoint[] = [];
-let p5DidError: boolean = false;
+let p5CurrentYear: string = "";
+let p5ForceRepaint: boolean = false;
 
-async function loadYearData(year: number): Promise<dataPoint[]> {
+async function loadYearData(year: string): Promise<dataPoint[]> {
     const res = await fetch(`{{CONTEXT}}/rest/readings/${year}`, {});
     if (!res.ok) {
         throw new Error();
@@ -28,33 +29,33 @@ async function loadYearData(year: number): Promise<dataPoint[]> {
 
 const sketch = function(p: any) {
     p.setup = function() {
-        let canvas = p.createCanvas(400, 400);
+        p5CurrentYear = "";
+        p5ForceRepaint = false;
+        let canvas = p.createCanvas(p.windowWidth / 2, p.windowHeight / 2);
         canvas.parent('blanketOutput');
         p.background(255);
-
-        loadYearData(2024).then(data => {
-            yearData = data;
-        })
-        .catch(() => {
-            yearData = [];
-        });
     };
 
     p.draw = function() {
-        p.background(255);
-        if (p5DidError) {
-            p.fill(0);
-            p.textSize(20);
-            p.text("An error occurred", 100, 200);
-            return;
-        }
         if (yearData.length === 0) {
+            p.background(255);
             p.fill(0);
             p.textSize(20);
             p.text("Waiting for data", 100, 200);
             return;
         }
 
+        if (!p5ForceRepaint) {
+            if (p5CurrentYear === yearData[0].date.substring(0, 4)) {
+                return;
+            } else {
+                p5CurrentYear = yearData[0].date.substring(0, 4);
+            }
+        } else {
+            p5ForceRepaint = false;
+        }
+
+        p.background(255);
         const barWidth = p.width / yearData.length;
         p.noStroke();
 
@@ -64,6 +65,10 @@ const sketch = function(p: any) {
             p.fill(colorEntry ? colorEntry.color : 0);
             p.rect(index * barWidth, 0, barWidth, p.height);
         });
-        p.noLoop();
     };
+
+    p.windowResized = function() {
+        p.resizeCanvas(p.windowWidth / 2, p.windowHeight / 2);
+        p5ForceRepaint = true;
+    }
 };
