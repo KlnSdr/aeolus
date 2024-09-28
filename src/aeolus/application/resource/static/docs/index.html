@@ -12,15 +12,19 @@
     <link rel="stylesheet" href="{{CONTEXT}}/style.css">
     <link rel="stylesheet" href="{{CONTEXT}}/landing/style.css">
 
+    <script src="{{CONTEXT}}/common/mobileNavbar.js"></script>
     <script src="{{CONTEXT}}/landing/index.js"></script>
     <script src="{{CONTEXT}}/docs/index.js"></script>
 </head>
 <body onload="generateDocs()">
 <nav>
     <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}')">Aeolus</a></h1>
-    <div class="navbarRight">
-        <button onclick="redirectToLogin()">anmelden</button>
+    <div id="navBody" class="mobileMenuHidden">
+        <div class="navbarRight">
+            <button onclick="redirectToLogin()">anmelden</button>
+        </div>
     </div>
+    <button id="bttnOpenMobileMenu" class="bigButton" onclick="toggleMobileMenu()">☰</button>
 </nav>
 <div class="center landingTextContainer">
     <h1>Aeolus API Dokumentation</h1>

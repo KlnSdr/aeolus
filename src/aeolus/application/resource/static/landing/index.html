@@ -9,6 +9,7 @@
 
     <link rel="icon" type="image/png" href="{{CONTEXT}}/favicon.png">
 
+    <script src="{{CONTEXT}}/common/mobileNavbar.js"></script>
     <link rel="stylesheet" href="{{CONTEXT}}/style.css">
     <link rel="stylesheet" href="{{CONTEXT}}/landing/style.css">
 
@@ -17,9 +18,12 @@
 <body>
 <nav>
     <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}')">Aeolus</a></h1>
-    <div class="navbarRight">
-        <button onclick="redirectToLogin()">anmelden</button>
+    <div id="navBody" class="mobileMenuHidden">
+        <div class="navbarRight">
+            <button onclick="redirectToLogin()">anmelden</button>
+        </div>
     </div>
+    <button id="bttnOpenMobileMenu" class="bigButton" onclick="toggleMobileMenu()">☰</button>
 </nav>
 <div class="center">
     <img src="{{CONTEXT}}/favicon.png" alt="Aeolus_logo" class="aeolus_logo">

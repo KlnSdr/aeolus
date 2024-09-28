@@ -6,6 +6,7 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f9f9f9;
+    overflow-x: hidden;
 }
 
 .navbarRight {
@@ -56,11 +57,46 @@ button:hover {
     margin-top: 10%;
 }
 
+#bttnOpenMobileMenu {
+    display: none;
+}
+
 @media (max-width: 800px) {
+    #bttnOpenMobileMenu {
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin: 12.5px;
+    }
+
     .center {
         margin-top: 5%;
         width: 100%;
         margin-left: 5px;
+    }
+
+    nav {
+        height: auto;
+        flex-flow: column;
+    }
+
+    .mobileMenuHidden {
+        display: none;
+    }
+
+    .navButtons {
+        display: block;
+        margin: 5px;
+    }
+
+    .navButtons button {
+        display: block;
+        margin: auto;
+    }
+
+    .navbarRight {
+        position: initial;
     }
 }
 
@@ -87,4 +123,9 @@ table tr:nth-child(even) {
 table tr:hover {
     background-color: darkblue;
     color: #f9f9f9;
+}
+
+.bigButton {
+    width: 50px;
+    height: 50px;
 }

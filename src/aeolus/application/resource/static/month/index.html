@@ -19,23 +19,27 @@
     <script src="{{CONTEXT}}/index.js"></script>
     <script src="{{CONTEXT}}/common/chart.js"></script>
     <script src="{{CONTEXT}}/common/index.js"></script>
+    <script src="{{CONTEXT}}/common/mobileNavbar.js"></script>
     <script src="{{CONTEXT}}/month/index.js"></script>
     <script src="{{CONTEXT}}/lib/Chart.min.js"></script>
 </head>
 <body onload="startup(); initCalender(); loadMessages()">
 <nav>
     <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}')">Aeolus</a></h1>
-    <div class="navButtons">
-        <button onclick="location.assign('{{CONTEXT}}/month')">Monatsübersicht</button>
-        <button onclick="location.assign('{{CONTEXT}}/year')">Jahresübersicht</button>
-        <button onclick="location.assign('{{CONTEXT}}/compare')">Vergleichen</button>
-        <button onclick="location.assign('{{CONTEXT}}/blanket')">Temperaturdecke</button>
+    <div id="navBody" class="mobileMenuHidden">
+        <div class="navButtons">
+            <button onclick="location.assign('{{CONTEXT}}/month')">Monatsübersicht</button>
+            <button onclick="location.assign('{{CONTEXT}}/year')">Jahresübersicht</button>
+            <button onclick="location.assign('{{CONTEXT}}/compare')">Vergleichen</button>
+            <button onclick="location.assign('{{CONTEXT}}/blanket')">Temperaturdecke</button>
+        </div>
+        <div class="navbarRight">
+            <button id="bttnMessages">Nachrichten: 0</button>
+            <label id="lblCurrentUser" onclick="window.location.assign('{{CONTEXT}}/me')">(...)</label>
+            <button onclick="doLogout()">logout</button>
+        </div>
     </div>
-    <div class="navbarRight">
-        <button id="bttnMessages">Nachrichten: 0</button>
-        <label id="lblCurrentUser" onclick="window.location.assign('{{CONTEXT}}/me')">(...)</label>
-        <button onclick="doLogout()">logout</button>
-    </div>
+    <button id="bttnOpenMobileMenu" class="bigButton" onclick="toggleMobileMenu()">☰</button>
 </nav>
 <div class="center">
     <div class="calender">

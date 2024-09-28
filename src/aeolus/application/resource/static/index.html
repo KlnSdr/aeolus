@@ -16,22 +16,26 @@
     <script src="{{CONTEXT}}/hades/messages.js"></script>
     <script src="{{CONTEXT}}/hades/logout.js"></script>
     <script src="{{CONTEXT}}/common/popup.js"></script>
+    <script src="{{CONTEXT}}/common/mobileNavbar.js"></script>
     <script src="{{CONTEXT}}/index.js"></script>
 </head>
 <body onload="startup(); loadMessages()">
 <nav>
     <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}')">Aeolus</a></h1>
-    <div class="navButtons">
-        <button onclick="location.assign('{{CONTEXT}}/month')">Monatsübersicht</button>
-        <button onclick="location.assign('{{CONTEXT}}/year')">Jahresübersicht</button>
-        <button onclick="location.assign('{{CONTEXT}}/compare')">Vergleichen</button>
-        <button onclick="location.assign('{{CONTEXT}}/blanket')">Temperaturdecke</button>
+    <div id="navBody" class="mobileMenuHidden">
+        <div class="navButtons">
+            <button onclick="location.assign('{{CONTEXT}}/month')">Monatsübersicht</button>
+            <button onclick="location.assign('{{CONTEXT}}/year')">Jahresübersicht</button>
+            <button onclick="location.assign('{{CONTEXT}}/compare')">Vergleichen</button>
+            <button onclick="location.assign('{{CONTEXT}}/blanket')">Temperaturdecke</button>
+        </div>
+        <div class="navbarRight">
+            <button id="bttnMessages">Nachrichten: 0</button>
+            <label id="lblCurrentUser" onclick="window.location.assign('{{CONTEXT}}/me')">(...)</label>
+            <button onclick="doLogout()">logout</button>
+        </div>
     </div>
-    <div class="navbarRight">
-        <button id="bttnMessages">Nachrichten: 0</button>
-        <label id="lblCurrentUser" onclick="window.location.assign('{{CONTEXT}}/me')">(...)</label>
-        <button onclick="doLogout()">logout</button>
-    </div>
+    <button id="bttnOpenMobileMenu" class="bigButton" onclick="toggleMobileMenu()">☰</button>
 </nav>
 <div class="center">
     <h1 id="lastValue" class="huge">XY.Z °C</h1>
