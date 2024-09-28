@@ -21,7 +21,7 @@
     <script src="{{CONTEXT}}/index.js"></script>
     <script src="{{CONTEXT}}/blanket/index.js"></script>
 </head>
-<body onload="startup(); initCalender(); loadMessages()">
+<body onload="startup(); openDayView(); loadMessages()">
 <nav>
     <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}')">Aeolus</a></h1>
     <div class="navButtons">
@@ -37,29 +37,11 @@
     </div>
 </nav>
 <div class="center">
-    <label for="selectYear">Jahr:</label>
-    <select id="selectYear"></select>
-    <label for="selectMonth">Monat:</label>
-    <select id="selectMonth">
-        <option value="01">Januar</option>
-        <option value="02">Februar</option>
-        <option value="03">März</option>
-        <option value="04">April</option>
-        <option value="05">Mai</option>
-        <option value="06">Juni</option>
-        <option value="07">Juli</option>
-        <option value="08">August</option>
-        <option value="09">September</option>
-        <option value="10">Oktober</option>
-        <option value="11">November</option>
-        <option value="12">Dezember</option>
-    </select>
-    <button id="bttnShowDiagram" onclick="loadNewData()">anzeigen</button>
-    <p id="outCurrentDate">DD.MM.YYYY</p>
-    <div id="outDayColor">
-        <button class="bigButton" onclick="decreaseDay()">&lt;</button>
-        <label id="outTemperature">XY.Z°C</label>
-        <button class="bigButton" onclick="increaseDay()">&gt;</button>
+    <div>
+        <button onclick="openDayView()">Tagesansicht</button>
+        <button onclick="openPreview()">Vorschau</button>
+    </div>
+    <div id="blanketOutput">
     </div>
 </div>
 </body>

@@ -42,3 +42,7 @@
     display: inline-block;
     width: 75px;
 }
+
+#blanketOutput {
+    margin-top: 5px;
+}

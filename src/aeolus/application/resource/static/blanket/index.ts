@@ -16,6 +16,77 @@ const temperatureColors = [
 let monthData: dataPoint[] = [];
 let dayIndex: number = 0;
 
+function openDayView() {
+    clearOutput();
+    const output: HTMLDivElement = document.getElementById("blanketOutput") as HTMLDivElement;
+
+    const lblYear: HTMLLabelElement = document.createElement("label");
+    lblYear.innerText = "Jahr:";
+    output.appendChild(lblYear);
+
+    const selectYear: HTMLSelectElement = document.createElement("select");
+    selectYear.id = "selectYear";
+    output.appendChild(selectYear);
+
+    const lblMonth: HTMLLabelElement = document.createElement("label");
+    lblMonth.innerText = "Monat:";
+    output.appendChild(lblMonth);
+
+    const selectMonth: HTMLSelectElement = document.createElement("select");
+    selectMonth.id = "selectMonth";
+    output.appendChild(selectMonth);
+
+    ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"].forEach((month, index) => {
+        const option: HTMLOptionElement = document.createElement("option");
+        option.innerText = month;
+        option.value = prependZero(index + 1);
+        selectMonth.appendChild(option);
+    });
+
+    const bttnShowDiagram: HTMLButtonElement = document.createElement("button");
+    bttnShowDiagram.id = "bttnShowDiagram";
+    bttnShowDiagram.innerText = "anzeigen";
+    bttnShowDiagram.onclick = loadNewData;
+    output.appendChild(bttnShowDiagram);
+
+    const outCurrentDate: HTMLParagraphElement = document.createElement("p");
+    outCurrentDate.id = "outCurrentDate";
+    outCurrentDate.innerText = "DD.MM.YYYY";
+    output.appendChild(outCurrentDate);
+
+    const outDayColor: HTMLDivElement = document.createElement("div");
+    outDayColor.id = "outDayColor";
+    output.appendChild(outDayColor);
+
+    const bttnDecreaseDay: HTMLButtonElement = document.createElement("button");
+    bttnDecreaseDay.classList.add("bigButton");
+    bttnDecreaseDay.onclick = decreaseDay;
+    bttnDecreaseDay.innerText = "<";
+    outDayColor.appendChild(bttnDecreaseDay);
+
+    const lblTemperature: HTMLLabelElement = document.createElement("label");
+    lblTemperature.id = "outTemperature";
+    lblTemperature.innerText = "XY.Z°C";
+    outDayColor.appendChild(lblTemperature);
+
+    const bttnIncreaseDay: HTMLButtonElement = document.createElement("button");
+    bttnIncreaseDay.classList.add("bigButton");
+    bttnIncreaseDay.onclick = increaseDay;
+    bttnIncreaseDay.innerText = ">";
+    outDayColor.appendChild(bttnIncreaseDay);
+
+    initCalender();
+}
+
+function openPreview() {
+    clearOutput();
+    const output: HTMLDivElement = document.getElementById("blanketOutput") as HTMLDivElement;
+}
+
+function clearOutput() {
+    (document.getElementById("blanketOutput") as HTMLDivElement).innerHTML = "";
+}
+
 // @ts-ignore
 function initCalender() {
     const selectYear = document.getElementById("selectYear") as HTMLSelectElement;
