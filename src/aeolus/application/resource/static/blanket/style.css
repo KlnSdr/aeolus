@@ -1,4 +1,5 @@
 :root {
+    --transparent: transparent;
     --nNine: red;
     --nSix: blue;
     --nThree: green;
@@ -19,9 +20,12 @@
 }
 
 #outDayColor {
-    background-color: var(--nNine);
     display: inline-block;
     padding: 50px;
-    box-shadow: 0 0 10px 5px var(--nNine);
     border-radius: 5px;
+}
+
+#outTemperature {
+    display: inline-block;
+    width: 75px;
 }
