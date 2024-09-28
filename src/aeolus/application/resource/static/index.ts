@@ -7,7 +7,7 @@ function loadLastReading() {
     const lastValue = document.getElementById("lastValue") as HTMLLabelElement;
     const lastValueFrom = document.getElementById("lastValueFrom") as HTMLLabelElement;
 
-    fetch("{{CONTEXT}}/rest/readings/last", {}).then(res => {
+    fetch("{{CONTEXT}}/rest/readings/last" + addParamForDifferentDataSource(), {}).then(res => {
         if (res.ok) {
             return res.json();
         }
@@ -113,7 +113,7 @@ function displayAlert(msg: string) {
 
 function saveValue(date: string, value: string): Promise<void> {
     return new Promise((resolve, reject) => {
-        fetch("{{CONTEXT}}/rest/readings", {
+        fetch("{{CONTEXT}}/rest/readings" + addParamForDifferentDataSource(), {
             method: "POST", headers: {
                 "Content-Type": "application/json"
             },

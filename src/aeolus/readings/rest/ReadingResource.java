@@ -9,7 +9,11 @@ import dobby.io.HttpContext;
 import dobby.io.response.ResponseCodes;
 import dobby.util.json.NewJson;
 import hades.annotations.AuthorizedOnly;
+import hades.authorized.Group;
+import hades.authorized.service.GroupService;
 import hades.common.ErrorResponses;
+import hades.user.User;
+import hades.user.service.UserService;
 
 import java.time.Year;
 import java.util.*;
@@ -149,8 +153,36 @@ public class ReadingResource {
         context.getResponse().setCode(wasAdded ? ResponseCodes.CREATED : ResponseCodes.INTERNAL_SERVER_ERROR);
     }
 
+    @Get(BASE_PATH + "/publicdataset/user/{id}")
+    public void doesUserExposeAPublicDataset(HttpContext context) {
+        final UUID userId = UUID.fromString(context.getRequest().getParam("id"));
+        final User user = UserService.getInstance().find(userId);
+
+        final String userGuestGroup = user.getId().toString() + "-guest";
+        final Group group = GroupService.getInstance().findByName(userGuestGroup);
+
+        final NewJson message = new NewJson();
+        message.setString("msg", "User does not expose a public dataset");
+
+        if (group == null) {
+            context.getResponse().setCode(ResponseCodes.UNAUTHORIZED);
+            context.getResponse().setBody(message);
+            return;
+        }
+
+        message.setString("id", user.getId().toString());
+
+        context.getResponse().setCode(ResponseCodes.OK);
+        context.getResponse().setBody(message);
+    }
+
     private UUID getUserId(HttpContext context) {
-        return UUID.fromString(context.getSession().get("userId"));
+        // change user context if dataSource is set
+        if (!context.getRequest().getQueryKeys().contains("dataSource")) {
+            return UUID.fromString(context.getSession().get("userId"));
+        }
+
+        return UUID.fromString(context.getRequest().getQuery("dataSource").getFirst());
     }
 
     private NewJson map(Reading reading) {
