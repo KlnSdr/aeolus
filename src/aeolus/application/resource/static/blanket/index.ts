@@ -10,7 +10,7 @@ const temperatureColors = [
     { min: 15, max: 17.9, cssVar: '--fifteen' },
     { min: 18, max: 20.9, cssVar: '--eighteen' },
     { min: 21, max: 23.9, cssVar: '--twentyOne' },
-    { min: 24, max: 26.9, cssVar: '--twentyFour' }
+    { min: 24, max: Infinity, cssVar: '--twentyFour' }
 ];
 
 let monthData: dataPoint[] = [];
@@ -106,7 +106,7 @@ function checkIndex() {
 
 function updateDisplayValue() {
     (document.getElementById("outTemperature") as HTMLLabelElement).innerText = monthData[dayIndex].value;
-    (document.getElementById("outCurrentDate") as HTMLLabelElement).innerText = monthData[dayIndex].date;
+    (document.getElementById("outCurrentDate") as HTMLLabelElement).innerText = monthData[dayIndex].date.split("-").reverse().join(".");
     changeOutputColor();
 }
 

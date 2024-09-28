@@ -1,17 +1,17 @@
 :root {
     --transparent: transparent;
-    --nNine: red;
-    --nSix: blue;
-    --nThree: green;
-    --zero: orange;
-    --three: purple;
-    --six: lime;
-    --nine: gray;
-    --twelve: yellow;
-    --fifteen: pink;
-    --eighteen: brown;
-    --twentyOne: cyan;
-    --twentyFour: black;
+    --nNine: #3c224a;
+    --nSix: #232040;
+    --nThree: #84d0d9;
+    --zero: #3bebd3;
+    --three: #184a5c;
+    --six: #00300f;
+    --nine: #134f07;
+    --twelve: #769400;
+    --fifteen: #fc9292;
+    --eighteen: #ab5824;
+    --twentyOne: #a82c07;
+    --twentyFour: #571000;
 }
 
 .bigButton {
