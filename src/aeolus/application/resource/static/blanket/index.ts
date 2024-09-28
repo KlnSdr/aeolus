@@ -16,6 +16,8 @@ const temperatureColors = [
 let monthData: dataPoint[] = [];
 let dayIndex: number = 0;
 
+let sketchInstance: any = null;
+
 function openDayView() {
     clearOutput();
     const output: HTMLDivElement = document.getElementById("blanketOutput") as HTMLDivElement;
@@ -80,10 +82,17 @@ function openDayView() {
 
 function openPreview() {
     clearOutput();
-    const output: HTMLDivElement = document.getElementById("blanketOutput") as HTMLDivElement;
+    if (!sketchInstance) {
+        // @ts-ignore
+        sketchInstance = new p5(sketch); // Create a new p5 instance
+    }
 }
 
 function clearOutput() {
+    if (sketchInstance) {
+        sketchInstance.remove(); // Remove the p5 instance, clearing the canvas
+        sketchInstance = null; // Reset the instance to null
+    }
     (document.getElementById("blanketOutput") as HTMLDivElement).innerHTML = "";
 }
 
