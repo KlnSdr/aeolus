@@ -1,14 +1,15 @@
 {
   "application": {
     "name": "aeolus",
-    "version": "0.8"
+    "version": "0.9"
   },
   "dobby": {
     "staticContent": {
       "directory": "static"
     },
     "session": {
-      "age": 24
+      "age": 24,
+      "store": "hades.session.HadesSessionStore"
     },
     "port": 3333,
     "threads": 10,
