@@ -35,6 +35,31 @@ function displayRawData(data: dataPoint[]) {
     }
 }
 
+function displayMinMaxAvg(data: dataPoint[]) {
+    const min = document.getElementById("minTemp") as HTMLLabelElement;
+    const minDate = document.getElementById("minTempDate") as HTMLLabelElement;
+    const max = document.getElementById("maxTemp") as HTMLLabelElement;
+    const maxDate = document.getElementById("maxTempDate") as HTMLLabelElement;
+    const avg = document.getElementById("avgTemp") as HTMLLabelElement;
+
+    if (data.length === 0) {
+        min.innerText = "Keine Daten";
+        minDate.innerText = "";
+        max.innerText = "Keine Daten";
+        maxDate.innerText = "";
+        avg.innerText = "Keine Daten";
+        return;
+    }
+
+    const values = data.filter(day => day.value !== "").map(day => parseFloat(day.value));
+
+    min.innerText = Math.min(...values).toFixed(1) + " °C";
+    minDate.innerText = data[values.indexOf(Math.min(...values))].date;
+    max.innerText = Math.max(...values).toFixed(1) + " °C";
+    maxDate.innerText = data[values.indexOf(Math.max(...values))].date;
+    avg.innerText = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1) + " °C";
+}
+
 function downloadRawData(data: dataPoint[], filename: string) {
     const blob: Blob = new Blob([rawDataToCsv(data)], {type: "text/plain;charset=utf-8"});
 

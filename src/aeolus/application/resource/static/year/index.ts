@@ -28,6 +28,7 @@ function loadNewData() {
         const processedData = preprocessData(data["readings"]);
         displayChart(processedData, "line", darkredRGB, undefined);
         displayRawData(processedData);
+        displayMinMaxAvg(processedData);
         (document.getElementById("bttnDownloadRawData") as HTMLButtonElement).onclick = () => downloadRawData(processedData, processedData[0].date.substring(0, 4));
     }).catch(_ => {
         alert("Ein Fehler ist beim Laden der Daten aufgetreten");

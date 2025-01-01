@@ -1,7 +1,7 @@
 {
   "application": {
     "name": "aeolus",
-    "version": "0.9"
+    "version": "0.10"
   },
   "dobby": {
     "staticContent": {
@@ -14,7 +14,7 @@
     "port": 3333,
     "threads": 10,
     "mode": "http",
-    "logLevel": "WARN"
+    "logLevel": "DEBUG"
   },
   "hades": {
     "context": "/aeolus",

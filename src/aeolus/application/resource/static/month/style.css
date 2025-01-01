@@ -4,7 +4,22 @@
     box-shadow: 0 0 5px 0 black;
     border-radius: 1em;
     padding: 1em;
+    margin-top: 10px;
 }
 
 .calenderDiagram {
+}
+
+.statsContainer {
+    width: 50%;
+    margin-left: 25%;
+    text-align: left;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(1, 1fr);
+    grid-column-gap: 5px;
+    grid-row-gap: 5px;
 }
