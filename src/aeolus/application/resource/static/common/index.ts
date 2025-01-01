@@ -46,5 +46,5 @@ function downloadRawData(data: dataPoint[], filename: string) {
 }
 
 function rawDataToCsv(data: dataPoint[]): string {
-    return "datum,temperatur\n" + data.map(day => day.date + "," + day.value).join("\n");
+    return "datum,temperatur\n" + data.filter(day => day.date !== "" && day.value !== "").map(day => day.date + "," + day.value).join("\n");
 }
