@@ -14,7 +14,7 @@
     "port": 3333,
     "threads": 10,
     "mode": "http",
-    "logLevel": "DEBUG"
+    "logLevel": "WARN"
   },
   "hades": {
     "context": "/aeolus",
