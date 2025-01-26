@@ -1,7 +1,9 @@
 {
   "application": {
     "name": "aeolus",
-    "version": "0.10"
+    "version": "0.11",
+    "dbHost": "thot-container",
+    "devMode": false
   },
   "dobby": {
     "staticContent": {
@@ -17,7 +19,6 @@
     "logLevel": "WARN"
   },
   "hades": {
-    "context": "/aeolus",
     "login": {
       "maxAttempts": 5,
       "lockDuration": 300000,

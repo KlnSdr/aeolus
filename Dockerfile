@@ -1,4 +1,4 @@
-FROM openjdk:21-jdk-slim
+FROM gcr.io/distroless/java21
 
 WORKDIR /app
 
@@ -6,4 +6,4 @@ COPY out/artifacts/aeolus_jar/aeolus.jar /app/app.jar
 
 EXPOSE 3333
 
-CMD ["java", "-jar", "/app/app.jar"]
+CMD ["app.jar"]
