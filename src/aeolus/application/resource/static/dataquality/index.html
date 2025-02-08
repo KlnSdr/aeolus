@@ -5,11 +5,12 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Aeolus</title>
+    <title>Aeolus - Datenqualität</title>
 
     <link rel="icon" type="image/png" href="{{CONTEXT}}/favicon.png">
 
     <link rel="stylesheet" href="{{CONTEXT}}/style.css">
+    <link rel="stylesheet" href="{{CONTEXT}}/dataquality/style.css">
     <link rel="stylesheet" href="{{CONTEXT}}/common/popup.css">
     <link rel="stylesheet" href="{{CONTEXT}}/hades/messages.css">
 
@@ -41,9 +42,22 @@
     <button id="bttnOpenMobileMenu" class="bigButton" onclick="toggleMobileMenu()">☰</button>
 </nav>
 <div class="center" style="margin-top: 10%">
-    <h1 id="lastValue" class="huge">XY.Z °C</h1>
-    <p id="lastValueFrom">vom: DD.MM.YYYY</p>
-    <button onclick="openAddValueManually()">Daten manuell eintragen</button>
+    <div class="integrityStatus">
+        <span class="statusSpan statusGreen"></span>
+    </div>
+    <div class="checkerSettings">
+        <label>Status: </label>
+        <label>aktiv</label>
+        <button>deaktivieren</button>
+
+        <label>letzte Überprüfung: </label>
+        <label>08.02.2025 20:30</label>
+        <button>manuell prüfen</button>
+
+        <label for="inTime">Startzeit:</label>
+        <input id="inTime" type="time"/>
+        <button>speichern</button>
+    </div>
 </div>
 </body>
 </html>

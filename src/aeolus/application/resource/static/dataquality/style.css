@@ -1,0 +1,23 @@
+.statusSpan {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.statusGreen {
+    background-color: green;
+}
+
+.checkerSettings {
+    max-width: 500px;
+    display: inline-grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    grid-column-gap: 5px;
+    grid-row-gap: 5px;
+}
+
+.checkerSettings label {
+    text-align: left;
+}
