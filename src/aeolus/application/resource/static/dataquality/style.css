@@ -9,6 +9,18 @@
     background-color: green;
 }
 
+.statusYellow {
+    background-color: yellow;
+}
+
+.statusRed {
+    background-color: red;
+}
+
+.statusGrey {
+    background-color: grey;
+}
+
 .checkerSettings {
     max-width: 500px;
     display: inline-grid;
