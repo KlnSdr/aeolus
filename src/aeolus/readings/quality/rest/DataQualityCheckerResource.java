@@ -1,6 +1,8 @@
 package aeolus.readings.quality.rest;
 
 import aeolus.readings.quality.CheckerConfig;
+import aeolus.readings.quality.DataQualityChecker;
+import aeolus.readings.quality.DataQualityCheckerDispatcher;
 import aeolus.readings.quality.service.CheckerConfigService;
 import dobby.annotations.Get;
 import dobby.annotations.Post;
@@ -80,6 +82,19 @@ public class DataQualityCheckerResource {
         config.setStartMinute(startMinute);
 
         service.save(config);
+    }
+
+    @AuthorizedOnly
+    @Post(BASE_PATH + "/run")
+    public void runCheckerForUser(HttpContext context) {
+        final UUID userId = getUserId(context);
+        CheckerConfig config = service.findByUser(userId);
+
+        if (config == null) {
+            config = service.create(userId);
+        }
+
+        DataQualityCheckerDispatcher.getInstance().runForUser(config);
     }
 
     private UUID getUserId(HttpContext context) {

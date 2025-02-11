@@ -34,7 +34,7 @@ public class DataQualityCheckerDispatcher {
         }
     }
 
-    private void runForUser(CheckerConfig config) {
+    public void runForUser(CheckerConfig config) {
         try {
             final CheckerStatus status = new DataQualityChecker(config.getUserId()).runCheck();
             config.setLastRunStatus(status);

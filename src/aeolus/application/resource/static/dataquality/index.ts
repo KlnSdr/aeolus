@@ -95,3 +95,14 @@ function saveStartTime() {
     loadCheckerConfig();
   });
 }
+
+function triggerRun() {
+  fetch("{{CONTEXT}}/rest/data-quality-checker-config/run", {
+    method: "POST",
+  }).then((response: Response) => {
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} ${response.statusText}`);
+    }
+    loadCheckerConfig();
+  });
+}
