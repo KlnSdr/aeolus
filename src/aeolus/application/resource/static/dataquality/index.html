@@ -20,8 +20,9 @@
     <script src="{{CONTEXT}}/common/mobileNavbar.js"></script>
     <script src="{{CONTEXT}}/common/changeDataSource.js"></script>
     <script src="{{CONTEXT}}/index.js"></script>
+    <script src="{{CONTEXT}}/dataquality/index.js"></script>
 </head>
-<body onload="startup(); loadMessages()">
+<body onload="startup(); loadMessages(); loadCheckerConfig()">
 <nav>
     <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}')">Aeolus</a></h1>
     <div id="navBody" class="mobileMenuHidden">
@@ -43,20 +44,20 @@
 </nav>
 <div class="center" style="margin-top: 10%">
     <div class="integrityStatus">
-        <span class="statusSpan statusGreen"></span>
+        <span id="runStatus" class="statusSpan"></span>
     </div>
     <div class="checkerSettings">
         <label>Status: </label>
-        <label>aktiv</label>
-        <button>deaktivieren</button>
+        <label id="checkerStatus">aktiv</label>
+        <button id="actionToggle">deaktivieren</button>
 
         <label>letzte Überprüfung: </label>
-        <label>08.02.2025 20:30</label>
+        <label id="lastCheck">08.02.2025 20:30</label>
         <button>manuell prüfen</button>
 
         <label for="inTime">Startzeit:</label>
         <input id="inTime" type="time"/>
-        <button>speichern</button>
+        <button onclick="saveStartTime()">speichern</button>
     </div>
 </div>
 </body>

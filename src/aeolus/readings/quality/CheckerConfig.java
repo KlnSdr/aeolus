@@ -1,5 +1,6 @@
 package aeolus.readings.quality;
 
+import aeolus.readings.quality.service.CheckerConfigService;
 import dobby.util.json.NewJson;
 import janus.DataClass;
 import janus.annotations.JanusBoolean;
@@ -120,6 +121,21 @@ public class CheckerConfig implements DataClass {
 
     @Override
     public NewJson toJson() {
+        final NewJson json = new NewJson();
+        json.setString("userId", userId.toString());
+        json.setBoolean("enabled", enabled);
+        json.setInt("startHour", startHour);
+        json.setInt("startMinute", startMinute);
+        json.setInt("lastRunDay", lastRunDay);
+        json.setInt("lastRunMonth", lastRunMonth);
+        json.setInt("lastRunYear", lastRunYear);
+        json.setInt("lastRunHour", lastRunHour);
+        json.setInt("lastRunMinute", lastRunMinute);
+        json.setString("lastRunStatus", lastRunStatus);
+        return json;
+    }
+
+    public NewJson toStoreJson() {
         final NewJson json = new NewJson();
         json.setString("userId", userId.toString());
         json.setString("enabled", enabled ? "true": "false");

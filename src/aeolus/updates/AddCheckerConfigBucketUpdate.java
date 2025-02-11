@@ -1,7 +1,6 @@
 package aeolus.updates;
 
-import aeolus.readings.quality.CheckerConfigService;
-import aeolus.readings.service.ReadingService;
+import aeolus.readings.quality.service.CheckerConfigService;
 import hades.update.Update;
 import thot.connector.Connector;
 

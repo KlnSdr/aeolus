@@ -1,5 +1,6 @@
 package aeolus.readings.quality;
 
+import aeolus.readings.quality.service.CheckerConfigService;
 import dobby.util.logging.Logger;
 
 import java.util.Calendar;
