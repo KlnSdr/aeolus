@@ -23,7 +23,7 @@ public class DataQualityChecker {
             service.find(userId, now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1, now.get(Calendar.DAY_OF_MONTH));
             return CheckerStatus.OK;
         } catch (NullPointerException e) {
-            MessageService.getInstance().update(MessageService.getInstance().newSystemMessage(userId, "No entry found for today"));
+            MessageService.getInstance().update(MessageService.getInstance().newSystemMessage(userId, "Missing entry for " + now.get(Calendar.YEAR) + "-" + (now.get(Calendar.MONTH) + 1) + "-" + now.get(Calendar.DAY_OF_MONTH)));
             return CheckerStatus.WARNING;
         } catch (Exception e) {
             LOGGER.error("an error occurred while checking data integrity");

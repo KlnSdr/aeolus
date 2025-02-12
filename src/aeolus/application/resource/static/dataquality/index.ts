@@ -77,6 +77,8 @@ function deactivateChecker() {
 }
 
 function saveStartTime() {
+  (document.getElementById("bttnSaveStart") as HTMLButtonElement).innerText =
+    "...";
   const time: string = (document.getElementById("inTime") as HTMLInputElement)
     .value;
   fetch("{{CONTEXT}}/rest/data-quality-checker-config/start-time", {
@@ -92,17 +94,23 @@ function saveStartTime() {
     if (!response.ok) {
       throw new Error(`HTTP ${response.status} ${response.statusText}`);
     }
+    (document.getElementById("bttnSaveStart") as HTMLButtonElement).innerText =
+      "speichern";
     loadCheckerConfig();
   });
 }
 
 function triggerRun() {
+  (document.getElementById("bttnTrigger") as HTMLButtonElement).innerText =
+    "...";
   fetch("{{CONTEXT}}/rest/data-quality-checker-config/run", {
     method: "POST",
   }).then((response: Response) => {
     if (!response.ok) {
       throw new Error(`HTTP ${response.status} ${response.statusText}`);
     }
+    (document.getElementById("bttnTrigger") as HTMLButtonElement).innerText =
+      "manuellPrüfen";
     loadCheckerConfig();
   });
 }
