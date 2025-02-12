@@ -19,6 +19,10 @@
     "logLevel": "DEBUG"
   },
   "hades": {
+    "apidocs": {
+      "enabled": true,
+      "hideHadesRoutes": true
+    },
     "login": {
       "maxAttempts": 5,
       "lockDuration": 300000,
@@ -43,7 +47,10 @@
       "/compare/index.html",
       "/blanket",
       "/blanket/",
-      "/blanket/index.html"
+      "/blanket/index.html",
+      "/dataquality",
+      "/dataquality/",
+      "/dataquality/index.html"
     ]
   }
 }

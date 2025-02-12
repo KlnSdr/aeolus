@@ -1,6 +1,5 @@
 package aeolus.readings.quality;
 
-import aeolus.readings.Reading;
 import aeolus.readings.service.ReadingService;
 import dobby.util.logging.Logger;
 import hades.messaging.service.MessageService;
