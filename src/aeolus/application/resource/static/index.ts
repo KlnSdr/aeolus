@@ -1,7 +1,6 @@
 function startup() {
     displayCurrentUserDisplayName().then(() => {});
     displayCurrentDatasource();
-    loadLastReading();
 }
 
 function loadLastReading() {
