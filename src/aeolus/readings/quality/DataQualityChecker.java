@@ -109,7 +109,11 @@ public class DataQualityChecker {
         final List<String> holes = new ArrayList<>();
 
         final LocalDate firstDayOfYear = LocalDate.of(year, 1, 1);
-        final LocalDate lastDayOfYear = LocalDate.of(year, 12, 31);
+        LocalDate lastDayOfYear = LocalDate.of(year, 12, 31);
+
+        if (LocalDate.now().isBefore(lastDayOfYear)) {
+            lastDayOfYear = LocalDate.now();
+        }
 
         final List<String> datesOfYear =  firstDayOfYear.datesUntil(lastDayOfYear.plusDays(1)).filter(d -> d.isBefore(LocalDate.now())).map(LocalDate::toString).toList();
 
