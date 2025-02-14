@@ -1,9 +1,9 @@
 {
   "application": {
     "name": "aeolus",
-    "version": "0.11",
+    "version": "0.12",
     "dbHost": "thot-container",
-    "devMode": true
+    "devMode": false
   },
   "dobby": {
     "staticContent": {
@@ -16,7 +16,7 @@
     "port": 3333,
     "threads": 10,
     "mode": "http",
-    "logLevel": "DEBUG"
+    "logLevel": "WARN"
   },
   "hades": {
     "apidocs": {
