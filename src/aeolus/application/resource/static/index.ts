@@ -94,6 +94,7 @@ function openAddValueManually() {
         saveValue(dateInput.value, valueInput.value)
             .then(() => {
                 displayAlert("Wert erfolgreich gespeichert.");
+                loadLastReading();
             })
             .catch(err => {
                 displayAlert("Ein Fehler ist beim Speichern aufgetreten: " + err.message);
