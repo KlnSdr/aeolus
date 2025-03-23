@@ -3,7 +3,7 @@
     "name": "aeolus",
     "version": "0.12",
     "dbHost": "thot-container",
-    "devMode": false
+    "devMode": true
   },
   "dobby": {
     "staticContent": {

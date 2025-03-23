@@ -1,0 +1,20 @@
+{
+  "remoteRepoUrl": "https://repo.klnsdr.com",
+  "project": {
+    "entry": "aeolus.application.Main",
+    "name": "aeolus",
+    "version": "0.12",
+    "group": "dobby",
+    "dependencies": [
+      {
+        "group": "dobby",
+        "name": "hades",
+        "version": "0.7"
+      }
+    ]
+  },
+  "compiler": {
+    "version": "21"
+  },
+  "exclude": []
+}
