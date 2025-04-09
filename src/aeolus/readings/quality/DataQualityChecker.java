@@ -3,7 +3,7 @@ package aeolus.readings.quality;
 import aeolus.readings.Reading;
 import aeolus.readings.service.ReadingService;
 import aeolus.util.IsoDate;
-import dobby.util.logging.Logger;
+import common.logger.Logger;
 import hades.messaging.Message;
 import hades.messaging.service.MessageService;
 

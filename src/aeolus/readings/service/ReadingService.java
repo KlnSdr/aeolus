@@ -3,8 +3,8 @@ package aeolus.readings.service;
 import aeolus.exceptions.DuplicateEntryException;
 import aeolus.readings.Reading;
 import dobby.util.json.NewJson;
-import janus.Janus;
 import thot.connector.Connector;
+import thot.janus.Janus;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-FROM docker.klnsdr.com/nyx-cli:1.1 as builder
+FROM docker.klnsdr.com/nyx-cli:1.3 as builder
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ FROM gcr.io/distroless/java21
 
 WORKDIR /app
 
-COPY --from=builder /app/build/aeolus-0.12.jar /app/app.jar
+COPY --from=builder /app/build/aeolus-0.13.jar /app/app.jar
 
 EXPOSE 3333
 

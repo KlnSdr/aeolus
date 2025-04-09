@@ -2,11 +2,10 @@ package aeolus.readings;
 
 import aeolus.util.IsoDate;
 import dobby.util.json.NewJson;
-import janus.DataClass;
-import janus.annotations.JanusString;
-import janus.annotations.JanusUUID;
+import thot.janus.DataClass;
+import thot.janus.annotations.JanusString;
+import thot.janus.annotations.JanusUUID;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 

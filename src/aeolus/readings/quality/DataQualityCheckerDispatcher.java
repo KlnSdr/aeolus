@@ -1,7 +1,7 @@
 package aeolus.readings.quality;
 
 import aeolus.readings.quality.service.CheckerConfigService;
-import dobby.util.logging.Logger;
+import common.logger.Logger;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

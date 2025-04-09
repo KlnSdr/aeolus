@@ -3,8 +3,8 @@ package aeolus.readings.quality.service;
 import aeolus.readings.quality.CheckerConfig;
 import aeolus.readings.quality.CheckerStatus;
 import dobby.util.json.NewJson;
-import janus.Janus;
 import thot.connector.Connector;
+import thot.janus.Janus;
 
 import java.util.ArrayList;
 import java.util.UUID;
