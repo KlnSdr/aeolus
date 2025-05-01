@@ -3,13 +3,13 @@
   "project": {
     "entry": "aeolus.application.Main",
     "name": "aeolus",
-    "version": "0.13",
+    "version": "0.14",
     "group": "dobby",
     "dependencies": [
       {
         "group": "dobby",
         "name": "hades",
-        "version": "2.1"
+        "version": "2.2"
       }
     ]
   },

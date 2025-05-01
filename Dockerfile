@@ -10,7 +10,7 @@ FROM gcr.io/distroless/java21
 
 WORKDIR /app
 
-COPY --from=builder /app/build/aeolus-0.13.jar /app/app.jar
+COPY --from=builder /app/build/aeolus-0.14.jar /app/app.jar
 
 EXPOSE 3333
 
