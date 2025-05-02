@@ -3,7 +3,7 @@
   "project": {
     "entry": "aeolus.application.Main",
     "name": "aeolus",
-    "version": "0.14",
+    "version": "0.15-snapshot",
     "group": "dobby",
     "dependencies": [
       {
