@@ -14,7 +14,6 @@ import java.util.*;
 public class InterpolationService {
     private static final Logger LOGGER = new Logger(InterpolationService.class);
     private static final ReadingService service = ReadingService.getInstance();
-    private static final int MAX_GAP_WIDTH_DAYS = 1;
     private static InterpolationService instance;
 
     private InterpolationService() {
@@ -64,29 +63,15 @@ public class InterpolationService {
 
             final int gapWidth = calculateGapWidth(hole, holes);
             LOGGER.debug("gap width for hole " + hole + ": " + gapWidth);
-            if (gapWidth > MAX_GAP_WIDTH_DAYS) {
-                LOGGER.debug("gap width for hole " + hole + " is greater than " + MAX_GAP_WIDTH_DAYS + " days. not interpolating");
-                notInterpolatedHoles.add(hole);
-                continue;
-            }
 
-            final LocalDate date = LocalDate.parse(hole);
-            final LocalDate prevDate = date.minusDays(1);
-            final LocalDate nextDate = date.plusDays(1);
-            final Reading prevReading;
-            final Reading nextReading;
-            try {
-                 prevReading = service.find(userId, prevDate.getYear(), prevDate.getMonthValue(), prevDate.getDayOfMonth());
-                 nextReading = service.find(userId, nextDate.getYear(), nextDate.getMonthValue(), nextDate.getDayOfMonth());
-            } catch (Exception e) {
-                LOGGER.debug("failed to retrieve readings for interpolation around date: " + hole + ". not interpolating");
-                notInterpolatedHoles.add(hole);
-                continue;
+            switch (gapWidth) {
+                case 1 -> interpolateSingle(hole, userId, interpolatedReadings, notInterpolatedHoles);
+                case 2 -> interpolateDouble(hole, userId, holes, interpolatedReadings, notInterpolatedHoles);
+                default -> {
+                    LOGGER.debug("unsupported gap width for hole " + hole + ": " + gapWidth + ". not interpolating");
+                    notInterpolatedHoles.add(hole);
+                }
             }
-
-            final float interpolatedValue = (float) ((prevReading.getValue() + nextReading.getValue()) / 2.0);
-            final Reading interpolatedReading = new Reading(round(interpolatedValue, 1), IsoDate.parseIsoDate(hole), userId);
-            interpolatedReadings.add(interpolatedReading);
         }
 
         for (Reading reading : interpolatedReadings) {
@@ -126,5 +111,73 @@ public class InterpolationService {
             dateMinus = dateMinus.minusDays(1);
         }
         return width;
+    }
+
+    private void interpolateSingle(String hole, UUID userId, List<Reading> interpolatedReadings, List<String> notInterpolatedHoles) {
+        final LocalDate date = LocalDate.parse(hole);
+        final LocalDate prevDate = date.minusDays(1);
+        final LocalDate nextDate = date.plusDays(1);
+        final Reading prevReading;
+        final Reading nextReading;
+        try {
+            prevReading = service.find(userId, prevDate.getYear(), prevDate.getMonthValue(), prevDate.getDayOfMonth());
+            nextReading = service.find(userId, nextDate.getYear(), nextDate.getMonthValue(), nextDate.getDayOfMonth());
+        } catch (Exception e) {
+            LOGGER.debug("failed to retrieve readings for interpolation around date: " + hole + ". not interpolating");
+            notInterpolatedHoles.add(hole);
+            return;
+        }
+
+        final float interpolatedValue = (float) ((prevReading.getValue() + nextReading.getValue()) / 2.0);
+        final Reading interpolatedReading = new Reading(round(interpolatedValue, 1), IsoDate.parseIsoDate(hole), userId);
+        interpolatedReadings.add(interpolatedReading);
+    }
+
+    private void interpolateDouble(String hole, UUID userId, List<String> holes, List<Reading> interpolatedReadings, List<String> notInterpolatedHoles) {
+        if (isAlreadyInterpolated(hole, interpolatedReadings)) {
+            LOGGER.debug("hole " + hole + " is already interpolated. skipping.");
+            return;
+        }
+        final LocalDate innerEdge = getOuterEdgeOfHole(hole, holes, false);
+        final LocalDate outerEdge = getOuterEdgeOfHole(hole, holes, true);
+
+        final Reading outerReading;
+        final Reading innerReading;
+        try {
+            outerReading = service.find(userId, outerEdge.getYear(), outerEdge.getMonthValue(), outerEdge.getDayOfMonth());
+            innerReading = service.find(userId, innerEdge.getYear(), innerEdge.getMonthValue(), innerEdge.getDayOfMonth());
+        } catch (Exception e) {
+            LOGGER.debug("failed to retrieve readings for interpolation around date: " + hole + ". not interpolating");
+            notInterpolatedHoles.add(hole);
+            return;
+        }
+
+        final float intermediateValue = (float) ((outerReading.getValue() + innerReading.getValue()) / 2.0);
+        final float firstInterpolatedValue = (float) ((innerReading.getValue() + intermediateValue) / 2.0);
+        final float secondInterpolatedValue = (float) ((outerReading.getValue() + intermediateValue) / 2.0);
+
+        final LocalDate firstHoleDate = innerEdge.plusDays(1);
+        final LocalDate secondHoleDate = innerEdge.plusDays(2);
+        final Reading firstInterpolatedReading = new Reading(round(firstInterpolatedValue, 1), IsoDate.parseIsoDate(firstHoleDate.toString()), userId);
+        final Reading secondInterpolatedReading = new Reading(round(secondInterpolatedValue, 1), IsoDate.parseIsoDate(secondHoleDate.toString()), userId);
+        interpolatedReadings.add(firstInterpolatedReading);
+        interpolatedReadings.add(secondInterpolatedReading);
+    }
+
+    private boolean isAlreadyInterpolated(String hole, List<Reading> interpolatedReadings) {
+        for (Reading reading : interpolatedReadings) {
+            if (IsoDate.toIsoDateString(reading.getDate()).equals(hole)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private LocalDate getOuterEdgeOfHole(String hole, List<String> holes, boolean forward) {
+        LocalDate date = LocalDate.parse(hole);
+        while (holes.contains(date.toString())) {
+            date = forward ? date.plusDays(1) : date.minusDays(1);
+        }
+        return date;
     }
 }
