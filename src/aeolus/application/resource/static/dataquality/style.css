@@ -25,11 +25,23 @@
     max-width: 500px;
     display: inline-grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+    grid-template-rows: repeat(4, 1fr);
     grid-column-gap: 5px;
     grid-row-gap: 5px;
 }
 
 .checkerSettings label {
     text-align: left;
+}
+
+.interpolation-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.interpolated-reading {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
 }

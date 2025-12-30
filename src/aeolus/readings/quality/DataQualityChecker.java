@@ -69,7 +69,7 @@ public class DataQualityChecker {
         }
     }
 
-    private Optional<List<String>> findHoles() {
+    protected Optional<List<String>> findHoles() {
         int year = Year.now().getValue();
         int yearsWithoutData = 0;
         final Map<Integer, List<String>> holes = new HashMap<>();

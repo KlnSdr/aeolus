@@ -3,6 +3,8 @@ package aeolus.readings.rest;
 import aeolus.exceptions.DuplicateEntryException;
 import aeolus.readings.Reading;
 import aeolus.readings.service.ReadingService;
+import aeolus.util.IsoDate;
+import common.logger.Logger;
 import dobby.annotations.Get;
 import dobby.annotations.Post;
 import dobby.io.HttpContext;
@@ -20,9 +22,11 @@ import hades.user.service.UserService;
 import java.time.Year;
 import java.util.*;
 
+import static aeolus.util.IsoDate.isValidIsoDate;
 import static aeolus.util.IsoDate.parseIsoDate;
 
 public class ReadingResource {
+    private static final Logger LOGGER = new Logger(ReadingResource.class);
     private static final String BASE_PATH = "/rest/readings";
 
     @AuthorizedOnly
@@ -180,6 +184,71 @@ public class ReadingResource {
         context.getResponse().setCode(wasAdded ? ResponseCodes.CREATED : ResponseCodes.INTERNAL_SERVER_ERROR);
     }
 
+    @AuthorizedOnly
+    @Post(BASE_PATH + "/batch")
+    @ApiDoc(description = "Adds multiple new readings at once.", summary = "Add multiple new reading.", baseUrl = BASE_PATH)
+    @ApiResponse(code = 201, message = "The readings have been added.")
+    @ApiResponse(code = 400, message = "Invalid date or value.")
+    @ApiResponse(code = 401, message = "Unauthorized access.")
+    @ApiResponse(code = 409, message = "Reading for one of the given date already exists.")
+    @ApiResponse(code = 500, message = "Internal server error.")
+    public void addReadingBatch(HttpContext context) {
+        final NewJson json = context.getRequest().getBody();
+        if (!validateBatchRequestBody(json)) {
+            sendBadRequest(context, "Invalid request body");
+            return;
+        }
+
+        final UUID userId = getUserId(context);
+        final ReadingService readingService = ReadingService.getInstance();
+
+        final List<NewJson> readingsJson = json.getList("readings").stream().map(obj -> (NewJson) obj).toList();
+        final List<Reading> readings = new ArrayList<>();
+        for (NewJson readingJson : readingsJson) {
+            final float value = readingJson.getFloat("value").floatValue();
+            final String isoDate = readingJson.getString("date");
+            final Date date = parseIsoDate(isoDate);
+            readings.add(new Reading(value, date, userId));
+
+            try {
+                readingService.find(userId, date.getYear(), date.getMonth() + 1, date.getDate());
+                context.getResponse().setCode(ResponseCodes.CONFLICT);
+
+                final NewJson message = new NewJson();
+                message.setString("msg", "Reading for date " + isoDate + " already exists");
+
+                context.getResponse().setBody(message);
+                return;
+            } catch (NullPointerException e) {
+                // no reading exists, continue
+            } catch (IllegalArgumentException e) {
+                sendBadRequest(context, "Invalid date in reading: " + isoDate);
+                return;
+            }
+        }
+
+        boolean allAdded = true;
+        for (Reading reading : readings) {
+            try {
+                boolean wasAdded = readingService.add(reading);
+                if (!wasAdded) {
+                    allAdded = false;
+                }
+            } catch (DuplicateEntryException e) { // should not happen due to pre-check
+                context.getResponse().setCode(ResponseCodes.CONFLICT);
+
+                final NewJson message = new NewJson();
+                message.setString("msg", "Reading for date " + IsoDate.toIsoDateString(reading.getDate()) + " already exists");
+
+                context.getResponse().setBody(message);
+                return;
+            }
+        }
+
+        // TODO: partial success handling
+        context.getResponse().setCode(allAdded ? ResponseCodes.CREATED : ResponseCodes.INTERNAL_SERVER_ERROR);
+    }
+
     @Get(BASE_PATH + "/publicdataset/user/{id}")
     @ApiDoc(description = "Checks if the user exposes a public dataset.", summary = "Check if the user exposes a public dataset.", baseUrl = BASE_PATH)
     @ApiResponse(code = 200, message = "The user exposes a public dataset.")
@@ -236,5 +305,42 @@ public class ReadingResource {
         json.setString("msg", message);
 
         ctx.getResponse().setBody(json);
+    }
+
+    private boolean validateBatchRequestBody(NewJson body) {
+        if (body == null || !body.hasKey("readings")) {
+            LOGGER.debug("request body is null or missing 'readings' key");
+            return false;
+        }
+
+        final List<Object> readings = body.getList("readings");
+        if (readings == null) {
+            LOGGER.debug("'readings' is null");
+            return false;
+        }
+
+        for (Object obj : readings) {
+            if (!(obj instanceof NewJson readingJson)) {
+                LOGGER.debug("'readings' element is not of type 'NewJson'");
+                return false;
+            }
+
+            if (!readingJson.hasKeys("value", "date")) {
+                LOGGER.debug("'reading' element is missing 'value' or 'date' key");
+                return false;
+            }
+
+            if (readingJson.getFloat("value") == null || readingJson.getString("date") == null) {
+                LOGGER.debug("'value' or 'date' is null in 'reading' element");
+                return false;
+            }
+
+            if (!isValidIsoDate(readingJson.getString("date"))) {
+                LOGGER.debug("'date' is not a valid ISO date in 'reading' element: " + readingJson.getString("date"));
+                return false;
+            }
+        }
+
+        return true;
     }
 }
