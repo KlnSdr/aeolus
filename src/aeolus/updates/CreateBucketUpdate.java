@@ -1,13 +1,24 @@
 package aeolus.updates;
 
 import aeolus.readings.service.ReadingService;
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import hades.update.Update;
 import thot.connector.Connector;
+import thot.connector.IConnector;
 
+@RegisterFor(CreateBucketUpdate.class)
 public class CreateBucketUpdate implements Update {
+    private final IConnector connector;
+
+    @Inject
+    public CreateBucketUpdate(IConnector connector) {
+        this.connector = connector;
+    }
+
     @Override
     public boolean run() {
-        return Connector.write(ReadingService.bucketName, "TEST", "") && Connector.delete(ReadingService.bucketName, "TEST");
+        return connector.write(ReadingService.bucketName, "TEST", "") && connector.delete(ReadingService.bucketName, "TEST");
     }
 
     @Override

@@ -1,5 +1,7 @@
 package aeolus.readings.filter;
 
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import dobby.filter.Filter;
 import dobby.filter.FilterType;
 import dobby.io.HttpContext;
@@ -8,8 +10,15 @@ import hades.user.service.UserService;
 
 import java.util.regex.Pattern;
 
+@RegisterFor(ReplaceUserNameWIthIdPreFilter.class)
 public class ReplaceUserNameWIthIdPreFilter implements Filter {
     private static final Pattern UUID_PATTER = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+    private final UserService userService;
+
+    @Inject
+    public ReplaceUserNameWIthIdPreFilter(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public String getName() {
@@ -44,7 +53,7 @@ public class ReplaceUserNameWIthIdPreFilter implements Filter {
             return true;
         }
 
-        final User[] user = UserService.getInstance().findByName(id);
+        final User[] user = userService.findByName(id);
         if (user.length != 1) {
             return true;
         }

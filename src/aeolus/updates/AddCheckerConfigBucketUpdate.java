@@ -1,13 +1,24 @@
 package aeolus.updates;
 
 import aeolus.readings.quality.service.CheckerConfigService;
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import hades.update.Update;
 import thot.connector.Connector;
+import thot.connector.IConnector;
 
+@RegisterFor(AddCheckerConfigBucketUpdate.class)
 public class AddCheckerConfigBucketUpdate implements Update {
+    private final IConnector connector;
+
+    @Inject
+    public AddCheckerConfigBucketUpdate(IConnector connector) {
+        this.connector = connector;
+    }
+
     @Override
     public boolean run() {
-        return Connector.write(CheckerConfigService.BUCKET_NAME, "TEST", "") && Connector.delete(CheckerConfigService.BUCKET_NAME, "TEST");
+        return connector.write(CheckerConfigService.BUCKET_NAME, "TEST", "") && connector.delete(CheckerConfigService.BUCKET_NAME, "TEST");
     }
 
     @Override

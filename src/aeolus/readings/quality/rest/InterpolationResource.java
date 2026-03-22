@@ -2,6 +2,8 @@ package aeolus.readings.quality.rest;
 
 import aeolus.readings.Reading;
 import aeolus.readings.quality.InterpolationService;
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import dobby.annotations.Get;
 import dobby.io.HttpContext;
 import dobby.util.Tupel;
@@ -14,9 +16,15 @@ import hades.util.UserUtil;
 import java.util.List;
 import java.util.UUID;
 
+@RegisterFor(InterpolationResource.class)
 public class InterpolationResource {
     private static final String BASE_PATH = "/rest/interpolation";
-    private static final InterpolationService service = InterpolationService.getInstance();
+    private final InterpolationService service;
+
+    @Inject
+    public InterpolationResource(InterpolationService service) {
+        this.service = service;
+    }
 
     @AuthorizedOnly
     @Get(BASE_PATH)

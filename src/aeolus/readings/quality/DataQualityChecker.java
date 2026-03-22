@@ -3,6 +3,8 @@ package aeolus.readings.quality;
 import aeolus.readings.Reading;
 import aeolus.readings.service.ReadingService;
 import aeolus.util.IsoDate;
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import common.logger.Logger;
 import hades.messaging.Message;
 import hades.messaging.service.MessageService;
@@ -12,26 +14,28 @@ import java.time.Year;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@RegisterFor(DataQualityChecker.class)
 public class DataQualityChecker {
-    private static final ReadingService readingService = ReadingService.getInstance();
-    private static final MessageService messageService = MessageService.getInstance();
+    private final ReadingService readingService;
+    private final MessageService messageService;
     private static final Logger LOGGER = new Logger(DataQualityChecker.class);
-    private final UUID userId;
 
-    public DataQualityChecker(UUID userId) {
-        this.userId = userId;
+    @Inject
+    public DataQualityChecker(ReadingService readingService, MessageService messageService) {
+        this.readingService = readingService;
+        this.messageService = messageService;
     }
 
-    public CheckerStatus runCheck() {
+    public CheckerStatus runCheck(UUID userId) {
         final String msgCheckToday;
         final List<String> msgFindHoles;
 
         try {
-            msgCheckToday = checkToday().orElse("");
-            msgFindHoles = findHoles().orElse(Collections.emptyList());
+            msgCheckToday = checkToday(userId).orElse("");
+            msgFindHoles = findHoles(userId).orElse(Collections.emptyList());
 
             if (!msgCheckToday.isEmpty() || !msgFindHoles.isEmpty()) {
-                messageService.update(buildMessage(msgCheckToday, msgFindHoles));
+                messageService.update(buildMessage(userId, msgCheckToday, msgFindHoles));
                 return CheckerStatus.WARNING;
             }
             return CheckerStatus.OK;
@@ -42,7 +46,7 @@ public class DataQualityChecker {
         }
     }
 
-    private Message buildMessage(String msgCheckToday, List<String> holes) {
+    private Message buildMessage(UUID userId, String msgCheckToday, List<String> holes) {
         final StringBuilder message = new StringBuilder();
 
         if (!msgCheckToday.isEmpty()) {
@@ -59,7 +63,7 @@ public class DataQualityChecker {
         return messageService.newSystemMessage(userId, message.toString());
     }
 
-    private Optional<String> checkToday() {
+    private Optional<String> checkToday(UUID userId) {
         final Calendar now = Calendar.getInstance();
         try {
             readingService.find(userId, now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1, now.get(Calendar.DAY_OF_MONTH));
@@ -69,7 +73,7 @@ public class DataQualityChecker {
         }
     }
 
-    protected Optional<List<String>> findHoles() {
+    protected Optional<List<String>> findHoles(UUID userId) {
         int year = Year.now().getValue();
         int yearsWithoutData = 0;
         final Map<Integer, List<String>> holes = new HashMap<>();

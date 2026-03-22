@@ -3,6 +3,8 @@ package aeolus.readings.quality;
 import aeolus.readings.Reading;
 import aeolus.readings.service.ReadingService;
 import aeolus.util.IsoDate;
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import common.logger.Logger;
 import dobby.util.Tupel;
 
@@ -11,19 +13,16 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
 
+@RegisterFor(InterpolationService.class)
 public class InterpolationService {
     private static final Logger LOGGER = new Logger(InterpolationService.class);
-    private static final ReadingService service = ReadingService.getInstance();
-    private static InterpolationService instance;
+    private final ReadingService service;
+    private final DataQualityChecker dataQualityChecker;
 
-    private InterpolationService() {
-    }
-
-    public static InterpolationService getInstance() {
-        if (instance == null) {
-            instance = new InterpolationService();
-        }
-        return instance;
+    @Inject
+    public InterpolationService(ReadingService service, DataQualityChecker dataQualityChecker) {
+        this.service = service;
+        this.dataQualityChecker = dataQualityChecker;
     }
 
     /**
@@ -40,7 +39,7 @@ public class InterpolationService {
      *         - A list of holes that could not be interpolated.
      */
     public Tupel<List<Reading>, List<String>> interpolate(UUID userId) {
-        final Optional<List<String>> optHoles = new DataQualityChecker(userId).findHoles();
+        final Optional<List<String>> optHoles = dataQualityChecker.findHoles(userId);
 
         if (optHoles.isEmpty()) {
             LOGGER.debug("no holes found for interpolation");

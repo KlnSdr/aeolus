@@ -3,6 +3,8 @@ package aeolus.readings.quality.rest;
 import aeolus.readings.quality.CheckerConfig;
 import aeolus.readings.quality.DataQualityCheckerDispatcher;
 import aeolus.readings.quality.service.CheckerConfigService;
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import dobby.annotations.Get;
 import dobby.annotations.Post;
 import dobby.io.HttpContext;
@@ -14,9 +16,17 @@ import hades.apidocs.annotations.ApiResponse;
 
 import java.util.UUID;
 
+@RegisterFor(DataQualityCheckerResource.class)
 public class DataQualityCheckerResource {
     private static final String BASE_PATH = "/rest/data-quality-checker-config";
-    private static final CheckerConfigService service = CheckerConfigService.getInstance();
+    private final CheckerConfigService service;
+    private final DataQualityCheckerDispatcher dispatcher;
+
+    @Inject
+    public DataQualityCheckerResource(CheckerConfigService service, DataQualityCheckerDispatcher dispatcher) {
+        this.service = service;
+        this.dispatcher = dispatcher;
+    }
 
     @AuthorizedOnly
     @Get(BASE_PATH)
@@ -121,7 +131,7 @@ public class DataQualityCheckerResource {
             config = service.create(userId);
         }
 
-        DataQualityCheckerDispatcher.getInstance().runForUser(config);
+        dispatcher.runForUser(config);
     }
 
     private UUID getUserId(HttpContext context) {

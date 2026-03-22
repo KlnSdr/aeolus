@@ -2,29 +2,28 @@ package aeolus.readings.quality.service;
 
 import aeolus.readings.quality.CheckerConfig;
 import aeolus.readings.quality.CheckerStatus;
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import dobby.util.json.NewJson;
 import thot.connector.Connector;
+import thot.connector.IConnector;
 import thot.janus.Janus;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
+@RegisterFor(CheckerConfigService.class)
 public class CheckerConfigService {
     public static final String BUCKET_NAME = "aeolus_checker_config";
-    private static CheckerConfigService instance;
+    private final IConnector connector;
 
-    private CheckerConfigService() {
-    }
-
-    public static CheckerConfigService getInstance() {
-        if (instance == null) {
-            instance = new CheckerConfigService();
-        }
-        return instance;
+    @Inject
+    public CheckerConfigService(IConnector connector) {
+        this.connector = connector;
     }
 
     public CheckerConfig[] findAll() {
-        final NewJson[] jsonConfigs = Connector.readPattern(BUCKET_NAME, ".*", NewJson.class);
+        final NewJson[] jsonConfigs = connector.readPattern(BUCKET_NAME, ".*", NewJson.class);
         final ArrayList<CheckerConfig> configs = new ArrayList<>();
 
         for (NewJson json : jsonConfigs) {
@@ -38,11 +37,11 @@ public class CheckerConfigService {
     }
 
     public CheckerConfig findByUser(UUID userId) {
-        return Janus.parse(Connector.read(BUCKET_NAME, userId.toString(), NewJson.class), CheckerConfig.class);
+        return Janus.parse(connector.read(BUCKET_NAME, userId.toString(), NewJson.class), CheckerConfig.class);
     }
 
     public boolean save(CheckerConfig config) {
-        return Connector.write(BUCKET_NAME, config.getKey(), config.toStoreJson());
+        return connector.write(BUCKET_NAME, config.getKey(), config.toStoreJson());
     }
 
     public CheckerConfig create(UUID userId) {

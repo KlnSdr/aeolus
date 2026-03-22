@@ -1,6 +1,8 @@
 package aeolus.readings.quality;
 
 import aeolus.readings.quality.service.CheckerConfigService;
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import common.logger.Logger;
 
 import java.text.ParseException;
@@ -8,19 +10,16 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+@RegisterFor(DataQualityCheckerDispatcher.class)
 public class DataQualityCheckerDispatcher {
     private static final Logger LOGGER = new Logger(DataQualityCheckerDispatcher.class);
-    private static final CheckerConfigService service = CheckerConfigService.getInstance();
-    private static DataQualityCheckerDispatcher instance;
+    private final CheckerConfigService service;
+    private final DataQualityChecker dataQualityChecker;
 
-    private DataQualityCheckerDispatcher() {
-    }
-
-    public static DataQualityCheckerDispatcher getInstance() {
-        if (instance == null) {
-            instance = new DataQualityCheckerDispatcher();
-        }
-        return instance;
+    @Inject
+    public DataQualityCheckerDispatcher(CheckerConfigService service, DataQualityChecker dataQualityChecker) {
+        this.service = service;
+        this.dataQualityChecker = dataQualityChecker;
     }
 
     public void run() {
@@ -43,7 +42,7 @@ public class DataQualityCheckerDispatcher {
     }
 
     public void runForUser(CheckerConfig config) {
-        final CheckerStatus status = new DataQualityChecker(config.getUserId()).runCheck();
+        final CheckerStatus status = dataQualityChecker.runCheck(config.getUserId());
         config.setLastRunStatus(status);
         updateLastRunTime(config);
         service.save(config);

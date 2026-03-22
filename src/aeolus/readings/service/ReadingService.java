@@ -2,8 +2,10 @@ package aeolus.readings.service;
 
 import aeolus.exceptions.DuplicateEntryException;
 import aeolus.readings.Reading;
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import dobby.util.json.NewJson;
-import thot.connector.Connector;
+import thot.connector.IConnector;
 import thot.janus.Janus;
 
 import java.util.UUID;
@@ -11,18 +13,14 @@ import java.util.UUID;
 import static aeolus.util.IsoDate.toIsoDateString;
 import static hades.common.Util.prependZero;
 
+@RegisterFor(ReadingService.class)
 public class ReadingService {
     public static final String bucketName = "aeolus_temperatureReadings";
-    private static ReadingService instance;
+    private final IConnector connector;
 
-    private ReadingService() {
-    }
-
-    public static ReadingService getInstance() {
-        if (instance == null) {
-            instance = new ReadingService();
-        }
-        return instance;
+    @Inject
+    public ReadingService(IConnector connector) {
+        this.connector = connector;
     }
 
     public Reading[] find(UUID owner, int year) {
@@ -50,7 +48,7 @@ public class ReadingService {
 
         String key = owner + "_" + yearString + "-" + monthString + "-" + dayString;
 
-        final Reading reading = Janus.parse(Connector.read(bucketName, key, NewJson.class), Reading.class);
+        final Reading reading = Janus.parse(connector.read(bucketName, key, NewJson.class), Reading.class);
 
         if (reading == null) {
             throw new NullPointerException("No reading found for date: " + key);
@@ -59,7 +57,7 @@ public class ReadingService {
     }
 
     private Reading[] find(UUID owner, String pattern) {
-        final NewJson[] readingsJson = Connector.readPattern(bucketName, owner + "_" + pattern, NewJson.class);
+        final NewJson[] readingsJson = connector.readPattern(bucketName, owner + "_" + pattern, NewJson.class);
 
         if (readingsJson == null) {
             return new Reading[0];
@@ -74,12 +72,12 @@ public class ReadingService {
     }
 
     public boolean add(Reading reading) throws DuplicateEntryException {
-        final NewJson existingReading = Connector.read(bucketName, reading.getKey(), NewJson.class);
+        final NewJson existingReading = connector.read(bucketName, reading.getKey(), NewJson.class);
         if (existingReading != null) {
             throw new DuplicateEntryException("Reading for date " + toIsoDateString(reading.getDate()) + " already " + "exists");
         }
 
-        return Connector.write(bucketName, reading.getKey(), reading.toStoreJson());
+        return connector.write(bucketName, reading.getKey(), reading.toStoreJson());
     }
 
 }

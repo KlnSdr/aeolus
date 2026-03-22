@@ -1,5 +1,6 @@
 package aeolus.readings.filter;
 
+import common.inject.api.RegisterFor;
 import dobby.filter.Filter;
 import dobby.filter.FilterType;
 import dobby.io.HttpContext;
@@ -10,6 +11,7 @@ import dobby.util.json.NewJson;
 
 import static aeolus.util.IsoDate.isValidIsoDate;
 
+@RegisterFor(DatePreFilter.class)
 public class DatePreFilter implements Filter {
     @Override
     public String getName() {

@@ -4,6 +4,8 @@ import aeolus.exceptions.DuplicateEntryException;
 import aeolus.readings.Reading;
 import aeolus.readings.service.ReadingService;
 import aeolus.util.IsoDate;
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import common.logger.Logger;
 import dobby.annotations.Get;
 import dobby.annotations.Post;
@@ -25,9 +27,20 @@ import java.util.*;
 import static aeolus.util.IsoDate.isValidIsoDate;
 import static aeolus.util.IsoDate.parseIsoDate;
 
+@RegisterFor(ReadingResource.class)
 public class ReadingResource {
     private static final Logger LOGGER = new Logger(ReadingResource.class);
     private static final String BASE_PATH = "/rest/readings";
+    private final ReadingService readingService;
+    private final UserService userService;
+    private final GroupService groupService;
+
+    @Inject
+    public ReadingResource(ReadingService readingService, UserService userService, GroupService groupService) {
+        this.readingService = readingService;
+        this.userService = userService;
+        this.groupService = groupService;
+    }
 
     @AuthorizedOnly
     @Get(BASE_PATH + "/last")
@@ -38,14 +51,14 @@ public class ReadingResource {
     @ApiResponse(code = 500, message = "Internal server error.")
     public void getLastReading(HttpContext context) {
         int year = Year.now().getValue();
-        Reading[] readings = ReadingService.getInstance().find(getUserId(context), year);
+        Reading[] readings = readingService.find(getUserId(context), year);
 
         if (readings.length == 0) {
-            readings = ReadingService.getInstance().find(getUserId(context), year - 1);
+            readings = readingService.find(getUserId(context), year - 1);
         }
 
         if (readings.length == 0) {
-            readings = ReadingService.getInstance().find(getUserId(context), year - 2);
+            readings = readingService.find(getUserId(context), year - 2);
         }
 
         if (readings.length == 0) {
@@ -75,7 +88,7 @@ public class ReadingResource {
             return;
         }
 
-        Reading[] readings = ReadingService.getInstance().find(getUserId(context), year);
+        Reading[] readings = readingService.find(getUserId(context), year);
         Arrays.sort(readings, Comparator.comparing(Reading::getDate));
 
         final NewJson json = new NewJson();
@@ -105,7 +118,7 @@ public class ReadingResource {
 
         Reading[] readings;
         try {
-            readings = ReadingService.getInstance().find(getUserId(context), year, month);
+            readings = readingService.find(getUserId(context), year, month);
             Arrays.sort(readings, Comparator.comparing(Reading::getDate));
         } catch (IllegalArgumentException e) {
             sendBadRequest(context, "Invalid month: " + month);
@@ -141,7 +154,7 @@ public class ReadingResource {
 
         Reading reading;
         try {
-            reading = ReadingService.getInstance().find(getUserId(context), year, month, day);
+            reading = readingService.find(getUserId(context), year, month, day);
         } catch (IllegalArgumentException e) {
             sendBadRequest(context, "Invalid date: " + year + "-" + month + "-" + day);
             return;
@@ -170,7 +183,7 @@ public class ReadingResource {
         Reading reading = new Reading(value, date, getUserId(context));
         boolean wasAdded;
         try {
-            wasAdded = ReadingService.getInstance().add(reading);
+            wasAdded = readingService.add(reading);
         } catch (DuplicateEntryException e) {
             context.getResponse().setCode(ResponseCodes.CONFLICT);
 
@@ -200,8 +213,6 @@ public class ReadingResource {
         }
 
         final UUID userId = getUserId(context);
-        final ReadingService readingService = ReadingService.getInstance();
-
         final List<NewJson> readingsJson = json.getList("readings").stream().map(obj -> (NewJson) obj).toList();
         final List<Reading> readings = new ArrayList<>();
         for (NewJson readingJson : readingsJson) {
@@ -256,10 +267,10 @@ public class ReadingResource {
     @ApiResponse(code = 500, message = "Internal server error.")
     public void doesUserExposeAPublicDataset(HttpContext context) {
         final UUID userId = UUID.fromString(context.getRequest().getParam("id"));
-        final User user = UserService.getInstance().find(userId);
+        final User user = userService.find(userId);
 
         final String userGuestGroup = user.getId().toString() + "-guest";
-        final Group group = GroupService.getInstance().findByName(userGuestGroup);
+        final Group group = groupService.findByName(userGuestGroup);
 
         final NewJson message = new NewJson();
         message.setString("msg", "User does not expose a public dataset");

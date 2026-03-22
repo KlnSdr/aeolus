@@ -1,5 +1,7 @@
 package aeolus.readings.filter;
 
+import common.inject.api.Inject;
+import common.inject.api.RegisterFor;
 import dobby.filter.Filter;
 import dobby.filter.FilterType;
 import dobby.io.HttpContext;
@@ -12,7 +14,17 @@ import hades.user.service.UserService;
 
 import java.util.UUID;
 
+@RegisterFor(DifferentDataSourcePreFilter.class)
 public class DifferentDataSourcePreFilter implements Filter {
+    private final UserService userService;
+    private final GroupService groupService;
+
+    @Inject
+    public DifferentDataSourcePreFilter(UserService userService, GroupService groupService) {
+        this.userService = userService;
+        this.groupService = groupService;
+    }
+
     @Override
     public String getName() {
         return "DifferentDataSourcePreFilter";
@@ -45,7 +57,7 @@ public class DifferentDataSourcePreFilter implements Filter {
             return false;
         }
 
-        final User dataSourceOwner = UserService.getInstance().find(dataSourceUserId);
+        final User dataSourceOwner = userService.find(dataSourceUserId);
 
         if (dataSourceOwner == null) {
             httpContext.getResponse().setCode(ResponseCodes.NOT_FOUND);
@@ -55,7 +67,7 @@ public class DifferentDataSourcePreFilter implements Filter {
 
         final UUID currentUserId = UUID.fromString(httpContext.getSession().get("userId"));
 
-        final User currentUser = UserService.getInstance().find(currentUserId);
+        final User currentUser = userService.find(currentUserId);
 
         if (currentUser == null) {
             httpContext.getResponse().setCode(ResponseCodes.UNAUTHORIZED);
@@ -63,7 +75,7 @@ public class DifferentDataSourcePreFilter implements Filter {
             return false;
         }
 
-        final Group[] groups = GroupService.getInstance().findGroupsByUser(currentUserId);
+        final Group[] groups = groupService.findGroupsByUser(currentUserId);
         boolean hasNeededGroup = false;
         for (Group group : groups) {
             if (group.getName().equals(dataSourceUserId + "-guest")) {
