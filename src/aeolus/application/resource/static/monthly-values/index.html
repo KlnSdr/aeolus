@@ -5,22 +5,23 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Aeolus</title>
-
-    <link rel="icon" type="image/png" href="{{CONTEXT}}/favicon.png">
+    <title>Aeolus - Monatswerte</title>
 
     <link rel="stylesheet" href="{{CONTEXT}}/style.css">
-    <link rel="stylesheet" href="{{CONTEXT}}/common/popup.css">
     <link rel="stylesheet" href="{{CONTEXT}}/hades/messages.css">
+    <link rel="stylesheet" href="{{CONTEXT}}/common/popup.css">
+    <link rel="stylesheet" href="{{CONTEXT}}/monthly-values/style.css">
 
     <script src="{{CONTEXT}}/hades/messages.js"></script>
+
     <script src="{{CONTEXT}}/hades/logout.js"></script>
-    <script src="{{CONTEXT}}/common/popup.js"></script>
+    <script src="{{CONTEXT}}/index.js"></script>
     <script src="{{CONTEXT}}/common/mobileNavbar.js"></script>
     <script src="{{CONTEXT}}/common/changeDataSource.js"></script>
-    <script src="{{CONTEXT}}/index.js"></script>
+    <script src="{{CONTEXT}}/common/popup.js"></script>
+    <script src="{{CONTEXT}}/monthly-values/index.js"></script>
 </head>
-<body onload="startup(); loadMessages(); loadLastReading()">
+<body onload="startup(); loadMessages(); loadMonthlyValues()">
 <nav>
     <h1><a id="headline" href="javascript:void(0);" onclick="location.assign('{{CONTEXT}}/')">Aeolus</a></h1>
     <div id="navBody" class="mobileMenuHidden">
@@ -41,10 +42,19 @@
     </div>
     <button id="bttnOpenMobileMenu" class="bigButton" onclick="toggleMobileMenu()">☰</button>
 </nav>
-<div class="center" style="margin-top: 10%">
-    <h1 id="lastValue" class="huge">XY.Z °C</h1>
-    <p id="lastValueFrom">vom: DD.MM.YYYY</p>
-    <button onclick="openAddValueManually()">Daten manuell eintragen</button>
+<div class="container">
+    <button onclick="openPopupEnterMonthlyValues()">Monatswerte eintragen</button>
+    <div id="historicMonthlyValuesContainer">
+        <h1>2026</h1>
+        <div class="yearSection">
+            <div class="card">
+                <label>Februar</label>
+            </div>
+            <div class="card">
+                <label>März</label>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>

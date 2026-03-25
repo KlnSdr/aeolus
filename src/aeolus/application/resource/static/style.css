@@ -60,7 +60,7 @@ button:hover {
     display: none;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1140px) {
     #bttnOpenMobileMenu {
         display: block;
         position: absolute;

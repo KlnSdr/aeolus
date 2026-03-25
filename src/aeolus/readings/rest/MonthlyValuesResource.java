@@ -18,6 +18,7 @@ import java.util.*;
 
 import static aeolus.util.IsoDate.isValidIsoDate;
 import static aeolus.util.IsoDate.parseIsoDate;
+import static hades.common.Util.prependZero;
 import static hades.util.UserUtil.getCurrentUserId;
 
 @RegisterFor(MonthlyValuesResource.class)
@@ -107,7 +108,7 @@ public class MonthlyValuesResource {
             return;
         }
         final UUID owner = getCurrentUserId(context);
-        final String date = body.getString("date");
+        final String date = year + "-" + prependZero(month) + "-01";
         final int operatingHoursHeating = body.getInt("operatingHoursHeating");
         final int operatingHoursWater = body.getInt("operatingHoursWater");
         final int operatingHoursTwo = body.getInt("operatingHoursTwo");
@@ -118,7 +119,7 @@ public class MonthlyValuesResource {
 
         // TODO mit werten des vormonats verrechnen?
 
-        if (isValidIsoDate(date)) {
+        if (!isValidIsoDate(date)) {
             ErrorResponses.badRequest(context.getResponse(), "Invalid date: " + date);
             return;
         }
@@ -160,14 +161,10 @@ public class MonthlyValuesResource {
     }
 
     private boolean validatePutRequest(NewJson json) {
-        if (!(json != null && json.hasKeys("date", "operatingHoursHeating", "operatingHoursWater", "operatingHoursTwo", "highTariffPower", "lowTariffPower", "householdPower", "householdWater"))) {
+        if (!(json != null && json.hasKeys("operatingHoursHeating", "operatingHoursWater", "operatingHoursTwo", "highTariffPower", "lowTariffPower", "householdPower", "householdWater"))) {
             return false;
         }
 
-        if (!json.getIntKeys().containsAll(List.of("operatingHoursHeating", "operatingHoursWater", "operatingHoursTwo", "highTariffPower", "lowTariffPower", "householdPower", "householdWater"))) {
-            return false;
-        }
-
-        return !json.getStringKeys().contains("date");
+        return json.getIntKeys().containsAll(List.of("operatingHoursHeating", "operatingHoursWater", "operatingHoursTwo", "highTariffPower", "lowTariffPower", "householdPower", "householdWater"));
     }
 }
