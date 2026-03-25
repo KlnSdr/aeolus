@@ -4,7 +4,6 @@ import aeolus.readings.quality.service.CheckerConfigService;
 import common.inject.api.Inject;
 import common.inject.api.RegisterFor;
 import hades.update.Update;
-import thot.connector.Connector;
 import thot.connector.IConnector;
 
 @RegisterFor(AddCheckerConfigBucketUpdate.class)
@@ -28,6 +27,6 @@ public class AddCheckerConfigBucketUpdate implements Update {
 
     @Override
     public int getOrder() {
-        return 1;
+        return UPDATE_ORDER.CHECKER_CONFIG_BUCKET.getOrder();
     }
 }

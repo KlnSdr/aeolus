@@ -4,7 +4,6 @@ import aeolus.readings.service.ReadingService;
 import common.inject.api.Inject;
 import common.inject.api.RegisterFor;
 import hades.update.Update;
-import thot.connector.Connector;
 import thot.connector.IConnector;
 
 @RegisterFor(CreateBucketUpdate.class)
@@ -28,6 +27,6 @@ public class CreateBucketUpdate implements Update {
 
     @Override
     public int getOrder() {
-        return 0;
+        return UPDATE_ORDER.CREATE_BUCKETS.getOrder();
     }
 }
