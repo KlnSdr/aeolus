@@ -150,7 +150,7 @@ function openPopupEnterMonthlyValues() {
         saveValues(data)
             .then(() => {
                 displayAlert("Wert erfolgreich gespeichert.");
-                // reload data
+                loadMonthlyValues();
             })
             .catch(err => {
                 displayAlert("Ein Fehler ist beim Speichern aufgetreten: " + err.message);

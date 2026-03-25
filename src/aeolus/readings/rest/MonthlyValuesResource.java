@@ -69,7 +69,7 @@ public class MonthlyValuesResource {
         }
 
         final UUID user = getCurrentUserId(context);
-        final MonthlyValues[] values = service.findByOwnerAndYearAndMonth(user, year, month);
+        final MonthlyValues[] values = {service.findByOwnerAndYearAndMonth(user, year, month)};
         sendResult(context, values);
     }
 
@@ -117,24 +117,31 @@ public class MonthlyValuesResource {
         final int householdPower = body.getInt("householdPower");
         final int householdWater = body.getInt("householdWater");
 
-        // TODO mit werten des vormonats verrechnen?
-
         if (!isValidIsoDate(date)) {
             ErrorResponses.badRequest(context.getResponse(), "Invalid date: " + date);
             return;
         }
 
-        final MonthlyValues monthlyValues = new MonthlyValues(
-            owner,
-            parseIsoDate(date),
-            operatingHoursHeating,
-            operatingHoursWater,
-            operatingHoursTwo,
-            highTariffPower,
-            lowTariffPower,
-            householdPower,
-            householdWater
-        );
+        final MonthlyValues monthlyValues;
+        try {
+            monthlyValues = service.calculateMonthsValuesFromCumulativeAndUpdateDatabase(
+                    new MonthlyValues(
+                            owner,
+                            parseIsoDate(date),
+                            operatingHoursHeating,
+                            operatingHoursWater,
+                            operatingHoursTwo,
+                            highTariffPower,
+                            lowTariffPower,
+                            householdPower,
+                            householdWater
+                    )
+            );
+        } catch (DuplicateEntryException e) {
+            ErrorResponses.conflict(context.getResponse(), "Entry for date already exists: " + date);
+            return;
+        }
+
         boolean wasAdded;
         try {
             wasAdded = service.update(monthlyValues);
@@ -149,6 +156,45 @@ public class MonthlyValuesResource {
         }
         context.getResponse().setCode(ResponseCodes.CREATED);
         context.getResponse().setBody(monthlyValues.toJson());
+    }
+
+    @AuthorizedOnly
+    @Put(BASE_PATH + "/temporary")
+    public void putForTemporary(HttpContext context) {
+        final NewJson body = context.getRequest().getBody();
+        if (!validatePutRequest(body)) {
+            ErrorResponses.badRequest(context.getResponse(), "Invalid request");
+            return;
+        }
+        final UUID owner = getCurrentUserId(context);
+        final String date = "1970-01-01";
+        final int operatingHoursHeating = body.getInt("operatingHoursHeating");
+        final int operatingHoursWater = body.getInt("operatingHoursWater");
+        final int operatingHoursTwo = body.getInt("operatingHoursTwo");
+        final int highTariffPower = body.getInt("highTariffPower");
+        final int lowTariffPower = body.getInt("lowTariffPower");
+        final int householdPower = body.getInt("householdPower");
+        final int householdWater = body.getInt("householdWater");
+
+        final MonthlyValues temporary = new MonthlyValues(
+                owner,
+                parseIsoDate(date),
+                operatingHoursHeating,
+                operatingHoursWater,
+                operatingHoursTwo,
+                highTariffPower,
+                lowTariffPower,
+                householdPower,
+                householdWater
+        );
+
+        boolean wasAdded = service.updateTemporary(temporary);
+
+        if  (!wasAdded) {
+            ErrorResponses.internalError(context.getResponse(), "Failed to set temporary monthly values");
+            return;
+        }
+        context.getResponse().setCode(ResponseCodes.OK);
     }
 
     private void sendResult(HttpContext context, MonthlyValues[] values) {
