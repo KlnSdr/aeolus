@@ -14,11 +14,13 @@
 
     <script src="{{CONTEXT}}/hades/messages.js"></script>
 
+    <script src="{{CONTEXT}}/lib/Chart.min.js"></script>
     <script src="{{CONTEXT}}/hades/logout.js"></script>
     <script src="{{CONTEXT}}/index.js"></script>
     <script src="{{CONTEXT}}/common/mobileNavbar.js"></script>
     <script src="{{CONTEXT}}/common/changeDataSource.js"></script>
     <script src="{{CONTEXT}}/common/popup.js"></script>
+    <script src="{{CONTEXT}}/monthly-values/chart.js"></script>
     <script src="{{CONTEXT}}/monthly-values/index.js"></script>
 </head>
 <body onload="startup(); loadMessages(); loadMonthlyValues()">
@@ -42,10 +44,12 @@
     </div>
     <button id="bttnOpenMobileMenu" class="bigButton" onclick="toggleMobileMenu()">☰</button>
 </nav>
-<div class="container">
-    <button onclick="openPopupEnterMonthlyValues()">Monatswerte eintragen</button>
-    <button onclick="openPopupMaintenance()">Wartung</button>
-    <div id="historicMonthlyValuesContainer">
+<div class="centeringContainer">
+    <div class="container">
+        <button onclick="openPopupEnterMonthlyValues()">Monatswerte eintragen</button>
+        <button onclick="openPopupMaintenance()">Wartung</button>
+        <div id="historicMonthlyValuesContainer">
+        </div>
     </div>
 </div>
 </body>

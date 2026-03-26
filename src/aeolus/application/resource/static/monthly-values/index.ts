@@ -38,9 +38,16 @@ function loadMonthlyValues() {
                 years[year].push(reading);
             });
             Object.keys(years).sort().reverse().forEach(year => {
+                const headingContainer: HTMLDivElement = document.createElement("div");
+                headingContainer.classList.add("yearHeadingContainer");
+                container.appendChild(headingContainer);
                 const heading: HTMLHeadingElement = document.createElement("h1");
                 heading.innerText = year;
-                container.appendChild(heading);
+                headingContainer.appendChild(heading);
+                const bttnOpenChart: HTMLButtonElement = document.createElement("button");
+                bttnOpenChart.innerText = "🗠";
+                bttnOpenChart.onclick = () => openPopupChartYear(years[year]);
+                headingContainer.appendChild(bttnOpenChart);
 
                 const yearSection: HTMLDivElement = document.createElement("div");
                 yearSection.classList.add("yearSection");
@@ -113,7 +120,7 @@ function openPopupMaintenance() {
     const container: HTMLDivElement = document.createElement("div");
     container.classList.add("popup-container");
     const heading: HTMLHeadingElement = document.createElement("h2");
-    heading.innerText = "Monatswerte";
+    heading.innerText = "Wartung vermerken";
     container.appendChild(heading);
 
     // peak webdevelopent
@@ -283,4 +290,15 @@ function saveValuesMaintenance(data: { [key: string]: number | string }): Promis
             reject(error);
         });
     });
+}
+
+function openPopupChartYear(yearData: MonthlyValues[]) {
+    const container: HTMLDivElement = document.createElement("div");
+    const heading: HTMLHeadingElement = document.createElement("h2");
+    heading.innerText = "Monatswerte " + yearData[0].date.substring(0, 4);
+    container.appendChild(heading);
+
+    container.appendChild(getChartForYear(yearData));
+
+    openPopup(container);
 }
