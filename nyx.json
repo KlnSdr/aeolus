@@ -10,6 +10,11 @@
         "group": "dobby",
         "name": "hades",
         "version": "2.4-snapshot"
+      },
+      {
+        "group": "common",
+        "name": "json",
+        "version": "1.2-snapshot"
       }
     ]
   },

@@ -107,6 +107,68 @@ function openMonthlyValuesPopup(monthlyValues: MonthlyValues) {
     container.appendChild(table);
     openPopup(container);
 }
+function openPopupMaintenance() {
+    const inputTypes: string[] = ["date", "number", "number", "number", "number", "number", "number", "number"];
+
+    const container: HTMLDivElement = document.createElement("div");
+    container.classList.add("popup-container");
+    const heading: HTMLHeadingElement = document.createElement("h2");
+    heading.innerText = "Monatswerte";
+    container.appendChild(heading);
+
+    // peak webdevelopent
+    const table: HTMLTableElement = document.createElement("table");
+
+    for (let i = 0; i < displayNames.length; i++) {
+        if (keys[i] == "date") {
+            continue;
+        }
+        const row: HTMLTableRowElement = document.createElement("tr");
+
+        const columnLabel: HTMLTableCellElement = document.createElement("td");
+        const label: HTMLLabelElement = document.createElement("label");
+        label.innerText = displayNames[i];
+        label.htmlFor = keys[i];
+        columnLabel.appendChild(label);
+
+        const columnValue: HTMLTableCellElement = document.createElement("td");
+        const input: HTMLInputElement = document.createElement("input");
+        input.type = inputTypes[i];
+        input.id = keys[i];
+        columnValue.appendChild(input);
+
+        const columnEnable: HTMLTableCellElement = document.createElement("td");
+        const checkbox: HTMLInputElement = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = keys[i] + "_enable";
+        columnEnable.appendChild(checkbox);
+
+        row.appendChild(columnLabel);
+        row.appendChild(columnValue);
+        row.appendChild(checkbox);
+
+        table.appendChild(row);
+    }
+
+    container.appendChild(table);
+
+    const bttnSave: HTMLButtonElement = document.createElement("button");
+    bttnSave.innerText = "speichern";
+    bttnSave.onclick = () => {
+        const data: { [key: string]: number | string } = getDataObjectMaintenance(keys);
+        closePopup(bttnSave);
+        saveValuesMaintenance(data)
+            .then(() => {
+                displayAlert("Wartung erfolgreich vermerkt.");
+            })
+            .catch(err => {
+                displayAlert("Ein Fehler ist beim Speichern aufgetreten: " + err.message);
+            });
+    };
+    container.appendChild(bttnSave);
+
+    openPopup(container);
+}
 
 function openPopupEnterMonthlyValues() {
     const inputTypes: string[] = ["date", "number", "number", "number", "number", "number", "number", "number"];
@@ -173,9 +235,42 @@ function getDataObject(keys: string[]): { [key: string]: number | string } {
     return data;
 }
 
+function getDataObjectMaintenance(keys: string[]): { [key: string]: number | string } {
+    const data: { [key: string]: string | number } = {};
+    keys.filter(k => k != "date").forEach(key => {
+        const inputElement = document.getElementById(key) as HTMLInputElement;
+        if (inputElement) {
+            if ((document.getElementById(key + "_enable") as HTMLInputElement).checked) {
+                data[key] = inputElement.type === "number" ? parseInt(inputElement.value) : inputElement.value;
+            } else {
+                data[key] = -1;
+            }
+        }
+    });
+
+    return data;
+}
+
 function saveValues(data: { [key: string]: number | string }): Promise<void> {
     return new Promise((resolve, reject) => {
         fetch(`{{CONTEXT}}/rest/monthly-values/${(data["date"] as string).substring(0, 4)}/${(data["date"] as string).substring(5, 7)}`, {
+            method: "PUT", headers: {
+                "Content-Type": "application/json"
+            }, body: JSON.stringify(data)
+        }).then((response) => {
+            if (!response.ok) {
+                throw new Error("HTTP error, status = " + response.status);
+            }
+            resolve();
+        }).catch((error) => {
+            reject(error);
+        });
+    });
+}
+
+function saveValuesMaintenance(data: { [key: string]: number | string }): Promise<void> {
+    return new Promise((resolve, reject) => {
+        fetch(`{{CONTEXT}}/rest/monthly-values/temporary`, {
             method: "PUT", headers: {
                 "Content-Type": "application/json"
             }, body: JSON.stringify(data)

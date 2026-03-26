@@ -28,6 +28,25 @@ public class MonthlyValuesService {
         this.connector = connector;
     }
 
+    public boolean reset(UUID owner) {
+        final MonthlyValues[] existingValues = findByOwner(owner);
+        boolean success = true;
+        for (MonthlyValues values : existingValues) {
+            success = success && connector.delete(BUCKET_NAME, values.getKey());
+        }
+
+        final MonthlyValues previousCumulative = getLastCumulative(owner);
+        if (previousCumulative != null) {
+            success = success && connector.delete(BUCKET_NAME_PREVIOUS_CUMULATIVE, owner.toString());
+        }
+
+        final MonthlyValues temporary = getTemporary(owner);
+        if (temporary != null) {
+            success = success && connector.delete(BUCKET_NAME_TEMPORARY, owner.toString());
+        }
+        return success;
+    }
+
     public MonthlyValues[] findByOwner(UUID owner) {
         final NewJson[] jsonResults = connector.readPattern(BUCKET_NAME, owner + "_[0-9][0-9][0-9][0-9]-[0-1][0-9]", NewJson.class);
         final List<MonthlyValues> results = new ArrayList<>();

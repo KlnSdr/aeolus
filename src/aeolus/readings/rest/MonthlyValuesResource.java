@@ -6,6 +6,7 @@ import aeolus.readings.service.MonthlyValuesService;
 import common.inject.api.Inject;
 import common.inject.api.RegisterFor;
 import common.logger.Logger;
+import dobby.annotations.Delete;
 import dobby.annotations.Get;
 import dobby.annotations.Put;
 import dobby.io.HttpContext;
@@ -192,6 +193,18 @@ public class MonthlyValuesResource {
 
         if  (!wasAdded) {
             ErrorResponses.internalError(context.getResponse(), "Failed to set temporary monthly values");
+            return;
+        }
+        context.getResponse().setCode(ResponseCodes.OK);
+    }
+
+    @AuthorizedOnly
+    @Delete(BASE_PATH)
+    public void resetData(HttpContext context) {
+        final UUID user = getCurrentUserId(context);
+        boolean success = service.reset(user);
+        if (!success) {
+            ErrorResponses.internalError(context.getResponse(), "Failed to reset monthly values");
             return;
         }
         context.getResponse().setCode(ResponseCodes.OK);
