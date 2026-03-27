@@ -39,11 +39,19 @@ function getChartForYear(yearData: MonthlyValues[]): HTMLElement {
                 type: "line"
             },
             {
-                label: 'Betriebsstunden',
-                data: yearData.map(month => month.operatingHoursHeating + month.operatingHoursWater),
+                label: 'Betriebsstunden Heizung',
+                data: yearData.map(month => month.operatingHoursHeating),
                 fill: true,
                 borderColor: "#666699",
                 backgroundColor: "#666699",
+                tension: 0.1
+            },
+            {
+                label: 'Betriebsstunden Wasser',
+                data: yearData.map(month => month.operatingHoursWater),
+                fill: true,
+                borderColor: "#668399",
+                backgroundColor: "#668399",
                 tension: 0.1
             }
         ]
@@ -53,8 +61,12 @@ function getChartForYear(yearData: MonthlyValues[]): HTMLElement {
             responsive: true, maintainAspectRatio: false, scales: {
                 yAxes: [{
                     ticks: {
-                        beginAtZero: true
-                    }
+                        beginAtZero: true,
+                    },
+                    stacked: true
+                }],
+                xAxes: [{
+                    stacked: true
                 }]
             }
         }
