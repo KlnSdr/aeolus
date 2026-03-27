@@ -44,7 +44,8 @@ function getChartForYear(yearData: MonthlyValues[]): HTMLElement {
                 fill: true,
                 borderColor: "#666699",
                 backgroundColor: "#666699",
-                tension: 0.1
+                tension: 0.1,
+                stack: 'bar-stacked'
             },
             {
                 label: 'Betriebsstunden Wasser',
@@ -52,7 +53,8 @@ function getChartForYear(yearData: MonthlyValues[]): HTMLElement {
                 fill: true,
                 borderColor: "#668399",
                 backgroundColor: "#668399",
-                tension: 0.1
+                tension: 0.1,
+                stack: 'bar-stacked'
             }
         ]
     };
@@ -62,11 +64,7 @@ function getChartForYear(yearData: MonthlyValues[]): HTMLElement {
                 yAxes: [{
                     ticks: {
                         beginAtZero: true,
-                    },
-                    stacked: true
-                }],
-                xAxes: [{
-                    stacked: true
+                    }
                 }]
             }
         }
@@ -125,7 +123,8 @@ function getChartForYears(yearData: {[key: string]: MonthlyValues[]}): HTMLEleme
                 fill: true,
                 borderColor: "#666699",
                 backgroundColor: "#666699",
-                tension: 0.1
+                tension: 0.1,
+                stack: 'bar-stacked'
             },
             {
                 label: 'Betriebsstunden Wasser',
@@ -133,7 +132,8 @@ function getChartForYears(yearData: {[key: string]: MonthlyValues[]}): HTMLEleme
                 fill: true,
                 borderColor: "#668399",
                 backgroundColor: "#668399",
-                tension: 0.1
+                tension: 0.1,
+                stack: 'bar-stacked'
             }
         ]
     };
@@ -144,10 +144,6 @@ function getChartForYears(yearData: {[key: string]: MonthlyValues[]}): HTMLEleme
                     ticks: {
                         beginAtZero: true,
                     },
-                    stacked: true
-                }],
-                xAxes: [{
-                    stacked: true
                 }]
             }
         }
