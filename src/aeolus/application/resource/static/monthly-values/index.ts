@@ -65,6 +65,7 @@ function loadMonthlyValues() {
                     yearSection.appendChild(card);
                 });
             });
+            (document.getElementById("bttnTrend") as HTMLButtonElement).onclick = () => openPopupTrend(years);
         })
         .catch(_ => {
             container.innerText = "Fehler beim Laden der Monatswerte.";
@@ -299,6 +300,17 @@ function openPopupChartYear(yearData: MonthlyValues[]) {
     container.appendChild(heading);
 
     container.appendChild(getChartForYear(yearData));
+
+    openPopup(container);
+}
+
+function openPopupTrend(yearData: {[key: string]: MonthlyValues[]}) {
+    const container: HTMLDivElement = document.createElement("div");
+    const heading: HTMLHeadingElement = document.createElement("h2");
+    heading.innerText = "Jahrestrend";
+    container.appendChild(heading);
+
+    container.appendChild(getChartForYears(yearData));
 
     openPopup(container);
 }
