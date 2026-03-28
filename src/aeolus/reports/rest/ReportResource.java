@@ -1,6 +1,7 @@
 package aeolus.reports.rest;
 
 import aeolus.reports.*;
+import aeolus.reports.rendering.ReportPdfRenderer;
 import aeolus.reports.service.ReportService;
 import common.inject.api.Inject;
 import common.inject.api.RegisterFor;
@@ -13,6 +14,8 @@ import dobby.util.json.NewJson;
 import hades.annotations.AuthorizedOnly;
 import hades.common.ErrorResponses;
 
+import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -23,10 +26,12 @@ import static hades.util.UserUtil.getCurrentUserId;
 public class ReportResource {
     private static final String BASE_PATH = "/rest/report";
     private final ReportService reportService;
+    private final ReportPdfRenderer reportPdfRenderer;
 
     @Inject
-    public ReportResource(ReportService reportService) {
+    public ReportResource(ReportService reportService,  ReportPdfRenderer reportPdfRenderer) {
         this.reportService = reportService;
+        this.reportPdfRenderer = reportPdfRenderer;
     }
 
     @AuthorizedOnly
@@ -120,9 +125,18 @@ public class ReportResource {
     }
 
     @AuthorizedOnly
-    @Post(BASE_PATH + "/id/{reportId}/render")
+    @Get(BASE_PATH + "/id/{reportId}/render")
     public void renderReport(HttpContext context) {
+        final Report report = reportService.find(getCurrentUserId(context), UUID.fromString(context.getRequest().getParam("reportId")));
+        if (report == null) {
+            ErrorResponses.notFound(context.getResponse(), "Report not found");
+            return;
+        }
 
+        int currentYear = Year.now().getValue();
+        int currentMonth = LocalDate.now().getMonthValue();
+//        reportPdfRenderer.render(report, currentMonth, currentYear);
+        context.getResponse().sendFile(reportPdfRenderer.render(report, currentMonth, 2025));
     }
 
     private boolean validateBasicReportInfo(NewJson body) {

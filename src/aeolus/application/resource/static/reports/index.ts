@@ -429,13 +429,7 @@ function loadReports() {
                 const bttnTrigger: HTMLButtonElement = document.createElement("button");
                 bttnTrigger.textContent = "Jetzt ausführen";
                 bttnTrigger.addEventListener("click", () => {
-                    // triggerReport(report.id)
-                    //     .then(() => {
-                    //         displayAlert("Bericht wird erstellt. Sie erhalten eine Benachrichtigung, sobald er fertig ist.");
-                    //     })
-                    //     .catch((err: any) => {
-                    //         displayAlert("Ein Fehler ist beim Ausführen des Berichts aufgetreten: " + err);
-                    //     });
+                    renderReport(report.id);
                 });
                 containerButtons.appendChild(bttnTrigger);
                 card.appendChild(containerButtons);
@@ -497,4 +491,21 @@ function deleteReport(id: string): Promise<void> {
                 reject(error);
             });
     });
+}
+
+function  renderReport(reportId: string) {
+    // fetch(`{{CONTEXT}}/rest/report/id/${reportId}/render`, {
+    //     method: "POST"
+    // })
+    //     .then((response) => {
+    //         if (!response.ok) {
+    //             throw new Error("HTTP error, status = " + response.status);
+    //         }
+    //         console.log("Report triggered successfully.");
+    //     })
+    //     .catch((error) => {
+    //         console.error("Error rendering report:", error);
+    //     });
+    // @ts-ignore
+    window.open(`{{CONTEXT}}/rest/report/id/${reportId}/render`, '_blank').focus();
 }
