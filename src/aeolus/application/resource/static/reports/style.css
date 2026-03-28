@@ -1,0 +1,54 @@
+.container {
+    margin: 5px;
+}
+
+td {
+    vertical-align: top;
+}
+
+.reportCard {
+    padding: 5px;
+    border: 2px solid darkblue;
+    position: relative;
+}
+
+#reportView {
+    display: flex;
+    flex-flow: row;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.reportDetails {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    grid-template-rows: repeat(3, auto);
+    grid-column-gap: 5px;
+    grid-row-gap: 5px;
+}
+
+ul {
+    padding: 0px 0px 0px 15px;
+    margin: 0px;
+}
+
+p {
+    margin: 0px;
+}
+
+.deleteButton {
+    background-color: darkred;
+    border: 2px solid darkred;
+    margin-right: 5px;
+}
+
+.deleteButton:hover {
+    color: darkred;
+}
+
+.reportCard .buttonBar {
+    position: absolute;
+    bottom: 0px;
+    margin-bottom: 5px;
+}
