@@ -65,6 +65,7 @@ public class ReportPdfRenderer {
         data.setString("temperatures", readings.stream()
                 .sorted(Comparator.comparing(Reading::getDate))
                 .map(r -> toIsoDateString(r.getDate()) + "," + r.getValue()).collect(Collectors.joining("\n")));
+        data.setString("features", report.getReportFeatures().stream().map(Enum::name).map(n -> "\"" + n + "\"").collect(Collectors.joining(",")));
 
         final StaticFile template = loadTemplate("monthly.typ");
         template.setContent(templateEngine.render(new String(template.getContent()), data).getBytes(StandardCharsets.UTF_8));

@@ -18,6 +18,14 @@
   footer: text(font: "New Computer Modern Mono")[automatisch erzeugt am #datetime.today().display("[day].[month].[year]")]
 )
 
+#let features = ({{features}})
+
+#let renderOptional(feature, content) = [
+  #if (features.contains(feature)) {
+    content
+  }
+]
+
 #let UP = text(fill: red)[$triangle.filled.t$]
 #let DOWN = text(fill: green)[$triangle.filled.b$]
 #let SAME = text(fill: gray)[$circle.filled$]
@@ -26,15 +34,18 @@
 {{temperatures}}
 "
 
-#let data = csv(bytes(rawdata)).map(p => (
-    datetime(
-      year: int(p.first().split("-").first()),
-      month: int(p.first().split("-").at(1)),
-      day: int(p.first().split("-").last()),
-    ),
-    float(p.last())
-  )
-)
+#let data = ()
+#if (features.contains("TEMPERATURE_CURVE")) {
+    data = csv(bytes(rawdata)).map(p => (
+        datetime(
+          year: int(p.first().split("-").first()),
+          month: int(p.first().split("-").at(1)),
+          day: int(p.first().split("-").last()),
+        ),
+        float(p.last())
+      )
+    )
+}
 
 #set text(lang: "de")
 #show table.cell.where(y: 0): strong
@@ -79,39 +90,41 @@
   table.header(
     [Kategorie],
     [Wert],
-    [Durchschnitt],
-    [Trend]
+    renderOptional("AVERAGES", [Durchschnitt]),
+    renderOptional("TREND", [Trend])
   ),
-  [Betriebsstunden (Heizung)], [${{operatingHoursHeating}} h$], [${{averageOperatingHoursHeating}} h$], calcTrend({{operatingHoursHeating}}, {{averageOperatingHoursHeating}}),
-  [Betriebsstunden (Wasser)], [${{operatingHoursWater}} h$], [${{averageOperatingHoursWater}} h$], calcTrend({{operatingHoursWater}}, {{averageOperatingHoursWater}}),
-  [Betriebsstunden 2], [${{operatingHoursTwo}} "kW"/h$], [${{averageOperatingHoursTwo}} "kW"/h$], calcTrend({{operatingHoursTwo}}, {{averageOperatingHoursTwo}}),
-  [Hochtarifstrom (1.81)], [${{highTariffPower}} "kW"/h$], [${{averageHighTariffPower}} "kW"/h$], calcTrend({{highTariffPower}}, {{averageHighTariffPower}}),
-  [Niedrigtarifstrom (1.82)], [${{lowTariffPower}} "kW"/h$], [${{averageLowTariffPower}} "kW"/h$], calcTrend({{lowTariffPower}}, {{averageLowTariffPower}}),
-  [Bestand am Monatsende (Hausstrom)], [${{householdPower}} "kW"/h$], [${{averageHouseholdPower}} "kW"/h$], calcTrend({{householdPower}}, {{averageHouseholdPower}}),
-  [Bestand am Monatsende (Wasser)], [${{householdWater}} m^3$], [${{averageHouseholdWater}} m^3$], calcTrend({{householdWater}}, {{averageHouseholdWater}}),
-  [Temperaturdurchschnitt], [${{temperatureAverage}} °C$], [${{averageTemperatureAverage}} °C$], calcTrend({{temperatureAverage}}, {{averageTemperatureAverage}}),
-  [wärmster Tag], [${{temperatureMax}} °C$], [${{averageTemperatureMax}} °C$], calcTrend({{temperatureMax}}, {{averageTemperatureMax}}),
-  [kältester Tag], [${{temperatureMin}} °C$], [${{averageTemperatureMin}} °C$], calcTrend({{temperatureMin}}, {{averageTemperatureMin}}),
+  [Betriebsstunden (Heizung)], [${{operatingHoursHeating}} h$], renderOptional("AVERAGES", [${{averageOperatingHoursHeating}} h$]), renderOptional("TREND", calcTrend({{operatingHoursHeating}}, {{averageOperatingHoursHeating}})),
+  [Betriebsstunden (Wasser)], [${{operatingHoursWater}} h$], renderOptional("AVERAGES", [${{averageOperatingHoursWater}} h$]), renderOptional("TREND", calcTrend({{operatingHoursWater}}, {{averageOperatingHoursWater}})),
+  [Betriebsstunden 2], [${{operatingHoursTwo}} "kW"/h$], renderOptional("AVERAGES", [${{averageOperatingHoursTwo}} "kW"/h$]), renderOptional("TREND", calcTrend({{operatingHoursTwo}}, {{averageOperatingHoursTwo}})),
+  [Hochtarifstrom (1.81)], [${{highTariffPower}} "kW"/h$], renderOptional("AVERAGES", [${{averageHighTariffPower}} "kW"/h$]), renderOptional("TREND", calcTrend({{highTariffPower}}, {{averageHighTariffPower}})),
+  [Niedrigtarifstrom (1.82)], [${{lowTariffPower}} "kW"/h$], renderOptional("AVERAGES", [${{averageLowTariffPower}} "kW"/h$]), renderOptional("TREND", calcTrend({{lowTariffPower}}, {{averageLowTariffPower}})),
+  [Bestand am Monatsende (Hausstrom)], [${{householdPower}} "kW"/h$], renderOptional("AVERAGES", [${{averageHouseholdPower}} "kW"/h$]), renderOptional("TREND", calcTrend({{householdPower}}, {{averageHouseholdPower}})),
+  [Bestand am Monatsende (Wasser)], [${{householdWater}} m^3$], renderOptional("AVERAGES", [${{averageHouseholdWater}} m^3$]), renderOptional("TREND", calcTrend({{householdWater}}, {{averageHouseholdWater}})),
+  [Temperaturdurchschnitt], [${{temperatureAverage}} °C$], renderOptional("AVERAGES", [${{averageTemperatureAverage}} °C$]), renderOptional("TREND", calcTrend({{temperatureAverage}}, {{averageTemperatureAverage}})),
+  [wärmster Tag], [${{temperatureMax}} °C$], renderOptional("AVERAGES", [${{averageTemperatureMax}} °C$]), renderOptional("TREND", calcTrend({{temperatureMax}}, {{averageTemperatureMax}})),
+  [kältester Tag], [${{temperatureMin}} °C$], renderOptional("AVERAGES", [${{averageTemperatureMin}} °C$]), renderOptional("TREND", calcTrend({{temperatureMin}}, {{averageTemperatureMin}})),
 )
 
-#lq.diagram(
-      width: 100%,
-      height: 50%,
-      ylim: (-20, 35),
-      ylabel: [Temperatur in °C],
-      xlabel: [Datum],
-      xaxis: (
-        format-ticks: lq.tick-format.datetime.with(
-          format: "[day].[month]",
+#if (features.contains("TEMPERATURE_CURVE")) {
+    lq.diagram(
+          width: 100%,
+          height: 50%,
+          ylim: (-20, 35),
+          ylabel: [Temperatur in °C],
+          xlabel: [Datum],
+          xaxis: (
+            format-ticks: lq.tick-format.datetime.with(
+              format: "[day].[month]",
+            ),
+          ),
+          lq.rect(0%, 2.97cm, width: 100%, height: 2cm, fill: gray),
+          lq.plot(
+            data.map(p => p.first()),
+            data.map(p => p.last()),
+            color: rgb("000"),
+            mark: none,
+            stroke: 2pt
         ),
-      ),
-      lq.rect(0%, 2.97cm, width: 100%, height: 2cm, fill: gray),
-      lq.plot(
-        data.map(p => p.first()),
-        data.map(p => p.last()),
-        color: rgb("000"),
-        mark: none,
-        stroke: 2pt
-    ),
-    title: [== {{month}}.{{year}}],
-  )
+        title: [== {{month}}.{{year}}],
+      )
+}

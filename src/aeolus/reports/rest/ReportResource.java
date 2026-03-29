@@ -156,7 +156,7 @@ public class ReportResource {
             return false;
         }
 
-        if (body.getList("reportFeatures") == null || body.getList("reportFeatures").isEmpty()) {
+        if (body.getList("reportFeatures") == null) {
             return false;
         }
 
