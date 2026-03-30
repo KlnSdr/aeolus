@@ -20,6 +20,16 @@
         "group": "common",
         "name": "logger",
         "version": "1.2-snapshot"
+      },
+      {
+        "group": "external",
+        "name": "jakarta-mail",
+        "version": "2.0.1"
+      },
+      {
+        "group": "external",
+        "name": "jakarta-activation",
+        "version": "2.0.1"
       }
     ]
   },
