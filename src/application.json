@@ -23,6 +23,7 @@
       "enabled": true,
       "hideHadesRoutes": true
     },
+    "disableWelcomeMessage": true,
     "login": {
       "maxAttempts": 5,
       "lockDuration": 300000,
@@ -50,7 +51,13 @@
       "/blanket/index.html",
       "/dataquality",
       "/dataquality/",
-      "/dataquality/index.html"
+      "/dataquality/index.html",
+      "/monthly-values",
+      "/monthly-values/",
+      "/monthly-values/index.html",
+      "/reports",
+      "/reports/",
+      "/reports/index.html"
     ]
   }
 }
