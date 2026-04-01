@@ -2,6 +2,7 @@ package aeolus.mail.service;
 
 import aeolus.mail.Attachment;
 import aeolus.mail.Mail;
+import common.inject.api.Inject;
 import common.inject.api.RegisterFor;
 import common.logger.Logger;
 import jakarta.activation.DataHandler;
@@ -21,8 +22,23 @@ import java.util.UUID;
 @RegisterFor(MailService.class)
 public class MailService {
     private static final Logger LOGGER = new Logger(MailService.class);
+    final String smtpHost;
+    final String username;
+    final String password;
 
-    public void send(Mail mail) {
+    @Inject
+    public MailService() {
+        smtpHost = System.getenv("MAIL_SERVER");
+        username = System.getenv("MAIL_USER");
+        password = System.getenv("MAIL_PASSWORD");
+
+        if (smtpHost == null || username == null || password == null || smtpHost.isBlank() || username.isBlank() || password.isBlank()) {
+            LOGGER.error("Missing mail configuration. Please set MAIL_SERVER, MAIL_USER and MAIL_PASSWORD environment variables.");
+            System.exit(1);
+        }
+    }
+
+    public void send(Mail mail) throws MessagingException {
         Path tempDir = null;
         try {
             tempDir = Files.createTempDirectory("mail-" + UUID.randomUUID());
@@ -35,7 +51,7 @@ public class MailService {
             LOGGER.debug("Sending email...");
             Transport.send(msg);
             LOGGER.debug("Email sent.");
-        } catch (MessagingException | IOException e) {
+        } catch (IOException e) {
             LOGGER.trace(e);
         } finally {
             cleanup(tempDir);
@@ -82,9 +98,6 @@ public class MailService {
 
     private Message constructMessage(Mail mail) throws MessagingException {
         LOGGER.debug("Preparing to send email to " + mail.getRecipient());
-        final String smtpHost = "MAILSERVER";
-        final String username = "SENDER";
-        final String password = "PASSWORD";
 
         final Properties props = new Properties();
         props.put("mail.smtp.host", smtpHost);

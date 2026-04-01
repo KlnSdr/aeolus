@@ -41,4 +41,13 @@ public class ReportService {
         }
         return reports.toArray(new Report[0]);
     }
+
+    public Report[] findAll() {
+        final NewJson[] jsons = connector.readPattern(BUCKET_NAME, ".*", NewJson.class);
+        final List<Report> reports = new ArrayList<>();
+        for (NewJson json : jsons) {
+            reports.add(Janus.parse(json, Report.class));
+        }
+        return reports.toArray(new Report[0]);
+    }
 }

@@ -198,7 +198,11 @@ public class ReportPdfRenderer {
     }
 
     private StaticFile renderYearReport(Report report, int year) {
-        return null;
+        final StaticFile template = loadTemplate("yearly.typ");
+        final NewJson data = new NewJson();
+        data.setString("year", String.valueOf(year));
+        template.setContent(templateEngine.render(new String(template.getContent()), data).getBytes(StandardCharsets.UTF_8));
+        return pdfRenderer.render(template);
     }
 
     private float calculateAverage(List<Reading> readings) {

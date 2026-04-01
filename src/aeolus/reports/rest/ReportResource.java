@@ -1,5 +1,7 @@
 package aeolus.reports.rest;
 
+import aeolus.mail.Mail;
+import aeolus.mail.service.MailService;
 import aeolus.reports.*;
 import aeolus.reports.rendering.ReportPdfRenderer;
 import aeolus.reports.service.ReportService;
@@ -8,18 +10,21 @@ import common.inject.api.RegisterFor;
 import dobby.annotations.Delete;
 import dobby.annotations.Get;
 import dobby.annotations.Post;
+import dobby.files.StaticFile;
 import dobby.io.HttpContext;
 import dobby.io.response.ResponseCodes;
 import dobby.util.json.NewJson;
 import hades.annotations.AuthorizedOnly;
 import hades.common.ErrorResponses;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static hades.common.Util.prependZero;
 import static hades.util.UserUtil.getCurrentUserId;
 
 @RegisterFor(ReportResource.class)
@@ -27,11 +32,13 @@ public class ReportResource {
     private static final String BASE_PATH = "/rest/report";
     private final ReportService reportService;
     private final ReportPdfRenderer reportPdfRenderer;
+    private final MailService mailService;
 
     @Inject
-    public ReportResource(ReportService reportService,  ReportPdfRenderer reportPdfRenderer) {
+    public ReportResource(ReportService reportService,  ReportPdfRenderer reportPdfRenderer, MailService mailService) {
         this.reportService = reportService;
         this.reportPdfRenderer = reportPdfRenderer;
+        this.mailService = mailService;
     }
 
     @AuthorizedOnly
@@ -135,8 +142,11 @@ public class ReportResource {
 
         int currentYear = Year.now().getValue();
         int currentMonth = LocalDate.now().getMonthValue();
-//        reportPdfRenderer.render(report, currentMonth, currentYear);
-        context.getResponse().sendFile(reportPdfRenderer.render(report, currentMonth, 2025));
+        try {
+            context.getResponse().sendFile(reportPdfRenderer.render(report, currentMonth, currentYear));
+        } catch (Exception e) {
+            ErrorResponses.internalError(context.getResponse(), "Failed to render report. " + e.getMessage());
+        }
     }
 
     private boolean validateBasicReportInfo(NewJson body) {
