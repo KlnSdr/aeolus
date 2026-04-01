@@ -1,7 +1,7 @@
 {
   "application": {
     "name": "aeolus",
-    "version": "0.15-snapshot",
+    "version": "0.15",
     "dbHost": "thot-container",
     "devMode": false
   },

@@ -9,17 +9,17 @@
       {
         "group": "dobby",
         "name": "hades",
-        "version": "2.4-snapshot"
+        "version": "2.4"
       },
       {
         "group": "common",
         "name": "json",
-        "version": "1.2-snapshot"
+        "version": "1.2"
       },
       {
         "group": "common",
         "name": "logger",
-        "version": "1.2-snapshot"
+        "version": "1.2"
       },
       {
         "group": "external",
