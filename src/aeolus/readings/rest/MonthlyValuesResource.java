@@ -13,6 +13,9 @@ import dobby.io.HttpContext;
 import dobby.io.response.ResponseCodes;
 import dobby.util.json.NewJson;
 import hades.annotations.AuthorizedOnly;
+import hades.apidocs.annotations.ApiDoc;
+import hades.apidocs.annotations.ApiResponse;
+import hades.apidocs.annotations.ApiResponses;
 import hades.common.ErrorResponses;
 
 import java.util.*;
@@ -33,6 +36,10 @@ public class MonthlyValuesResource {
         this.service = service;
     }
 
+    @ApiDoc(description = "Retrieves all monthly values for the current user. The endpoint returns an array of monthly values sorted by date.", summary = "Get all Monthly Values sorted by date.", baseUrl = BASE_PATH)
+    @ApiResponse(code = 200, message = "Successful operation.")
+    @ApiResponse(code = 401, message = "Unauthorized access.")
+    @ApiResponse(code = 500, message = "Internal server error.")
     @AuthorizedOnly
     @Get(BASE_PATH)
     public void getAll(HttpContext context) {
@@ -40,6 +47,11 @@ public class MonthlyValuesResource {
         sendResult(context, service.findByOwner(user));
     }
 
+    @ApiDoc(description = "Retrieves all monthly values of the provided year for the current user. The endpoint returns an array of monthly values sorted by date.", summary = "Get all Monthly Values for {year} sorted by date.", baseUrl = BASE_PATH)
+    @ApiResponse(code = 200, message = "Successful operation.")
+    @ApiResponse(code = 400, message = "Invalid year parameter.")
+    @ApiResponse(code = 401, message = "Unauthorized access.")
+    @ApiResponse(code = 500, message = "Internal server error.")
     @AuthorizedOnly
     @Get(BASE_PATH + "/year/{year}")
     public void getForYear(HttpContext context) {
@@ -56,6 +68,11 @@ public class MonthlyValuesResource {
         sendResult(context, values);
     }
 
+    @ApiDoc(description = "Retrieves all monthly values for the specified year and month. The year must be a valid integer. The endpoint returns an array of monthly values for the given year, sorted by date.", summary = "Get monthly values for a specific year and month.", baseUrl = BASE_PATH)
+    @ApiResponse(code = 200, message = "Successful operation.")
+    @ApiResponse(code = 400, message = "Invalid year or month parameter.")
+    @ApiResponse(code = 401, message = "Unauthorized access.")
+    @ApiResponse(code = 500, message = "Internal server error.")
     @AuthorizedOnly
     @Get(BASE_PATH + "/year/{year}/month/{month}")
     public void getForYearAndMonth(HttpContext context) {
@@ -74,6 +91,11 @@ public class MonthlyValuesResource {
         sendResult(context, values);
     }
 
+    @ApiDoc(description = "Retrieves all monthly values for the specified month across all years. The month must be a valid integer between 1 and 12. The endpoint returns an array of monthly values for the given month, sorted by date.", summary = "Get monthly values for a specific month across all years.", baseUrl = BASE_PATH)
+    @ApiResponse(code = 200, message = "Successful operation.")
+    @ApiResponse(code = 400, message = "Invalid month parameter.")
+    @ApiResponse(code = 401, message = "Unauthorized access.")
+    @ApiResponse(code = 500, message = "Internal server error.")
     @AuthorizedOnly
     @Get(BASE_PATH + "/slice/{month}")
     public void getForMonth(HttpContext context) {
@@ -90,6 +112,12 @@ public class MonthlyValuesResource {
         sendResult(context, values);
     }
 
+    @ApiDoc(description = "Adds monthly values for the specified year and month. The year must be a valid integer and the month must be a valid integer between 1 and 12. The request body must contain the following integer fields: operatingHoursHeating, operatingHoursWater, operatingHoursTwo, highTariffPower, lowTariffPower, householdPower, householdWater. If an entry for the specified date already exists, an error is returned.", summary = "Add or update monthly values for a specific year and month.", baseUrl = BASE_PATH)
+    @ApiResponse(code = 201, message = "Successful operation.")
+    @ApiResponse(code = 400, message = "Invalid month or year parameter.")
+    @ApiResponse(code = 401, message = "Unauthorized access.")
+    @ApiResponse(code = 409, message = "Entry for the specified date already exists.")
+    @ApiResponse(code = 500, message = "Internal server error.")
     @AuthorizedOnly
     @Put(BASE_PATH + "/{year}/{month}")
     public void putForYearAndMonth(HttpContext context) {
@@ -159,6 +187,11 @@ public class MonthlyValuesResource {
         context.getResponse().setBody(monthlyValues.toJson());
     }
 
+    @ApiDoc(description = "Sets the temporary monthly values for the current user. The request body must contain the following integer fields: operatingHoursHeating, operatingHoursWater, operatingHoursTwo, highTariffPower, lowTariffPower, householdPower, householdWater. These temporary values can be used for calculations or previews without affecting the actual stored monthly values.", summary = "Set temporary monthly values for the current user.", baseUrl = BASE_PATH)
+    @ApiResponse(code = 200, message = "Successful operation.")
+    @ApiResponse(code = 400, message = "Invalid month or year parameter.")
+    @ApiResponse(code = 401, message = "Unauthorized access.")
+    @ApiResponse(code = 500, message = "Internal server error.")
     @AuthorizedOnly
     @Put(BASE_PATH + "/temporary")
     public void putForTemporary(HttpContext context) {
@@ -193,18 +226,6 @@ public class MonthlyValuesResource {
 
         if  (!wasAdded) {
             ErrorResponses.internalError(context.getResponse(), "Failed to set temporary monthly values");
-            return;
-        }
-        context.getResponse().setCode(ResponseCodes.OK);
-    }
-
-    @AuthorizedOnly
-    @Delete(BASE_PATH)
-    public void resetData(HttpContext context) {
-        final UUID user = getCurrentUserId(context);
-        boolean success = service.reset(user);
-        if (!success) {
-            ErrorResponses.internalError(context.getResponse(), "Failed to reset monthly values");
             return;
         }
         context.getResponse().setCode(ResponseCodes.OK);

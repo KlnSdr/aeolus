@@ -15,6 +15,9 @@ import dobby.io.HttpContext;
 import dobby.io.response.ResponseCodes;
 import dobby.util.json.NewJson;
 import hades.annotations.AuthorizedOnly;
+import hades.apidocs.annotations.ApiDoc;
+import hades.apidocs.annotations.ApiResponse;
+import hades.apidocs.annotations.ApiResponses;
 import hades.common.ErrorResponses;
 
 import java.io.IOException;
@@ -41,6 +44,8 @@ public class ReportResource {
         this.mailService = mailService;
     }
 
+    @ApiDoc( summary = "Get all reports", description = "Returns all reports owned by the currently authenticated user", baseUrl = BASE_PATH)
+    @ApiResponse(code = 200, message = "OK")
     @AuthorizedOnly
     @Get(BASE_PATH)
     public void getAllReports(HttpContext context) {
@@ -54,6 +59,11 @@ public class ReportResource {
         context.getResponse().setBody(json);
     }
 
+    @ApiDoc(summary = "Delete report", description = "Deletes a report owned by the authenticated user by report ID", baseUrl = BASE_PATH)
+    @ApiResponse(code = 204, message = "Report deleted successfully")
+    @ApiResponse(code = 400, message = "Invalid report ID format")
+    @ApiResponse(code = 404, message = "Report not found")
+    @ApiResponse(code = 500, message = "Internal server error while deleting report")
     @AuthorizedOnly
     @Delete(BASE_PATH + "/id/{reportId}")
     public void deleteReport(HttpContext context) {
@@ -78,6 +88,10 @@ public class ReportResource {
         }
     }
 
+    @ApiDoc(summary = "Create report", description = "Creates a new report for the authenticated user. Supports scheduled and immediate triggers.", baseUrl = BASE_PATH)
+    @ApiResponse(code = 201, message = "Report created successfully")
+    @ApiResponse(code = 400, message = "Invalid report input or schedule definition")
+    @ApiResponse(code = 500, message = "Failed to create report")
     @AuthorizedOnly
     @Post(BASE_PATH)
     public void createReport(HttpContext context) {
@@ -131,6 +145,10 @@ public class ReportResource {
         }
     }
 
+    @ApiDoc(summary = "Render report", description = "Generates a rendered file (e.g. PDF) for a report for the current month and year", baseUrl = BASE_PATH)
+    @ApiResponse(code = 200, message = "File rendered successfully")
+    @ApiResponse(code = 404, message = "Report not found")
+    @ApiResponse(code = 500, message = "Rendering failure")
     @AuthorizedOnly
     @Get(BASE_PATH + "/id/{reportId}/render")
     public void renderReport(HttpContext context) {
