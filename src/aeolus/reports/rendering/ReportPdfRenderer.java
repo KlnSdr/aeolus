@@ -55,6 +55,10 @@ public class ReportPdfRenderer {
     }
 
     private StaticFile renderMonthReport(Report report, int month, int year) {
+        if (month == 0) {
+            month = 12;
+            year--;
+        }
         final TableValuesDTO tableValues = gatherTableValues(report, month, year, report.getReportFeatures().contains(ReportFeatures.AVERAGES));
         final List<Reading> readings = report.getReportFeatures().contains(ReportFeatures.TEMPERATURE_CURVE) ? List.of(readingService.find(report.getOwner(), year, month)) : List.of();
         final boolean enableTrends = report.getReportFeatures().contains(ReportFeatures.TREND);
