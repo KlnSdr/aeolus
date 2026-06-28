@@ -50,6 +50,13 @@ public class ReadingResource {
     @ApiResponse(code = 404, message = "No reading found.")
     @ApiResponse(code = 500, message = "Internal server error.")
     public void getLastReading(HttpContext context) {
+        final Optional<Reading> lastReading = readingService.findLastReading(getUserId(context));
+
+        if (lastReading.isPresent()) {
+            context.getResponse().setBody(lastReading.get().toJson());
+            return;
+        }
+
         int year = Year.now().getValue();
         Reading[] readings = readingService.find(getUserId(context), year);
 
@@ -68,8 +75,8 @@ public class ReadingResource {
 
         Arrays.sort(readings, Comparator.comparing(Reading::getDate));
 
-        final Reading lastReading = readings[readings.length - 1];
-        context.getResponse().setBody(lastReading.toJson());
+        final Reading reading = readings[readings.length - 1];
+        context.getResponse().setBody(reading.toJson());
     }
 
     @AuthorizedOnly

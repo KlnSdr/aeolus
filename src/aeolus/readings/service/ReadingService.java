@@ -1,6 +1,7 @@
 package aeolus.readings.service;
 
 import aeolus.exceptions.DuplicateEntryException;
+import aeolus.readings.LastReading;
 import aeolus.readings.Reading;
 import common.inject.api.Inject;
 import common.inject.api.RegisterFor;
@@ -8,6 +9,7 @@ import dobby.util.json.NewJson;
 import thot.connector.IConnector;
 import thot.janus.Janus;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static aeolus.util.IsoDate.toIsoDateString;
@@ -16,11 +18,27 @@ import static hades.common.Util.prependZero;
 @RegisterFor(ReadingService.class)
 public class ReadingService {
     public static final String bucketName = "aeolus_temperatureReadings";
+    public static final String bucketNameLastReading = "aeolus_lastTemperatureReadings";
     private final IConnector connector;
 
     @Inject
     public ReadingService(IConnector connector) {
         this.connector = connector;
+    }
+
+    public Optional<Reading> findLastReading(UUID owner) {
+        final LastReading lastReading = Janus.parse(connector.read(bucketNameLastReading, owner.toString(), NewJson.class), LastReading.class);
+        if (lastReading == null) {
+            return Optional.empty();
+        }
+
+        final String key = lastReading.getForeignKey();
+        final Reading reading = Janus.parse(connector.read(bucketName, key, NewJson.class), Reading.class);
+        if (reading == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(reading);
     }
 
     public Reading[] find(UUID owner, int year) {
@@ -77,7 +95,11 @@ public class ReadingService {
             throw new DuplicateEntryException("Reading for date " + toIsoDateString(reading.getDate()) + " already " + "exists");
         }
 
-        return connector.write(bucketName, reading.getKey(), reading.toStoreJson());
+        final LastReading lastReading = new LastReading();
+        lastReading.setOwner(reading.getOwner());
+        lastReading.setForeignKey(reading.getKey());
+
+        return connector.write(bucketName, reading.getKey(), reading.toStoreJson()) && connector.write(bucketNameLastReading, lastReading.getKey(), lastReading.toJson());
     }
 
 }
