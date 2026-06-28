@@ -34,6 +34,9 @@ td {
 
 .yearHeadingContainer button {
     font-weight: bolder;
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
 }
 
 .yearHeadingContainer {

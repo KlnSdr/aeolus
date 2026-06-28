@@ -35,13 +35,11 @@ public class ReportResource {
     private static final String BASE_PATH = "/rest/report";
     private final ReportService reportService;
     private final ReportPdfRenderer reportPdfRenderer;
-    private final MailService mailService;
 
     @Inject
-    public ReportResource(ReportService reportService,  ReportPdfRenderer reportPdfRenderer, MailService mailService) {
+    public ReportResource(ReportService reportService,  ReportPdfRenderer reportPdfRenderer) {
         this.reportService = reportService;
         this.reportPdfRenderer = reportPdfRenderer;
-        this.mailService = mailService;
     }
 
     @ApiDoc( summary = "Get all reports", description = "Returns all reports owned by the currently authenticated user", baseUrl = BASE_PATH)

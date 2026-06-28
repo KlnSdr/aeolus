@@ -2,7 +2,9 @@ package aeolus.readings.rest;
 
 import aeolus.exceptions.DuplicateEntryException;
 import aeolus.readings.MonthlyValues;
+import aeolus.readings.TariffPrices;
 import aeolus.readings.service.MonthlyValuesService;
+import aeolus.readings.service.TariffService;
 import common.inject.api.Inject;
 import common.inject.api.RegisterFor;
 import common.logger.Logger;
@@ -18,10 +20,10 @@ import hades.apidocs.annotations.ApiResponse;
 import hades.apidocs.annotations.ApiResponses;
 import hades.common.ErrorResponses;
 
+import java.time.LocalDate;
 import java.util.*;
 
-import static aeolus.util.IsoDate.isValidIsoDate;
-import static aeolus.util.IsoDate.parseIsoDate;
+import static aeolus.util.IsoDate.*;
 import static hades.common.Util.prependZero;
 import static hades.util.UserUtil.getCurrentUserId;
 
@@ -30,10 +32,12 @@ public class MonthlyValuesResource {
     private static final Logger LOGGER = new Logger(MonthlyValuesResource.class);
     private static final String BASE_PATH = "/rest/monthly-values";
     private final MonthlyValuesService service;
+    private final TariffService tariffService;
 
     @Inject
-    public MonthlyValuesResource(MonthlyValuesService service) {
+    public MonthlyValuesResource(MonthlyValuesService service, TariffService tariffService) {
         this.service = service;
+        this.tariffService = tariffService;
     }
 
     @ApiDoc(description = "Retrieves all monthly values for the current user. The endpoint returns an array of monthly values sorted by date.", summary = "Get all Monthly Values sorted by date.", baseUrl = BASE_PATH)
@@ -44,7 +48,34 @@ public class MonthlyValuesResource {
     @Get(BASE_PATH)
     public void getAll(HttpContext context) {
         final UUID user = getCurrentUserId(context);
-        sendResult(context, service.findByOwner(user));
+        final MonthlyValues[] monthlyValues = service.findByOwner(user);
+        Arrays.sort(monthlyValues, Comparator.comparing(MonthlyValues::getDate));
+        final TariffPrices[] tariffPrices = tariffService.findByOwner(user);
+        final List<NewJson> monthlyValuesJson = new ArrayList<>();
+
+        for (MonthlyValues values : monthlyValues) {
+            NewJson json = values.toJson();
+            boolean found = false;
+            int valuesYear = LocalDate.parse(toIsoDateString(values.getDate())).getYear();
+            for (TariffPrices prices : tariffPrices) {
+                if (prices.getYear() == valuesYear) {
+                    json.setJson("tariffPrices", prices.toJson());
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                final TariffPrices defaultTariff = new TariffPrices();
+                defaultTariff.setOwner(user);
+                defaultTariff.setYear(valuesYear);
+                json.setJson("tariffPrices", defaultTariff.toJson());
+            }
+            monthlyValuesJson.add(json);
+        }
+        final NewJson json = new NewJson();
+        List<Object> readingsList = List.of(monthlyValuesJson.toArray(NewJson[]::new));
+        json.setList("readings", readingsList);
+        context.getResponse().setBody(json);
     }
 
     @ApiDoc(description = "Retrieves all monthly values of the provided year for the current user. The endpoint returns an array of monthly values sorted by date.", summary = "Get all Monthly Values for {year} sorted by date.", baseUrl = BASE_PATH)
