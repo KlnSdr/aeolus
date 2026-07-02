@@ -10,6 +10,8 @@ import dobby.io.HttpContext;
 import dobby.io.response.ResponseCodes;
 import dobby.util.json.NewJson;
 import hades.annotations.AuthorizedOnly;
+import hades.apidocs.annotations.ApiDoc;
+import hades.apidocs.annotations.ApiResponse;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -28,6 +30,10 @@ public class TariffPricesResource {
         this.tariffService = tariffService;
     }
 
+    @ApiDoc(description = "Retrieves all tariff prices for the current user. The endpoint returns an array of tariff prices sorted by year.", summary = "Get all Tariff Prices sorted by year.", baseUrl = BASE_PATH)
+    @ApiResponse(code = 200, message = "Successful operation.")
+    @ApiResponse(code = 401, message = "Unauthorized access.")
+    @ApiResponse(code = 500, message = "Internal server error.")
     @AuthorizedOnly
     @Get(BASE_PATH)
     public void getAll(HttpContext context) {
@@ -35,6 +41,12 @@ public class TariffPricesResource {
         sendResult(context, tariffService.findByOwner(user));
     }
 
+    @ApiDoc(description = "Creates or updates the tariff prices for the specified year. The year must be a valid integer. The request body must contain the following non-negative integer fields: centsHighTariff, centsLowTariff, centsHouseholdPower.", summary = "Create or update tariff prices for a specific year.", baseUrl = BASE_PATH)
+    @ApiResponse(code = 201, message = "Successful operation.")
+    @ApiResponse(code = 400, message = "Invalid year parameter or request body.")
+    @ApiResponse(code = 401, message = "Unauthorized access.")
+    @ApiResponse(code = 500, message = "Internal server error.")
+    @AuthorizedOnly
     @Put(BASE_PATH + "/{year}")
     public void update(HttpContext context) {
         final int year;
