@@ -1,4 +1,4 @@
-module Signup exposing (..)
+module Signup.Signup exposing (..)
 
 import CommonStyles exposing (buttonStyle)
 import Css exposing (backgroundColor, block, border3, center, display, hex, inlineBlock, left, padding, px, solid, textAlign, textDecoration, underline)

@@ -2,12 +2,13 @@ module Main exposing (..)
 
 import Browser
 import Css exposing (..)
-import Html.Styled exposing (Html, div, h1, img, text, toUnstyled)
-import Html.Styled.Attributes exposing (alt, css, src)
-import Login exposing (doLogin, loginView)
-import MainView exposing (doGetUserInfo, getLastReading, mainView)
-import NavBar exposing (navBar, unauthNavBar)
-import Signup exposing (signupView)
+import Html.Styled exposing (Html, div, toUnstyled)
+import Html.Styled.Attributes exposing (css)
+import Landing.Landing as Landing exposing (view)
+import Login.Login exposing (doLogin, loginView)
+import Main.Main exposing (doGetUserInfo, getLastReading, mainView)
+import NavBar exposing (navBar)
+import Signup.Signup exposing (signupView)
 import Types exposing (..)
 
 
@@ -80,32 +81,11 @@ update msg model =
                             ( model, Cmd.none )
 
 
-logoStyle : List Style
-logoStyle =
-    [ maxWidth (vw 25)
-    , maxHeight (vh 25)
-    ]
-
-
-landingCenterContainer : List Style
-landingCenterContainer =
-    [ marginTop (vh 5)
-    , width (vw 50)
-    , marginLeft (vw 25)
-    , textAlign center
-    ]
-
-
 mainContent : Model -> List (Html Msg)
 mainContent model =
     case model.page of
         Landing ->
-            [ unauthNavBar
-            , div [ css landingCenterContainer ]
-                [ img [ css logoStyle, src "favicon.png", alt "Aeolus" ] []
-                , h1 [] [ text "Aeolus" ]
-                ]
-            ]
+            Landing.view
 
         Main ->
             List.concat [ [ navBar model.user ], mainView model ]
