@@ -1,11 +1,16 @@
-module NavBar exposing (navBar, unauthNavBar)
+module NavBar exposing (Msg(..), navBar, unauthNavBar)
 
 import CommonStyles exposing (buttonStyle)
 import Css exposing (..)
 import Html.Styled exposing (Html, button, div, h1, label, nav, text)
 import Html.Styled.Attributes exposing (css)
 import Html.Styled.Events exposing (onClick)
-import Types exposing (..)
+import Types exposing (User)
+
+
+type Msg
+    = LogoutClicked
+    | LoginClicked
 
 
 type alias NavigationLocation =
@@ -19,31 +24,36 @@ navBarElements =
     [ { location = "{{CONTEXT}}/month"
       , displayText = "Monatsübersicht"
       }
-    , { location = "{CONTEXT}}/year"
+    , { location = "{{CONTEXT}}/year"
       , displayText = "Jahresübersicht"
       }
-    , { location = "{CONTEXT}}/compare"
+    , { location = "{{CONTEXT}}/compare"
       , displayText = "Vergleichen"
       }
-    , { location = "{CONTEXT}}/dataquality"
+    , { location = "{{CONTEXT}}/dataquality"
       , displayText = "Datenqualität"
       }
-    , { location = "{CONTEXT}}/monthly-values"
+    , { location = "{{CONTEXT}}/monthly-values"
       , displayText = "Monatswerte"
       }
-    , { location = "{CONTEXT}}/reports"
+    , { location = "{{CONTEXT}}/reports"
       , displayText = "Berichte"
       }
-    , { location = "{CONTEXT}}/blanket"
+    , { location = "{{CONTEXT}}/blanket"
       , displayText = "Temperaturdecke"
       }
     ]
 
-userToName: Maybe User -> String
+
+userToName : Maybe User -> String
 userToName user =
-  case user of
-    Just u -> u.displayName
-    Nothing -> "..."
+    case user of
+        Just u ->
+            u.displayName
+
+        Nothing ->
+            "..."
+
 
 navBar : Maybe User -> Html Msg
 navBar user =
@@ -55,15 +65,11 @@ navBar user =
             [ div [ css navBarButtonsStyle ] (List.map (\e -> button [ css buttonStyle ] [ text e.displayText ]) navBarElements)
             , div [ css navBarRight ]
                 [ button [ css buttonStyle ] [ text "Nachrichten: 0" ]
-                , label [] [ text ("(" ++ (userToName user) ++ ")") ]
-                , button [ css buttonStyle, onClick (Goto Landing) ] [ text "logout" ]
+                , label [] [ text ("(" ++ userToName user ++ ")") ]
+                , button [ css buttonStyle, onClick LogoutClicked ] [ text "logout" ]
                 ]
             ]
         ]
-
-
-
--- TODO combine with navBar
 
 
 unauthNavBar : Html Msg
@@ -75,7 +81,7 @@ unauthNavBar =
         , div []
             [ div [ css navBarButtonsStyle ] []
             , div [ css navBarRight ]
-                [ button [ css buttonStyle, onClick (Goto Login) ] [ text "anmelden" ]
+                [ button [ css buttonStyle, onClick LoginClicked ] [ text "anmelden" ]
                 ]
             ]
         ]

@@ -1,16 +1,13 @@
-module Pages.Landing exposing (..)
+module Pages.Landing exposing (view)
 
 import Css exposing (..)
 import Html.Styled exposing (Html, div, h1, img, text)
 import Html.Styled.Attributes exposing (alt, css, src)
-import NavBar exposing (unauthNavBar)
-import Types exposing (..)
 
 
-view : List (Html Msg)
+view : List (Html msg)
 view =
-    [ unauthNavBar
-    , div [ css landingCenterContainer ]
+    [ div [ css landingCenterContainer ]
         [ img [ css logoStyle, src "favicon.png", alt "Aeolus" ] []
         , h1 [] [ text "Aeolus" ]
         ]

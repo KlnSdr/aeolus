@@ -1,15 +1,38 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import Browser
 import Css exposing (..)
 import Html.Styled exposing (Html, div, toUnstyled)
 import Html.Styled.Attributes exposing (css)
-import NavBar exposing (navBar)
-import Pages.Landing as Landing exposing (view)
-import Pages.Login exposing (doLogin, loginView)
-import Pages.Main exposing (doGetUserInfo, getLastReading, mainView)
-import Pages.Signup exposing (signupView)
-import Types exposing (..)
+import NavBar
+import Pages.Landing as Landing
+import Pages.Login as Login
+import Pages.Main as Dashboard
+import Pages.Signup as Signup
+import Types exposing (User)
+
+
+type Page
+    = Landing
+    | LoginPage Login.Model
+    | SignupPage Signup.Model
+    | DashboardPage Dashboard.Model
+
+
+type alias Model =
+    { page : Page
+    , user : Maybe User
+    }
+
+
+type Msg
+    = GotoLanding
+    | GotoLoginPage
+    | GotoSignupPage
+    | NavBarMsg NavBar.Msg
+    | LoginMsg Login.Msg
+    | SignupMsg Signup.Msg
+    | DashboardMsg Dashboard.Msg
 
 
 main : Program () Model Msg
@@ -22,79 +45,94 @@ main =
         }
 
 
-initModel : Model
-initModel =
-    { page = Landing
-    , user = Nothing
-    , lastReading = Nothing
-    }
-
-
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( initModel, Cmd.none )
+    ( { page = Landing, user = Nothing }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Goto page ->
-            case page of
-                Main ->
-                    ( { model | page = page }, doGetUserInfo )
+        GotoLanding ->
+            ( { model | page = Landing, user = Nothing }, Cmd.none )
+
+        GotoLoginPage ->
+            ( { model | page = LoginPage Login.init }, Cmd.none )
+
+        GotoSignupPage ->
+            ( { model | page = SignupPage Signup.init }, Cmd.none )
+
+        NavBarMsg navBarMsg ->
+            case navBarMsg of
+                NavBar.LogoutClicked ->
+                    update GotoLanding model
+
+                NavBar.LoginClicked ->
+                    update GotoLoginPage model
+
+        LoginMsg subMsg ->
+            case model.page of
+                LoginPage subModel ->
+                    let
+                        ( newSubModel, subCmd, out ) =
+                            Login.update subMsg subModel
+                    in
+                    case out of
+                        Login.NoOp ->
+                            ( { model | page = LoginPage newSubModel }, Cmd.map LoginMsg subCmd )
+
+                        Login.RequestSignup ->
+                            ( { model | page = SignupPage Signup.init }, Cmd.none )
+
+                        Login.LoggedInAs ->
+                            let
+                                ( dashboardModel, dashboardCmd ) =
+                                    Dashboard.init
+                            in
+                            ( { model | page = DashboardPage dashboardModel }
+                            , Cmd.map DashboardMsg dashboardCmd
+                            )
 
                 _ ->
-                    ( { model | page = page }, Cmd.none )
+                    -- A LoginMsg arriving while we're not on the login page
+                    -- would mean a stale Cmd fired after the user navigated
+                    -- away. Ignoring it is correct; logging would help spot
+                    -- if it ever actually happens.
+                    ( model, Cmd.none )
 
-        Action action ->
-            case action of
-                DoSignIn ->
-                    ( model, doLogin "klnsdr" "iamroot" )
+        SignupMsg subMsg ->
+            case model.page of
+                SignupPage subModel ->
+                    let
+                        ( newSubModel, subCmd, out ) =
+                            Signup.update subMsg subModel
+                    in
+                    case out of
+                        Signup.NoOp ->
+                            ( { model | page = SignupPage newSubModel }, Cmd.map SignupMsg subCmd )
 
-                DoSignUp ->
-                    update (Goto Main) model
+                        Signup.RequestLogin ->
+                            ( { model | page = LoginPage Login.init }, Cmd.none )
 
-        Response res ->
-            case res of
-                LoginResponse result ->
-                    case result of
-                        Ok _ ->
-                            update (Goto Main) model
+                        Signup.SignedUp ->
+                            update GotoLoginPage model
 
-                        Err _ ->
-                            ( model, Cmd.none )
+                _ ->
+                    ( model, Cmd.none )
 
-                UserResponse result ->
-                    case result of
-                        Ok user ->
-                            ( { model | user = Just user }, getLastReading )
+        DashboardMsg subMsg ->
+            case model.page of
+                DashboardPage subModel ->
+                    let
+                        ( newSubModel, subCmd ) =
+                            Dashboard.update subMsg subModel
+                    in
+                    ( { model | page = DashboardPage newSubModel, user = Dashboard.userOf newSubModel }
+                    , Cmd.map DashboardMsg subCmd
+                    )
 
-                        Err _ ->
-                            ( model, Cmd.none )
-
-                LastReadingResponse result ->
-                    case result of
-                        Ok lastReading ->
-                            ( { model | lastReading = Just lastReading }, Cmd.none )
-
-                        Err _ ->
-                            ( model, Cmd.none )
-
-
-mainContent : Model -> List (Html Msg)
-mainContent model =
-    case model.page of
-        Landing ->
-            Landing.view
-
-        Main ->
-            List.concat [ [ navBar model.user ], mainView model ]
-
-        Login ->
-            loginView
-
-        Signup ->
-            signupView
+                _ ->
+                    ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -110,3 +148,20 @@ view model =
             ]
         ]
         (mainContent model)
+
+
+mainContent : Model -> List (Html Msg)
+mainContent model =
+    case model.page of
+        Landing ->
+            Html.Styled.map NavBarMsg NavBar.unauthNavBar :: Landing.view
+
+        LoginPage subModel ->
+            List.map (Html.Styled.map LoginMsg) (Login.view subModel)
+
+        SignupPage subModel ->
+            List.map (Html.Styled.map SignupMsg) (Signup.view subModel)
+
+        DashboardPage subModel ->
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+                :: List.map (Html.Styled.map DashboardMsg) (Dashboard.view subModel)
