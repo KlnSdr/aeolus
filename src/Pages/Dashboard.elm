@@ -1,30 +1,31 @@
-module Pages.Main exposing (Model, Msg, init, update, userOf, view)
+module Pages.Dashboard exposing (Model, Msg, init, update, userOf, view)
 
 import Constants exposing (api_url, token)
 import Html.Styled exposing (Html, div, h1, p, text)
 import Http exposing (header, jsonBody, request)
 import Json.Decode as Decode
 import Json.Encode as Encode
+import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Types exposing (LastReading, User)
 
 
 type alias Model =
-    { user : Maybe User
-    , lastReading : Maybe LastReading
+    { user : WebData User
+    , lastReading : WebData LastReading
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { user = Nothing, lastReading = Nothing }
+    ( { user = Loading, lastReading = NotAsked }
     , doGetUserInfo
     )
 
 
 userOf : Model -> Maybe User
 userOf model =
-    model.user
+    RemoteData.toMaybe model.user
 
 
 type Msg
@@ -35,46 +36,41 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UserResponded (Ok user) ->
-            ( { model | user = Just user }, getLastReading )
+        UserResponded result ->
+            ( { model | user = RemoteData.fromResult result }
+            , case result of
+                Ok _ ->
+                    getLastReading
 
-        UserResponded (Err _) ->
-            ( model, Cmd.none )
+                Err _ ->
+                    Cmd.none
+            )
 
-        LastReadingResponded (Ok lastReading) ->
-            ( { model | lastReading = Just lastReading }, Cmd.none )
-
-        LastReadingResponded (Err _) ->
-            ( model, Cmd.none )
+        LastReadingResponded result ->
+            ( { model | lastReading = RemoteData.fromResult result }, Cmd.none )
 
 
 view : Model -> List (Html Msg)
 view model =
-    [ div []
-        [ h1 [] [ text (getLastReadingValue model.lastReading) ]
-        , p [] [ text ("vom: " ++ getLastReadingDate model.lastReading) ]
-        ]
-    ]
+    [ div [] (viewLastReading model.lastReading) ]
 
 
-getLastReadingValue : Maybe LastReading -> String
-getLastReadingValue lastReading =
-    case lastReading of
-        Just val ->
-            Round.round 1 val.value ++ " °C"
+viewLastReading : WebData LastReading -> List (Html msg)
+viewLastReading remoteReading =
+    case remoteReading of
+        NotAsked ->
+            [ h1 [] [ text "XY.Z °C" ], p [] [ text "vom: DD.MM.YYYY" ] ]
 
-        Nothing ->
-            "XY.Z °C"
+        Loading ->
+            [ h1 [] [ text "Loading..." ] ]
 
+        Failure _ ->
+            [ h1 [] [ text "Couldn't load the last reading." ] ]
 
-getLastReadingDate : Maybe LastReading -> String
-getLastReadingDate lastReading =
-    case lastReading of
-        Just val ->
-            val.date
-
-        Nothing ->
-            "DD.MM.YYYY"
+        Success reading ->
+            [ h1 [] [ text (Round.round 1 reading.value ++ " °C") ]
+            , p [] [ text ("vom: " ++ reading.date) ]
+            ]
 
 
 doGetUserInfo : Cmd Msg

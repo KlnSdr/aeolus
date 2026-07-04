@@ -7,7 +7,7 @@ import Html.Styled.Attributes exposing (css)
 import NavBar
 import Pages.Landing as Landing
 import Pages.Login as Login
-import Pages.Main as Dashboard
+import Pages.Dashboard as Dashboard
 import Pages.Signup as Signup
 import Types exposing (User)
 
