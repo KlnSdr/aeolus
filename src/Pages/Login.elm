@@ -1,4 +1,4 @@
-module Login.Login exposing (..)
+module Pages.Login exposing (..)
 
 import CommonStyles exposing (buttonStyle)
 import Constants exposing (api_url)

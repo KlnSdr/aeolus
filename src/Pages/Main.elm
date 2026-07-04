@@ -1,4 +1,4 @@
-module Main.Main exposing (..)
+module Pages.Main exposing (..)
 
 import Constants exposing (api_url, token)
 import Html.Styled exposing (Html, div, h1, p, text)

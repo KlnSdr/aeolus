@@ -4,11 +4,11 @@ import Browser
 import Css exposing (..)
 import Html.Styled exposing (Html, div, toUnstyled)
 import Html.Styled.Attributes exposing (css)
-import Landing.Landing as Landing exposing (view)
-import Login.Login exposing (doLogin, loginView)
-import Main.Main exposing (doGetUserInfo, getLastReading, mainView)
 import NavBar exposing (navBar)
-import Signup.Signup exposing (signupView)
+import Pages.Landing as Landing exposing (view)
+import Pages.Login exposing (doLogin, loginView)
+import Pages.Main exposing (doGetUserInfo, getLastReading, mainView)
+import Pages.Signup exposing (signupView)
 import Types exposing (..)
 
 

@@ -1,4 +1,4 @@
-module Landing.Landing exposing (..)
+module Pages.Landing exposing (..)
 
 import Css exposing (..)
 import Html.Styled exposing (Html, div, h1, img, text)
