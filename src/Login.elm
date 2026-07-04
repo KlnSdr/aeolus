@@ -1,10 +1,14 @@
 module Login exposing (..)
 
 import CommonStyles exposing (buttonStyle)
+import Constants exposing (api_url)
 import Css exposing (backgroundColor, block, border3, center, display, hex, inlineBlock, left, padding, px, solid, textAlign, textDecoration, underline)
 import Html.Styled exposing (Html, a, button, div, h1, input, table, td, text, tr)
 import Html.Styled.Attributes exposing (css, type_)
 import Html.Styled.Events exposing (onClick)
+import Http exposing (header, jsonBody)
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Types exposing (..)
 
 
@@ -31,3 +35,27 @@ loginView =
             ]
         ]
     ]
+
+
+doLogin : String -> String -> Cmd Msg
+doLogin username password =
+    Http.request
+        { method = "POST"
+        , headers = [ header "Content-Type" "application/json" ]
+        , url = api_url ++ "/rest/users/login"
+        , body =
+            jsonBody
+                (Encode.object
+                    [ ( "displayName", Encode.string username )
+                    , ( "password", Encode.string password )
+                    ]
+                )
+        , expect = Http.expectJson (Response << LoginResponse) redirectToDecoder
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+redirectToDecoder : Decode.Decoder String
+redirectToDecoder =
+    Decode.field "redirectTo" Decode.string
