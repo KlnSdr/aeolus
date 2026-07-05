@@ -1,15 +1,18 @@
 module Main exposing (main)
 
 import Browser
+import Browser.Navigation as Nav
 import Css exposing (..)
 import Html.Styled exposing (Html, div, toUnstyled)
 import Html.Styled.Attributes exposing (css)
 import NavBar
+import Pages.Dashboard as Dashboard
 import Pages.Landing as Landing
 import Pages.Login as Login
-import Pages.Dashboard as Dashboard
 import Pages.Signup as Signup
+import Route exposing (Route)
 import Types exposing (User)
+import Url exposing (Url)
 
 
 type Page
@@ -20,15 +23,15 @@ type Page
 
 
 type alias Model =
-    { page : Page
+    { key : Nav.Key
+    , page : Page
     , user : Maybe User
     }
 
 
 type Msg
-    = GotoLanding
-    | GotoLoginPage
-    | GotoSignupPage
+    = UrlChanged Url
+    | LinkClicked Browser.UrlRequest
     | NavBarMsg NavBar.Msg
     | LoginMsg Login.Msg
     | SignupMsg Signup.Msg
@@ -37,38 +40,61 @@ type Msg
 
 main : Program () Model Msg
 main =
-    Browser.element
+    Browser.application
         { init = init
         , update = update
-        , view = view >> toUnstyled
+        , view = view
         , subscriptions = \_ -> Sub.none
+        , onUrlChange = UrlChanged
+        , onUrlRequest = LinkClicked
         }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { page = Landing, user = Nothing }, Cmd.none )
+init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init _ url key =
+    changeRouteTo (Route.fromUrl url) { key = key, page = Landing, user = Nothing }
+
+
+changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo maybeRoute model =
+    case maybeRoute of
+        Nothing ->
+            ( { model | page = Landing }, Cmd.none )
+
+        Just Route.Landing ->
+            ( { model | page = Landing, user = Nothing }, Cmd.none )
+
+        Just Route.Login ->
+            ( { model | page = LoginPage Login.init }, Cmd.none )
+
+        Just Route.Signup ->
+            ( { model | page = SignupPage Signup.init }, Cmd.none )
+
+        Just Route.Dashboard ->
+            let
+                ( dashboardModel, dashboardCmd ) =
+                    Dashboard.init
+            in
+            ( { model | page = DashboardPage dashboardModel }, Cmd.map DashboardMsg dashboardCmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotoLanding ->
-            ( { model | page = Landing, user = Nothing }, Cmd.none )
+        UrlChanged url ->
+            changeRouteTo (Route.fromUrl url) model
 
-        GotoLoginPage ->
-            ( { model | page = LoginPage Login.init }, Cmd.none )
+        LinkClicked (Browser.Internal url) ->
+            ( model, Nav.pushUrl model.key (Url.toString url) )
 
-        GotoSignupPage ->
-            ( { model | page = SignupPage Signup.init }, Cmd.none )
+        LinkClicked (Browser.External href) ->
+            ( model, Nav.load href )
 
-        NavBarMsg navBarMsg ->
-            case navBarMsg of
-                NavBar.LogoutClicked ->
-                    update GotoLanding model
+        NavBarMsg NavBar.LogoutClicked ->
+            ( model, Nav.pushUrl model.key (Route.toPath Route.Landing) )
 
-                NavBar.LoginClicked ->
-                    update GotoLoginPage model
+        NavBarMsg NavBar.LoginClicked ->
+            ( model, Nav.pushUrl model.key (Route.toPath Route.Login) )
 
         LoginMsg subMsg ->
             case model.page of
@@ -82,16 +108,10 @@ update msg model =
                             ( { model | page = LoginPage newSubModel }, Cmd.map LoginMsg subCmd )
 
                         Login.RequestSignup ->
-                            ( { model | page = SignupPage Signup.init }, Cmd.none )
+                            ( model, Nav.pushUrl model.key (Route.toPath Route.Signup) )
 
                         Login.LoggedInAs ->
-                            let
-                                ( dashboardModel, dashboardCmd ) =
-                                    Dashboard.init
-                            in
-                            ( { model | page = DashboardPage dashboardModel }
-                            , Cmd.map DashboardMsg dashboardCmd
-                            )
+                            ( model, Nav.pushUrl model.key (Route.toPath Route.Dashboard) )
 
                 _ ->
                     -- A LoginMsg arriving while we're not on the login page
@@ -112,10 +132,10 @@ update msg model =
                             ( { model | page = SignupPage newSubModel }, Cmd.map SignupMsg subCmd )
 
                         Signup.RequestLogin ->
-                            ( { model | page = LoginPage Login.init }, Cmd.none )
+                            ( model, Nav.pushUrl model.key (Route.toPath Route.Login) )
 
                         Signup.SignedUp ->
-                            update GotoLoginPage model
+                            ( model, Nav.pushUrl model.key (Route.toPath Route.Login) )
 
                 _ ->
                     ( model, Cmd.none )
@@ -135,8 +155,8 @@ update msg model =
                     ( model, Cmd.none )
 
 
-view : Model -> Html Msg
-view model =
+viewBody : Model -> Html Msg
+viewBody model =
     div
         [ css
             [ margin (px 0)
@@ -148,6 +168,13 @@ view model =
             ]
         ]
         (mainContent model)
+
+
+view : Model -> Browser.Document Msg
+view model =
+    { title = "Aeolus"
+    , body = [ toUnstyled (viewBody model) ]
+    }
 
 
 mainContent : Model -> List (Html Msg)
