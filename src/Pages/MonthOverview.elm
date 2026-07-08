@@ -129,7 +129,13 @@ renderChart readings model =
                     points
                 , C.each model.hovering <|
                     \_ item ->
-                        [ C.tooltip item [] [] [ Html.text (Round.round 1 (CI.getY item) ++ " °C") ] ]
+                        [ C.tooltip item
+                            []
+                            []
+                            [ (CI.getX item |> round |> formatRataDie) ++ ": " |> Html.text
+                            , Html.text (Round.round 1 (CI.getY item) ++ " °C")
+                            ]
+                        ]
                 ]
             )
         ]
