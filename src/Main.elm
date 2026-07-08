@@ -9,8 +9,9 @@ import NavBar
 import Pages.Dashboard as Dashboard
 import Pages.Landing as Landing
 import Pages.Login as Login
+import Pages.MonthOverview as MonthOverview
 import Pages.Signup as Signup
-import Route exposing (Route)
+import Route exposing (Route(..))
 import Types exposing (User)
 import Url exposing (Url)
 
@@ -20,6 +21,7 @@ type Page
     | LoginPage Login.Model
     | SignupPage Signup.Model
     | DashboardPage Dashboard.Model
+    | MonthlyOverviewPage MonthOverview.Model
 
 
 type alias Model =
@@ -36,6 +38,7 @@ type Msg
     | LoginMsg Login.Msg
     | SignupMsg Signup.Msg
     | DashboardMsg Dashboard.Msg
+    | MonthOverviewMsg MonthOverview.Msg
 
 
 main : Program () Model Msg
@@ -77,6 +80,13 @@ changeRouteTo maybeRoute model =
             in
             ( { model | page = DashboardPage dashboardModel }, Cmd.map DashboardMsg dashboardCmd )
 
+        Just Route.MonthlyOverview ->
+            let
+                ( monthOverview, monthCmd ) =
+                    MonthOverview.init
+            in
+            ( { model | page = MonthlyOverviewPage monthOverview }, Cmd.map MonthOverviewMsg monthCmd )
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -95,6 +105,9 @@ update msg model =
 
         NavBarMsg NavBar.LoginClicked ->
             ( model, Nav.pushUrl model.key (Route.toPath Route.Login) )
+
+        NavBarMsg (NavBar.NavElementClicked location) ->
+            ( model, Nav.pushUrl model.key (Route.toPath location) )
 
         LoginMsg subMsg ->
             case model.page of
@@ -154,6 +167,20 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        MonthOverviewMsg subMsg ->
+            case model.page of
+                MonthlyOverviewPage subModel ->
+                    let
+                        ( newSubModel, subCmd ) =
+                            MonthOverview.update subMsg subModel
+                    in
+                    ( { model | page = MonthlyOverviewPage newSubModel, user = MonthOverview.userOf newSubModel }
+                    , Cmd.map MonthOverviewMsg subCmd
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 viewBody : Model -> Html Msg
 viewBody model =
@@ -192,3 +219,7 @@ mainContent model =
         DashboardPage subModel ->
             Html.Styled.map NavBarMsg (NavBar.navBar model.user)
                 :: List.map (Html.Styled.map DashboardMsg) (Dashboard.view subModel)
+
+        MonthlyOverviewPage subModel ->
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+                :: List.map (Html.Styled.map MonthOverviewMsg) (MonthOverview.view subModel)

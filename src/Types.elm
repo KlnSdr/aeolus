@@ -1,4 +1,4 @@
-module Types exposing (LastReading, User)
+module Types exposing (Reading, User)
 
 
 type alias User =
@@ -8,7 +8,7 @@ type alias User =
     }
 
 
-type alias LastReading =
+type alias Reading =
     { value : Float
     , date : String
     }

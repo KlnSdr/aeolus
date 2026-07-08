@@ -5,12 +5,14 @@ import Css exposing (..)
 import Html.Styled exposing (Html, button, div, h1, label, nav, text)
 import Html.Styled.Attributes exposing (css)
 import Html.Styled.Events exposing (onClick)
+import Route exposing (Route(..))
 import Types exposing (User)
 
 
 type Msg
     = LogoutClicked
     | LoginClicked
+    | NavElementClicked Route
 
 
 type alias NavigationLocation =
@@ -62,7 +64,7 @@ navBar user =
         ]
         [ h1 [ css navHeadingStyle ] [ text "Aeolus" ]
         , div []
-            [ div [ css navBarButtonsStyle ] (List.map (\e -> button [ css buttonStyle ] [ text e.displayText ]) navBarElements)
+            [ div [ css navBarButtonsStyle ] (List.map (\e -> button [ css buttonStyle, onClick (NavElementClicked MonthlyOverview) ] [ text e.displayText ]) navBarElements)
             , div [ css navBarRight ]
                 [ button [ css buttonStyle ] [ text "Nachrichten: 0" ]
                 , label [] [ text ("(" ++ userToName user ++ ")") ]

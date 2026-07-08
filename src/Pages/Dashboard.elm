@@ -7,12 +7,12 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
-import Types exposing (LastReading, User)
+import Types exposing (Reading, User)
 
 
 type alias Model =
     { user : WebData User
-    , lastReading : WebData LastReading
+    , lastReading : WebData Reading
     }
 
 
@@ -30,7 +30,7 @@ userOf model =
 
 type Msg
     = UserResponded (Result Http.Error User)
-    | LastReadingResponded (Result Http.Error LastReading)
+    | LastReadingResponded (Result Http.Error Reading)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -55,7 +55,7 @@ view model =
     [ div [] (viewLastReading model.lastReading) ]
 
 
-viewLastReading : WebData LastReading -> List (Html msg)
+viewLastReading : WebData Reading -> List (Html msg)
 viewLastReading remoteReading =
     case remoteReading of
         NotAsked ->
@@ -107,8 +107,8 @@ getLastReading =
         }
 
 
-lastReadingDecoder : Decode.Decoder LastReading
+lastReadingDecoder : Decode.Decoder Reading
 lastReadingDecoder =
-    Decode.map2 LastReading
+    Decode.map2 Reading
         (Decode.field "value" Decode.float)
         (Decode.field "date" Decode.string)

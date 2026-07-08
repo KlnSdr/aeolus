@@ -9,6 +9,7 @@ type Route
     | Login
     | Signup
     | Dashboard
+    | MonthlyOverview
 
 
 parser : Parser (Route -> a) a
@@ -17,6 +18,7 @@ parser =
         [ Parser.map Landing (s "landing")
         , Parser.map Login (s "login")
         , Parser.map Signup (s "signup")
+        , Parser.map MonthlyOverview (s "month")
         , Parser.map Dashboard top
         ]
 
@@ -29,7 +31,17 @@ fromUrl url =
 toPath : Route -> String
 toPath route =
     case route of
-        Landing -> "/landing"
-        Login -> "/login"
-        Signup -> "/signup"
-        Dashboard -> "/"
+        Landing ->
+            "/landing"
+
+        Login ->
+            "/login"
+
+        Signup ->
+            "/signup"
+
+        Dashboard ->
+            "/"
+
+        MonthlyOverview ->
+            "/month"
