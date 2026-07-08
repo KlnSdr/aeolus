@@ -4,18 +4,20 @@ import Chart as C
 import Chart.Attributes as CA
 import Chart.Events as CE
 import Chart.Item as CI
-import Constants exposing (api_url, token)
-import Css exposing (marginLeft, marginTop, maxHeight, maxWidth, pct, property, px, width)
+import Constants exposing (api_url, intToMonth, monthToInt, months, token)
+import Css exposing (center, marginLeft, marginTop, maxHeight, maxWidth, pct, property, px, textAlign, width)
 import Css.Global exposing (global, selector)
 import Html
-import Html.Styled exposing (Html, div, fromUnstyled, p, text)
-import Html.Styled.Attributes exposing (class, css)
+import Html.Styled exposing (Html, div, fromUnstyled, option, p, select, text)
+import Html.Styled.Attributes exposing (class, css, value)
+import Html.Styled.Events exposing (onInput)
 import Http exposing (header, jsonBody, request)
 import Json.Decode as Decode
 import Json.Encode as Encode
+import List exposing (map, reverse)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
-import String exposing (fromInt)
+import String exposing (fromInt, toInt)
 import Types exposing (Reading, User)
 
 
@@ -23,12 +25,14 @@ type alias Model =
     { user : WebData User
     , readings : WebData (List Reading)
     , hovering : List (CI.One { x : Float, y : Float } CI.Dot)
+    , year : Int
+    , month : Int
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { user = Loading, readings = NotAsked, hovering = [] }
+    ( { user = Loading, readings = NotAsked, hovering = [], year = 2026, month = 1 }
     , doGetUserInfo
     )
 
@@ -38,10 +42,27 @@ userOf model =
     RemoteData.toMaybe model.user
 
 
+type SelectElement
+    = Year
+    | Month
+
+
 type Msg
     = UserResponded (Result Http.Error User)
     | ReadingResponded (Result Http.Error (List Reading))
     | OnHover (List (CI.One { x : Float, y : Float } CI.Dot))
+    | LoadReadings Int Int
+    | SelectChanged SelectElement String
+
+
+toInt : String -> Int -> Int
+toInt str default =
+    case str |> String.toInt of
+        Just val ->
+            val
+
+        Nothing ->
+            default
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -51,7 +72,7 @@ update msg model =
             ( { model | user = RemoteData.fromResult result }
             , case result of
                 Ok _ ->
-                    loadReadingsForMonth
+                    loadReadingsForMonth model.year model.month
 
                 Err _ ->
                     Cmd.none
@@ -60,24 +81,50 @@ update msg model =
         ReadingResponded result ->
             ( { model | readings = RemoteData.fromResult result }, Cmd.none )
 
+        LoadReadings year month ->
+            ( model, loadReadingsForMonth year month )
+
         OnHover hovering ->
             ( { model | hovering = hovering }, Cmd.none )
+
+        SelectChanged selectType value ->
+            case selectType of
+                Year ->
+                    ( { model | year = toInt value 0 }, loadReadingsForMonth (toInt value 0) model.month )
+
+                Month ->
+                    ( { model | month = monthToInt value }, loadReadingsForMonth model.year (monthToInt value) )
 
 
 view : Model -> List (Html Msg)
 view model =
-    case model.readings of
-        NotAsked ->
-            [ p [] [ text "X" ] ]
+    [ div
+        [ css
+            [ width (pct 50)
+            , maxHeight (pct 25)
+            , property "aspect-ratio" "2 / 1"
+            , marginLeft (pct 25)
+            , marginTop (px 50)
+            , textAlign center
+            ]
+        ]
+        [ select [ value (intToMonth (model.month - 1)), onInput (SelectChanged Month) ] (months |> map (\m -> option [] [ text m ]))
+        , select [ value (model.year |> fromInt), onInput (SelectChanged Year) ]
+            (List.range 2000 2026 |> reverse |> map (\e -> option [] [ text (fromInt e) ]))
+        , case model.readings of
+            NotAsked ->
+                p [] [ text "Loading..." ]
 
-        Loading ->
-            [ p [] [ text "Loading..." ] ]
+            Loading ->
+                p [] [ text "Loading..." ]
 
-        Failure _ ->
-            [ p [] [ text "Couldn't load readings." ] ]
+            Failure _ ->
+                p [] [ text "Couldn't load readings." ]
 
-        Success readings ->
-            [ renderChart readings model ]
+            Success readings ->
+                renderChart readings model
+        ]
+    ]
 
 
 renderChart : List Reading -> Model -> Html Msg
@@ -94,11 +141,7 @@ renderChart readings model =
     div
         [ class "month-chart"
         , css
-            [ width (pct 50)
-            , maxHeight (pct 25)
-            , property "aspect-ratio" "2 / 1"
-            , marginLeft (pct 25)
-            , marginTop (px 50)
+            [ marginTop (px 50)
             ]
         ]
         [ global
@@ -116,13 +159,15 @@ renderChart readings model =
                 , CE.onMouseMove OnHover (CE.getNearest CI.dots)
                 , CE.onMouseLeave (OnHover [])
                 ]
-                [ C.xAxis []
+                [ C.grid [ CA.color "#bbb" ]
+                , C.xAxis [ CA.color "black" ]
                 , C.xLabels
                     [ CA.amount 8
                     , CA.format (\x -> formatRataDie (round x))
+                    , CA.color "black"
                     ]
-                , C.yAxis []
-                , C.yLabels [ CA.withGrid ]
+                , C.yAxis [ CA.color "black" ]
+                , C.yLabels [ CA.withGrid, CA.color "black" ]
                 , C.series .x
                     [ C.interpolated .y [ CA.monotone, CA.color "#00008b" ] [ CA.circle ]
                     ]
@@ -162,11 +207,11 @@ userInfoDecoder =
         (Decode.field "id" Decode.string)
 
 
-loadReadingsForMonth : Cmd Msg
-loadReadingsForMonth =
+loadReadingsForMonth : Int -> Int -> Cmd Msg
+loadReadingsForMonth year month =
     request
         { method = "GET"
-        , url = api_url ++ "/rest/readings/2026/2"
+        , url = api_url ++ "/rest/readings/" ++ fromInt year ++ "/" ++ fromInt month
         , headers = [ header "Hades-Login-Token" token ]
         , expect = Http.expectJson ReadingResponded readingsDecoder
         , body = jsonBody (Encode.object [])
