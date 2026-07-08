@@ -1,7 +1,7 @@
-module Pages.MonthOverview exposing (Model, Msg, init, update, userOf, view)
+module Pages.YearOverview exposing (Model, Msg, init, update, userOf, view)
 
 import Components.TemperatureProfileChart as Chart
-import Constants exposing (api_url, intToMonth, monthToInt, months, token)
+import Constants exposing (api_url, token)
 import Css exposing (center, marginLeft, marginTop, pct, px, textAlign, width)
 import Html.Styled exposing (Html, div, map, option, p, select, text)
 import Html.Styled.Attributes exposing (css, value)
@@ -21,13 +21,12 @@ type alias Model =
     , readings : WebData (List Reading)
     , chart : Chart.Model
     , year : Int
-    , month : Int
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { user = Loading, readings = NotAsked, chart = Chart.init, year = 2026, month = 1 }
+    ( { user = Loading, readings = NotAsked, chart = Chart.init, year = 2026 }
     , doGetUserInfo
     )
 
@@ -39,14 +38,13 @@ userOf model =
 
 type SelectElement
     = Year
-    | Month
 
 
 type Msg
     = UserResponded (Result Http.Error User)
     | ReadingResponded (Result Http.Error (List Reading))
     | ChartMsg Chart.Msg
-    | LoadReadings Int Int
+    | LoadReadings Int
     | SelectChanged SelectElement String
 
 
@@ -67,7 +65,7 @@ update msg model =
             ( { model | user = RemoteData.fromResult result }
             , case result of
                 Ok _ ->
-                    loadReadingsForMonth model.year model.month
+                    loadReadingsForYear model.year
 
                 Err _ ->
                     Cmd.none
@@ -76,8 +74,8 @@ update msg model =
         ReadingResponded result ->
             ( { model | readings = RemoteData.fromResult result }, Cmd.none )
 
-        LoadReadings year month ->
-            ( model, loadReadingsForMonth year month )
+        LoadReadings year ->
+            ( model, loadReadingsForYear year )
 
         ChartMsg subMsg ->
             ( { model | chart = Chart.update subMsg model.chart }, Cmd.none )
@@ -85,10 +83,7 @@ update msg model =
         SelectChanged selectType value ->
             case selectType of
                 Year ->
-                    ( { model | year = toInt value 0 }, loadReadingsForMonth (toInt value 0) model.month )
-
-                Month ->
-                    ( { model | month = monthToInt value }, loadReadingsForMonth model.year (monthToInt value) )
+                    ( { model | year = toInt value 0 }, loadReadingsForYear (toInt value 0) )
 
 
 view : Model -> List (Html Msg)
@@ -102,8 +97,7 @@ view model =
             , textAlign center
             ]
         ]
-        [ select [ value (intToMonth (model.month - 1)), onInput (SelectChanged Month) ] (months |> List.map (\m -> option [] [ text m ]))
-        , select [ value (model.year |> fromInt), onInput (SelectChanged Year) ]
+        [ select [ value (model.year |> fromInt), onInput (SelectChanged Year) ]
             (List.range 2000 2026 |> reverse |> List.map (\e -> option [] [ text (fromInt e) ]))
         , case model.readings of
             NotAsked ->
@@ -167,11 +161,11 @@ userInfoDecoder =
         (Decode.field "id" Decode.string)
 
 
-loadReadingsForMonth : Int -> Int -> Cmd Msg
-loadReadingsForMonth year month =
+loadReadingsForYear : Int -> Cmd Msg
+loadReadingsForYear year =
     request
         { method = "GET"
-        , url = api_url ++ "/rest/readings/" ++ fromInt year ++ "/" ++ fromInt month
+        , url = api_url ++ "/rest/readings/" ++ fromInt year
         , headers = [ header "Hades-Login-Token" token ]
         , expect = Http.expectJson ReadingResponded readingsDecoder
         , body = jsonBody (Encode.object [])

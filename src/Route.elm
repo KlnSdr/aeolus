@@ -10,6 +10,7 @@ type Route
     | Signup
     | Dashboard
     | MonthlyOverview
+    | YearlyOverview
 
 
 parser : Parser (Route -> a) a
@@ -19,6 +20,7 @@ parser =
         , Parser.map Login (s "login")
         , Parser.map Signup (s "signup")
         , Parser.map MonthlyOverview (s "month")
+        , Parser.map YearlyOverview (s "year")
         , Parser.map Dashboard top
         ]
 
@@ -45,3 +47,6 @@ toPath route =
 
         MonthlyOverview ->
             "/month"
+
+        YearlyOverview ->
+            "/year"

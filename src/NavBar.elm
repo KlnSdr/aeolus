@@ -16,32 +16,32 @@ type Msg
 
 
 type alias NavigationLocation =
-    { location : String
+    { location : Route
     , displayText : String
     }
 
 
 navBarElements : List NavigationLocation
 navBarElements =
-    [ { location = "{{CONTEXT}}/month"
+    [ { location = MonthlyOverview
       , displayText = "Monatsübersicht"
       }
-    , { location = "{{CONTEXT}}/year"
+    , { location = YearlyOverview
       , displayText = "Jahresübersicht"
       }
-    , { location = "{{CONTEXT}}/compare"
+    , { location = MonthlyOverview
       , displayText = "Vergleichen"
       }
-    , { location = "{{CONTEXT}}/dataquality"
+    , { location = MonthlyOverview
       , displayText = "Datenqualität"
       }
-    , { location = "{{CONTEXT}}/monthly-values"
+    , { location = MonthlyOverview
       , displayText = "Monatswerte"
       }
-    , { location = "{{CONTEXT}}/reports"
+    , { location = MonthlyOverview
       , displayText = "Berichte"
       }
-    , { location = "{{CONTEXT}}/blanket"
+    , { location = MonthlyOverview
       , displayText = "Temperaturdecke"
       }
     ]
@@ -64,7 +64,7 @@ navBar user =
         ]
         [ h1 [ css navHeadingStyle ] [ text "Aeolus" ]
         , div []
-            [ div [ css navBarButtonsStyle ] (List.map (\e -> button [ css buttonStyle, onClick (NavElementClicked MonthlyOverview) ] [ text e.displayText ]) navBarElements)
+            [ div [ css navBarButtonsStyle ] (List.map (\e -> button [ css buttonStyle, onClick (NavElementClicked e.location) ] [ text e.displayText ]) navBarElements)
             , div [ css navBarRight ]
                 [ button [ css buttonStyle ] [ text "Nachrichten: 0" ]
                 , label [] [ text ("(" ++ userToName user ++ ")") ]

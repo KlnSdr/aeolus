@@ -11,6 +11,7 @@ import Pages.Landing as Landing
 import Pages.Login as Login
 import Pages.MonthOverview as MonthOverview
 import Pages.Signup as Signup
+import Pages.YearOverview as YearOverview
 import Route exposing (Route(..))
 import Types exposing (User)
 import Url exposing (Url)
@@ -22,6 +23,7 @@ type Page
     | SignupPage Signup.Model
     | DashboardPage Dashboard.Model
     | MonthlyOverviewPage MonthOverview.Model
+    | YearlyOverviewPage YearOverview.Model
 
 
 type alias Model =
@@ -39,6 +41,7 @@ type Msg
     | SignupMsg Signup.Msg
     | DashboardMsg Dashboard.Msg
     | MonthOverviewMsg MonthOverview.Msg
+    | YearOverviewMsg YearOverview.Msg
 
 
 main : Program () Model Msg
@@ -86,6 +89,13 @@ changeRouteTo maybeRoute model =
                     MonthOverview.init
             in
             ( { model | page = MonthlyOverviewPage monthOverview }, Cmd.map MonthOverviewMsg monthCmd )
+
+        Just Route.YearlyOverview ->
+            let
+                ( yearOverview, yearCmd ) =
+                    YearOverview.init
+            in
+            ( { model | page = YearlyOverviewPage yearOverview }, Cmd.map YearOverviewMsg yearCmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -181,6 +191,20 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        YearOverviewMsg subMsg ->
+            case model.page of
+                YearlyOverviewPage subModel ->
+                    let
+                        ( newSubModel, subCmd ) =
+                            YearOverview.update subMsg subModel
+                    in
+                    ( { model | page = YearlyOverviewPage newSubModel, user = YearOverview.userOf newSubModel }
+                    , Cmd.map YearOverviewMsg subCmd
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 viewBody : Model -> Html Msg
 viewBody model =
@@ -223,3 +247,7 @@ mainContent model =
         MonthlyOverviewPage subModel ->
             Html.Styled.map NavBarMsg (NavBar.navBar model.user)
                 :: List.map (Html.Styled.map MonthOverviewMsg) (MonthOverview.view subModel)
+
+        YearlyOverviewPage subModel ->
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+                :: List.map (Html.Styled.map YearOverviewMsg) (YearOverview.view subModel)
