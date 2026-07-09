@@ -18,7 +18,7 @@ FROM gcr.io/distroless/java21
 
 WORKDIR /app
 
- COPY --from=builder /app/build/aeolus-0.16.jar /app/app.jar
+COPY --from=builder /app/build/*.jar /app/app.jar
 COPY --from=typst /typst /usr/local/bin/typst
 
 EXPOSE 3333
