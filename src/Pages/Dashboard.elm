@@ -1,13 +1,11 @@
 module Pages.Dashboard exposing (Model, Msg, init, update, userOf, view)
 
-import Constants exposing (api_url, token)
 import Html.Styled exposing (Html, div, h1, p, text)
-import Http exposing (header, jsonBody, request)
-import Json.Decode as Decode
-import Json.Encode as Encode
+import Http
+import Readings exposing (Reading)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
-import Types exposing (Reading, User)
+import Users exposing (User)
 
 
 type alias Model =
@@ -19,7 +17,7 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { user = Loading, lastReading = NotAsked }
-    , doGetUserInfo
+    , Users.info UserResponded
     )
 
 
@@ -40,7 +38,7 @@ update msg model =
             ( { model | user = RemoteData.fromResult result }
             , case result of
                 Ok _ ->
-                    getLastReading
+                    Readings.last LastReadingResponded
 
                 Err _ ->
                     Cmd.none
@@ -71,44 +69,3 @@ viewLastReading remoteReading =
             [ h1 [] [ text (Round.round 1 reading.value ++ " °C") ]
             , p [] [ text ("vom: " ++ reading.date) ]
             ]
-
-
-doGetUserInfo : Cmd Msg
-doGetUserInfo =
-    request
-        { method = "GET"
-        , url = api_url ++ "/rest/users/loginuserinfo"
-        , headers = [ header "Hades-Login-Token" token ]
-        , expect = Http.expectJson UserResponded userInfoDecoder
-        , body = jsonBody (Encode.object [])
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-
-userInfoDecoder : Decode.Decoder User
-userInfoDecoder =
-    Decode.map3 User
-        (Decode.field "mail" Decode.string)
-        (Decode.field "displayName" Decode.string)
-        (Decode.field "id" Decode.string)
-
-
-getLastReading : Cmd Msg
-getLastReading =
-    request
-        { method = "GET"
-        , url = api_url ++ "/rest/readings/last"
-        , headers = [ header "Hades-Login-Token" token ]
-        , expect = Http.expectJson LastReadingResponded lastReadingDecoder
-        , body = jsonBody (Encode.object [])
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-
-lastReadingDecoder : Decode.Decoder Reading
-lastReadingDecoder =
-    Decode.map2 Reading
-        (Decode.field "value" Decode.float)
-        (Decode.field "date" Decode.string)

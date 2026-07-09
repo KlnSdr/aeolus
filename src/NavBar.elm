@@ -6,7 +6,7 @@ import Html.Styled exposing (Html, button, div, h1, label, nav, text)
 import Html.Styled.Attributes exposing (css)
 import Html.Styled.Events exposing (onClick)
 import Route exposing (Route(..))
-import Types exposing (User)
+import Users exposing (User)
 
 
 type Msg

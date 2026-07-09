@@ -1,19 +1,19 @@
 module Pages.MonthOverview exposing (Model, Msg, init, update, userOf, view)
 
 import Components.TemperatureProfileChart as Chart
-import Constants exposing (api_url, intToMonth, monthToInt, months, token)
+import Constants exposing (intToMonth, monthToInt, months)
 import Css exposing (center, marginLeft, marginTop, pct, px, textAlign, width)
+import Dates exposing (formatRataDie, parseDateToRataDie)
 import Html.Styled exposing (Html, div, map, option, p, select, text)
 import Html.Styled.Attributes exposing (css, value)
 import Html.Styled.Events exposing (onInput)
-import Http exposing (header, jsonBody, request)
-import Json.Decode as Decode
-import Json.Encode as Encode
+import Http
 import List exposing (reverse)
+import Readings exposing (Reading)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import String exposing (fromInt, toInt)
-import Types exposing (Reading, User)
+import Users exposing (User)
 
 
 type alias Model =
@@ -28,7 +28,7 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { user = Loading, readings = NotAsked, chart = Chart.init, year = 2026, month = 1 }
-    , doGetUserInfo
+    , Users.info UserResponded
     )
 
 
@@ -67,7 +67,7 @@ update msg model =
             ( { model | user = RemoteData.fromResult result }
             , case result of
                 Ok _ ->
-                    loadReadingsForMonth model.year model.month
+                    Readings.forMonth ReadingResponded model.year model.month
 
                 Err _ ->
                     Cmd.none
@@ -77,7 +77,7 @@ update msg model =
             ( { model | readings = RemoteData.fromResult result }, Cmd.none )
 
         LoadReadings year month ->
-            ( model, loadReadingsForMonth year month )
+            ( model, Readings.forMonth ReadingResponded year month )
 
         ChartMsg subMsg ->
             ( { model | chart = Chart.update subMsg model.chart }, Cmd.none )
@@ -85,10 +85,10 @@ update msg model =
         SelectChanged selectType value ->
             case selectType of
                 Year ->
-                    ( { model | year = toInt value 0 }, loadReadingsForMonth (toInt value 0) model.month )
+                    ( { model | year = toInt value 0 }, Readings.forMonth ReadingResponded (toInt value 0) model.month )
 
                 Month ->
-                    ( { model | month = monthToInt value }, loadReadingsForMonth model.year (monthToInt value) )
+                    ( { model | month = monthToInt value }, Readings.forMonth ReadingResponded model.year (monthToInt value) )
 
 
 view : Model -> List (Html Msg)
@@ -144,159 +144,3 @@ renderChart readings model =
             }
             model.chart
         )
-
-
-doGetUserInfo : Cmd Msg
-doGetUserInfo =
-    request
-        { method = "GET"
-        , url = api_url ++ "/rest/users/loginuserinfo"
-        , headers = [ header "Hades-Login-Token" token ]
-        , expect = Http.expectJson UserResponded userInfoDecoder
-        , body = jsonBody (Encode.object [])
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-
-userInfoDecoder : Decode.Decoder User
-userInfoDecoder =
-    Decode.map3 User
-        (Decode.field "mail" Decode.string)
-        (Decode.field "displayName" Decode.string)
-        (Decode.field "id" Decode.string)
-
-
-loadReadingsForMonth : Int -> Int -> Cmd Msg
-loadReadingsForMonth year month =
-    request
-        { method = "GET"
-        , url = api_url ++ "/rest/readings/" ++ fromInt year ++ "/" ++ fromInt month
-        , headers = [ header "Hades-Login-Token" token ]
-        , expect = Http.expectJson ReadingResponded readingsDecoder
-        , body = jsonBody (Encode.object [])
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-
-readingsDecoder : Decode.Decoder (List Reading)
-readingsDecoder =
-    Decode.field "readings" (Decode.list readingDecoder)
-
-
-readingDecoder : Decode.Decoder Reading
-readingDecoder =
-    Decode.map2 Reading
-        (Decode.field "value" Decode.float)
-        (Decode.field "date" Decode.string)
-
-
-parseDateToRataDie : String -> Maybe Int
-parseDateToRataDie dateString =
-    case String.split "-" dateString of
-        [ yStr, mStr, dStr ] ->
-            Maybe.map3 toRataDie
-                (String.toInt yStr)
-                (String.toInt mStr)
-                (String.toInt dStr)
-
-        _ ->
-            Nothing
-
-
-formatRataDie : Int -> String
-formatRataDie n =
-    let
-        { day, month } =
-            fromRataDie n
-
-        pad x =
-            String.padLeft 2 '0' (fromInt x)
-    in
-    pad day ++ "." ++ pad month
-
-
-toRataDie : Int -> Int -> Int -> Int
-toRataDie year month day =
-    let
-        y =
-            if month <= 2 then
-                year - 1
-
-            else
-                year
-
-        era =
-            (if y >= 0 then
-                y
-
-             else
-                y - 399
-            )
-                // 400
-
-        yoe =
-            y - era * 400
-
-        mp =
-            modBy 12 (month + 9)
-
-        doy =
-            (153 * mp + 2) // 5 + day - 1
-
-        doe =
-            yoe * 365 + yoe // 4 - yoe // 100 + doy
-    in
-    era * 146097 + doe - 719468
-
-
-fromRataDie : Int -> { year : Int, month : Int, day : Int }
-fromRataDie z0 =
-    let
-        z =
-            z0 + 719468
-
-        era =
-            (if z >= 0 then
-                z
-
-             else
-                z - 146096
-            )
-                // 146097
-
-        doe =
-            z - era * 146097
-
-        yoe =
-            (doe - doe // 1460 + doe // 36524 - doe // 146096) // 365
-
-        y =
-            yoe + era * 400
-
-        doy =
-            doe - (365 * yoe + yoe // 4 - yoe // 100)
-
-        mp =
-            (5 * doy + 2) // 153
-
-        day =
-            doy - (153 * mp + 2) // 5 + 1
-
-        month =
-            if mp < 10 then
-                mp + 3
-
-            else
-                mp - 9
-    in
-    { year =
-        if month <= 2 then
-            y + 1
-
-        else
-            y
-    , month = month
-    , day = day
-    }

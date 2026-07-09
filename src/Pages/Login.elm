@@ -1,14 +1,12 @@
 module Pages.Login exposing (Model, Msg(..), OutMsg(..), init, update, view)
 
 import CommonStyles exposing (buttonStyle)
-import Constants exposing (api_url)
 import Css exposing (backgroundColor, block, border3, center, color, display, hex, inlineBlock, left, padding, px, solid, textAlign, textDecoration, underline)
 import Html.Styled exposing (Html, a, button, div, h1, input, table, td, text, tr)
 import Html.Styled.Attributes exposing (css, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
-import Http exposing (header, jsonBody)
-import Json.Decode as Decode
-import Json.Encode as Encode
+import Http
+import Users
 
 
 type alias Model =
@@ -47,7 +45,7 @@ update msg model =
             ( { model | password = v }, Cmd.none, NoOp )
 
         SubmitClicked ->
-            ( { model | error = Nothing }, doLogin model.username model.password, NoOp )
+            ( { model | error = Nothing }, Users.doLogin model.username model.password LoginResponded, NoOp )
 
         GotoSignupClicked ->
             ( model, Cmd.none, RequestSignup )
@@ -93,27 +91,3 @@ viewError error =
 
         Nothing ->
             text ""
-
-
-doLogin : String -> String -> Cmd Msg
-doLogin username password =
-    Http.request
-        { method = "POST"
-        , headers = [ header "Content-Type" "application/json" ]
-        , url = api_url ++ "/rest/users/login"
-        , body =
-            jsonBody
-                (Encode.object
-                    [ ( "displayName", Encode.string username )
-                    , ( "password", Encode.string password )
-                    ]
-                )
-        , expect = Http.expectJson LoginResponded redirectToDecoder
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-
-redirectToDecoder : Decode.Decoder String
-redirectToDecoder =
-    Decode.field "redirectTo" Decode.string

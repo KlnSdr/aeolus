@@ -13,8 +13,8 @@ import Pages.MonthOverview as MonthOverview
 import Pages.Signup as Signup
 import Pages.YearOverview as YearOverview
 import Route exposing (Route(..))
-import Types exposing (User)
 import Url exposing (Url)
+import Users exposing (User)
 
 
 type Page
