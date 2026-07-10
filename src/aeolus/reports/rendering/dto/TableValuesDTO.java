@@ -191,26 +191,26 @@ public class TableValuesDTO {
         final DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(1);
 
-        json.setString("operatingHoursHeating", df.format(operatingHoursHeating));
-        json.setString("averageOperatingHoursHeating", df.format(averageOperatingHoursHeating));
-        json.setString("operatingHoursWater", df.format(operatingHoursWater));
-        json.setString("averageOperatingHoursWater", df.format(averageOperatingHoursWater));
-        json.setString("operatingHoursTwo", df.format(operatingHoursTwo));
-        json.setString("averageOperatingHoursTwo", df.format(averageOperatingHoursTwo));
-        json.setString("highTariffPower", df.format(highTariffPower));
-        json.setString("averageHighTariffPower", df.format(averageHighTariffPower));
-        json.setString("lowTariffPower", df.format(lowTariffPower));
-        json.setString("averageLowTariffPower", df.format(averageLowTariffPower));
-        json.setString("householdPower", df.format(householdPower));
-        json.setString("averageHouseholdPower", df.format(averageHouseholdPower));
-        json.setString("householdWater", df.format(householdWater));
-        json.setString("averageHouseholdWater", df.format(averageHouseholdWater));
-        json.setString("temperatureAverage", df.format(temperatureAverage));
-        json.setString("averageTemperatureAverage", df.format(averageTemperatureAverage));
-        json.setString("temperatureMax", df.format(temperatureMax));
-        json.setString("averageTemperatureMax", df.format(averageTemperatureMax));
-        json.setString("temperatureMin", df.format(temperatureMin));
-        json.setString("averageTemperatureMin", df.format(averageTemperatureMin));
+        json.setString("operatingHoursHeating", df.format(operatingHoursHeating).replace(",", ""));
+        json.setString("averageOperatingHoursHeating", df.format(averageOperatingHoursHeating).replace(",", ""));
+        json.setString("operatingHoursWater", df.format(operatingHoursWater).replace(",", ""));
+        json.setString("averageOperatingHoursWater", df.format(averageOperatingHoursWater).replace(",", ""));
+        json.setString("operatingHoursTwo", df.format(operatingHoursTwo).replace(",", ""));
+        json.setString("averageOperatingHoursTwo", df.format(averageOperatingHoursTwo).replace(",", ""));
+        json.setString("highTariffPower", df.format(highTariffPower).replace(",", ""));
+        json.setString("averageHighTariffPower", df.format(averageHighTariffPower).replace(",", ""));
+        json.setString("lowTariffPower", df.format(lowTariffPower).replace(",", ""));
+        json.setString("averageLowTariffPower", df.format(averageLowTariffPower).replace(",", ""));
+        json.setString("householdPower", df.format(householdPower).replace(",", ""));
+        json.setString("averageHouseholdPower", df.format(averageHouseholdPower).replace(",", ""));
+        json.setString("householdWater", df.format(householdWater).replace(",", ""));
+        json.setString("averageHouseholdWater", df.format(averageHouseholdWater).replace(",", ""));
+        json.setString("temperatureAverage", df.format(temperatureAverage).replace(",", ""));
+        json.setString("averageTemperatureAverage", df.format(averageTemperatureAverage).replace(",", ""));
+        json.setString("temperatureMax", df.format(temperatureMax).replace(",", ""));
+        json.setString("averageTemperatureMax", df.format(averageTemperatureMax).replace(",", ""));
+        json.setString("temperatureMin", df.format(temperatureMin).replace(",", ""));
+        json.setString("averageTemperatureMin", df.format(averageTemperatureMin).replace(",", ""));
         return json;
     }
 }

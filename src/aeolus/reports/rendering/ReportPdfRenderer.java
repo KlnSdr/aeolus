@@ -21,9 +21,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -202,11 +205,170 @@ public class ReportPdfRenderer {
     }
 
     private StaticFile renderYearReport(Report report, int year) {
-        final StaticFile template = loadTemplate("yearly.typ");
-        final NewJson data = new NewJson();
+        final List<MonthlyValues> monthlyValues = gatherMonthlyValuesOfYear(report.getOwner(), year);
+        if (monthlyValues == null) {
+            throw new IllegalStateException("No monthly values found for owner " + report.getOwner() + " and year " + year);
+        }
+
+        final boolean withAverages = report.getReportFeatures().contains(ReportFeatures.AVERAGES);
+        final TableValuesDTO tableValues = gatherYearlyTableValues(report, year, monthlyValues, withAverages);
+        final List<Reading> readings = report.getReportFeatures().contains(ReportFeatures.TEMPERATURE_CURVE) ? gatherYearlyReadings(report.getOwner(), year) : List.of();
+        final boolean enableTrends = report.getReportFeatures().contains(ReportFeatures.TREND);
+        final NewJson data = tableValues.toJson();
         data.setString("year", String.valueOf(year));
+        data.setString("enableTrends", String.valueOf(enableTrends));
+        data.setString("temperatures", readings.stream()
+                .sorted(Comparator.comparing(Reading::getDate))
+                .map(r -> toIsoDateString(r.getDate()) + "," + r.getValue()).collect(Collectors.joining("\n")));
+        data.setString("operatingHoursHeatingCurve", buildMonthlyCurve(monthlyValues, MonthlyValues::getOperatingHoursHeating));
+        data.setString("operatingHoursWaterCurve", buildMonthlyCurve(monthlyValues, MonthlyValues::getOperatingHoursWater));
+        data.setString("operatingHoursTwoCurve", buildMonthlyCurve(monthlyValues, MonthlyValues::getOperatingHoursTwo));
+        data.setString("highTariffPowerCurve", buildMonthlyCurve(monthlyValues, MonthlyValues::getHighTariffPower));
+        data.setString("lowTariffPowerCurve", buildMonthlyCurve(monthlyValues, MonthlyValues::getLowTariffPower));
+        data.setString("householdPowerCurve", buildMonthlyCurve(monthlyValues, MonthlyValues::getHouseholdPower));
+        data.setString("householdWaterCurve", buildMonthlyCurve(monthlyValues, MonthlyValues::getHouseholdWater));
+        data.setString("features", report.getReportFeatures().stream().map(Enum::name).map(n -> "\"" + n + "\"").collect(Collectors.joining(",")));
+
+        final StaticFile template = loadTemplate("yearly.typ");
         template.setContent(templateEngine.render(new String(template.getContent()), data).getBytes(StandardCharsets.UTF_8));
         return pdfRenderer.render(template);
+    }
+
+    private String buildMonthlyCurve(List<MonthlyValues> monthlyValues, ToIntFunction<MonthlyValues> valueExtractor) {
+        final List<String> rows = new ArrayList<>();
+        for (int i = 0; i < monthlyValues.size(); i++) {
+            rows.add((i + 1) + "," + valueExtractor.applyAsInt(monthlyValues.get(i)));
+        }
+        return String.join("\n", rows);
+    }
+
+    private List<Reading> gatherYearlyReadings(UUID owner, int year) {
+        final List<Reading> readings = new ArrayList<>();
+        for (int month = 1; month <= 12; month++) {
+            readings.addAll(List.of(readingService.find(owner, year, month)));
+        }
+        return readings;
+    }
+
+    private TableValuesDTO gatherYearlyTableValues(Report report, int year, List<MonthlyValues> monthlyValues, boolean withAverages) {
+        final TableValuesDTO tableValues = new TableValuesDTO();
+        final Tupel<Float, Tupel<Float, Float>> temperatureTriple = calculateTemperatureTripleOfYear(report.getOwner(), year);
+        tableValues.setTemperatureAverage(temperatureTriple._1());
+        tableValues.setTemperatureMax(temperatureTriple._2()._1());
+        tableValues.setTemperatureMin(temperatureTriple._2()._2());
+        fillTableValuesWithYearlyValues(tableValues, monthlyValues);
+        if (withAverages) {
+            fillTableValuesWithYearlyAverages(tableValues, report, year);
+        }
+
+        return tableValues;
+    }
+
+    private void fillTableValuesWithYearlyAverages(TableValuesDTO tableValues, Report report, int year) {
+        final Tupel<Float, Tupel<Float, Float>> temperatureAverages = calculateTemperatureAveragesPreviousYears(report.getOwner(), year);
+        tableValues.setAverageTemperatureAverage(temperatureAverages._1());
+        tableValues.setAverageTemperatureMax(temperatureAverages._2()._1());
+        tableValues.setAverageTemperatureMin(temperatureAverages._2()._2());
+
+        final List<MonthlyValues> previousYearlyValues = new ArrayList<>();
+        int previousYear = year - 1;
+        boolean foundValues = true;
+        while (foundValues) {
+            final MonthlyValues yearlySum = sumMonthlyValuesOfYear(report.getOwner(), previousYear);
+            if (yearlySum == null) {
+                foundValues = false;
+            } else {
+                previousYearlyValues.add(yearlySum);
+            }
+            previousYear--;
+        }
+
+        tableValues.setAverageHouseholdPower((float) previousYearlyValues.stream().mapToDouble(MonthlyValues::getHouseholdPower).average().orElse(0));
+        tableValues.setAverageHouseholdWater((float) previousYearlyValues.stream().mapToDouble(MonthlyValues::getHouseholdWater).average().orElse(0));
+        tableValues.setAverageOperatingHoursHeating((float) previousYearlyValues.stream().mapToDouble(MonthlyValues::getOperatingHoursHeating).average().orElse(0));
+        tableValues.setAverageOperatingHoursWater((float) previousYearlyValues.stream().mapToDouble(MonthlyValues::getOperatingHoursWater).average().orElse(0));
+        tableValues.setAverageOperatingHoursTwo((float) previousYearlyValues.stream().mapToDouble(MonthlyValues::getOperatingHoursTwo).average().orElse(0));
+        tableValues.setAverageHighTariffPower((float) previousYearlyValues.stream().mapToDouble(MonthlyValues::getHighTariffPower).average().orElse(0));
+        tableValues.setAverageLowTariffPower((float) previousYearlyValues.stream().mapToDouble(MonthlyValues::getLowTariffPower).average().orElse(0));
+    }
+
+    private void fillTableValuesWithYearlyValues(TableValuesDTO tableValues, List<MonthlyValues> monthlyValues) {
+        tableValues.setOperatingHoursHeating(monthlyValues.stream().mapToInt(MonthlyValues::getOperatingHoursHeating).sum());
+        tableValues.setOperatingHoursWater(monthlyValues.stream().mapToInt(MonthlyValues::getOperatingHoursWater).sum());
+        tableValues.setOperatingHoursTwo(monthlyValues.stream().mapToInt(MonthlyValues::getOperatingHoursTwo).sum());
+        tableValues.setHighTariffPower(monthlyValues.stream().mapToInt(MonthlyValues::getHighTariffPower).sum());
+        tableValues.setLowTariffPower(monthlyValues.stream().mapToInt(MonthlyValues::getLowTariffPower).sum());
+        tableValues.setHouseholdPower(monthlyValues.stream().mapToInt(MonthlyValues::getHouseholdPower).sum());
+        tableValues.setHouseholdWater(monthlyValues.stream().mapToInt(MonthlyValues::getHouseholdWater).sum());
+    }
+
+    private MonthlyValues sumMonthlyValuesOfYear(UUID owner, int year) {
+        final List<MonthlyValues> monthlyValues = gatherMonthlyValuesOfYear(owner, year);
+        if (monthlyValues == null) {
+            return null;
+        }
+
+        return new MonthlyValues(
+                owner,
+                new GregorianCalendar(year, Calendar.JANUARY, 1).getTime(),
+                monthlyValues.stream().mapToInt(MonthlyValues::getOperatingHoursHeating).sum(),
+                monthlyValues.stream().mapToInt(MonthlyValues::getOperatingHoursWater).sum(),
+                monthlyValues.stream().mapToInt(MonthlyValues::getOperatingHoursTwo).sum(),
+                monthlyValues.stream().mapToInt(MonthlyValues::getHighTariffPower).sum(),
+                monthlyValues.stream().mapToInt(MonthlyValues::getLowTariffPower).sum(),
+                monthlyValues.stream().mapToInt(MonthlyValues::getHouseholdPower).sum(),
+                monthlyValues.stream().mapToInt(MonthlyValues::getHouseholdWater).sum()
+        );
+    }
+
+    private List<MonthlyValues> gatherMonthlyValuesOfYear(UUID owner, int year) {
+        final List<MonthlyValues> monthlyValues = new ArrayList<>();
+        for (int month = 1; month <= 12; month++) {
+            final MonthlyValues values = monthlyValuesService.findByOwnerAndYearAndMonth(owner, year, month);
+            if (values == null) {
+                return null;
+            }
+            monthlyValues.add(values);
+        }
+        return monthlyValues;
+    }
+
+    private Tupel<Float, Tupel<Float, Float>> calculateTemperatureTripleOfYear(UUID owner, int year) {
+        final List<Reading> readings = gatherYearlyReadings(owner, year);
+        if (readings.isEmpty()) {
+            return new Tupel<>(0f, new Tupel<>(0f, 0f));
+        }
+        final float average = calculateAverage(readings);
+        final float max = (float) readings.stream().mapToDouble(Reading::getValue).max().orElse(0);
+        final float min = (float) readings.stream().mapToDouble(Reading::getValue).min().orElse(0);
+        return new Tupel<>(average, new Tupel<>(max, min));
+    }
+
+    private Tupel<Float, Tupel<Float, Float>> calculateTemperatureAveragesPreviousYears(UUID owner, int year) {
+        final List<Reading> readings = new ArrayList<>();
+        final List<Float> maxValues = new ArrayList<>();
+        final List<Float> minValues = new ArrayList<>();
+        int previousYear = year - 1;
+        boolean foundValues = true;
+        while (foundValues) {
+            final List<Reading> batch = gatherYearlyReadings(owner, previousYear);
+            if (batch.isEmpty()) {
+                foundValues = false;
+            } else {
+                readings.addAll(batch);
+                maxValues.add((float) batch.stream().mapToDouble(Reading::getValue).max().orElse(0));
+                minValues.add((float) batch.stream().mapToDouble(Reading::getValue).min().orElse(0));
+            }
+            previousYear--;
+        }
+
+        return new Tupel<>(
+                calculateAverage(readings),
+                new Tupel<>(
+                        (float) maxValues.stream().mapToDouble(Float::doubleValue).average().orElse(0),
+                        (float) minValues.stream().mapToDouble(Float::doubleValue).average().orElse(0)
+                )
+        );
     }
 
     private float calculateAverage(List<Reading> readings) {
