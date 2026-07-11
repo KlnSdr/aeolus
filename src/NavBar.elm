@@ -2,8 +2,8 @@ module NavBar exposing (Msg(..), navBar, unauthNavBar)
 
 import CommonStyles exposing (buttonStyle)
 import Css exposing (..)
-import Html.Styled exposing (Html, button, div, h1, label, nav, text)
-import Html.Styled.Attributes exposing (css)
+import Html.Styled exposing (Html, a, button, div, h1, label, nav, text)
+import Html.Styled.Attributes exposing (css, href)
 import Html.Styled.Events exposing (onClick)
 import Route exposing (Route(..))
 import Users exposing (User)
@@ -62,13 +62,13 @@ navBar user =
     nav
         [ css navBarStyle
         ]
-        [ h1 [ css navHeadingStyle ] [ text "Aeolus" ]
+        [ h1 [] [ a [ css navHeadingStyle, href "/" ] [ text "Aeolus" ] ]
         , div []
             [ div [ css navBarButtonsStyle ] (List.map (\e -> button [ css buttonStyle, onClick (NavElementClicked e.location) ] [ text e.displayText ]) navBarElements)
             , div [ css navBarRight ]
                 [ button [ css buttonStyle ] [ text "Nachrichten: 0" ]
                 , label [] [ text ("(" ++ userToName user ++ ")") ]
-                , button [ css buttonStyle, onClick LogoutClicked ] [ text "logout" ]
+                , button [ css buttonStyle, onClick LogoutClicked ] [ text "abmelden" ]
                 ]
             ]
         ]
@@ -79,7 +79,7 @@ unauthNavBar =
     nav
         [ css navBarStyle
         ]
-        [ h1 [ css navHeadingStyle ] [ text "Aeolus" ]
+        [ h1 [] [ a [ css navHeadingStyle, href "/" ] [ text "Aeolus" ] ]
         , div []
             [ div [ css navBarButtonsStyle ] []
             , div [ css navBarRight ]
@@ -105,6 +105,9 @@ navHeadingStyle =
     , marginLeft (px 5)
     , textDecoration none
     , color (hex "#f9f9f9")
+    , active
+        [ color (hex "#f9f9f9")
+        ]
     ]
 
 

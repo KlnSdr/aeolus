@@ -3,7 +3,7 @@ module Pages.Login exposing (Model, Msg(..), OutMsg(..), init, update, view)
 import CommonStyles exposing (buttonStyle)
 import Css exposing (backgroundColor, block, border3, center, color, display, hex, inlineBlock, left, padding, px, solid, textAlign, textDecoration, underline)
 import Html.Styled exposing (Html, a, button, div, h1, input, table, td, text, tr)
-import Html.Styled.Attributes exposing (css, type_, value)
+import Html.Styled.Attributes exposing (css, href, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import Users
@@ -25,7 +25,6 @@ type Msg
     = UsernameChanged String
     | PasswordChanged String
     | SubmitClicked
-    | GotoSignupClicked
     | LoginResponded (Result Http.Error String)
 
 
@@ -46,9 +45,6 @@ update msg model =
 
         SubmitClicked ->
             ( { model | error = Nothing }, Users.doLogin model.username model.password LoginResponded, NoOp )
-
-        GotoSignupClicked ->
-            ( model, Cmd.none, RequestSignup )
 
         LoginResponded (Ok _) ->
             ( model, Cmd.none, LoggedInAs )
@@ -77,7 +73,7 @@ view model =
                     ]
                 ]
             , viewError model.error
-            , a [ onClick GotoSignupClicked, css [ textDecoration underline, display block, textAlign center ] ] [ text "No account? Signup" ]
+            , a [ href "/signup", css [ textDecoration underline, display block, textAlign center ] ] [ text "No account? Signup" ]
             ]
         ]
     ]

@@ -3,7 +3,7 @@ module Pages.Signup exposing (Model, Msg(..), OutMsg(..), init, update, view)
 import CommonStyles exposing (buttonStyle)
 import Css exposing (backgroundColor, block, border3, center, color, display, hex, inlineBlock, left, padding, px, solid, textAlign, textDecoration, underline)
 import Html.Styled exposing (Html, a, button, div, h1, input, table, td, text, tr)
-import Html.Styled.Attributes exposing (css, type_, value)
+import Html.Styled.Attributes exposing (css, href, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
 
 
@@ -27,7 +27,6 @@ type Msg
     | PasswordChanged String
     | RepeatPasswordChanged String
     | SubmitClicked
-    | GotoLoginClicked
 
 
 type OutMsg
@@ -61,9 +60,6 @@ update msg model =
                 -- (there was no actual signup request before either).
                 ( model, Cmd.none, SignedUp )
 
-        GotoLoginClicked ->
-            ( model, Cmd.none, RequestLogin )
-
 
 view : Model -> List (Html Msg)
 view model =
@@ -93,7 +89,7 @@ view model =
                     ]
                 ]
             , viewError model.error
-            , a [ onClick GotoLoginClicked, css [ textDecoration underline, display block, textAlign center ] ] [ text "Already have an account? Login" ]
+            , a [ href "/login", css [ textDecoration underline, display block, textAlign center ] ] [ text "Already have an account? Login" ]
             ]
         ]
     ]

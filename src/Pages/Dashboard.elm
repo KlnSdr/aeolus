@@ -1,6 +1,8 @@
 module Pages.Dashboard exposing (Model, Msg, init, update, userOf, view)
 
+import Css exposing (Style, bolder, center, em, fontSize, fontWeight, margin, marginTop, pct, px, textAlign)
 import Html.Styled exposing (Html, div, h1, p, text)
+import Html.Styled.Attributes exposing (css)
 import Http
 import Readings exposing (Reading)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -50,22 +52,30 @@ update msg model =
 
 view : Model -> List (Html Msg)
 view model =
-    [ div [] (viewLastReading model.lastReading) ]
+    [ div [ css [ textAlign center, marginTop (pct 10) ] ] (viewLastReading model.lastReading) ]
+
+
+huge : List Style
+huge =
+    [ fontSize (em 5)
+    , fontWeight bolder
+    , margin (px 0)
+    ]
 
 
 viewLastReading : WebData Reading -> List (Html msg)
 viewLastReading remoteReading =
     case remoteReading of
         NotAsked ->
-            [ h1 [] [ text "XY.Z °C" ], p [] [ text "vom: DD.MM.YYYY" ] ]
+            [ h1 [ css huge ] [ text "XY.Z °C" ], p [] [ text "vom: DD.MM.YYYY" ] ]
 
         Loading ->
-            [ h1 [] [ text "Loading..." ] ]
+            [ h1 [ css huge ] [ text "Loading..." ] ]
 
         Failure _ ->
-            [ h1 [] [ text "Couldn't load the last reading." ] ]
+            [ h1 [ css huge ] [ text "Couldn't load the last reading." ] ]
 
         Success reading ->
-            [ h1 [] [ text (Round.round 1 reading.value ++ " °C") ]
+            [ h1 [ css huge ] [ text (Round.round 1 reading.value ++ " °C") ]
             , p [] [ text ("vom: " ++ reading.date) ]
             ]

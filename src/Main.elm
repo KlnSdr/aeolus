@@ -215,7 +215,7 @@ viewBody model =
             , backgroundColor (hex "#f9f9f9")
             , overflowX hidden
             , minHeight (vh 100)
-            , fontFamilies [ "Arial", "sans-serif" ]
+            , fontFamilies [ "IBM Plex Sans", "sans-serif" ]
             ]
         ]
         (mainContent model)
