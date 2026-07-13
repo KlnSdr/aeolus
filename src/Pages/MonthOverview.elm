@@ -1,5 +1,6 @@
 module Pages.MonthOverview exposing (Model, Msg, init, update, userOf, view)
 
+import Components.Stats exposing (readingStats)
 import Components.TemperatureProfileChart as Chart
 import Constants exposing (intToMonth, monthToInt, months)
 import Css exposing (center, marginLeft, marginTop, pct, px, textAlign, width)
@@ -102,22 +103,24 @@ view model =
             , textAlign center
             ]
         ]
-        [ select [ value (intToMonth (model.month - 1)), onInput (SelectChanged Month) ] (months |> List.map (\m -> option [] [ text m ]))
-        , select [ value (model.year |> fromInt), onInput (SelectChanged Year) ]
+        ([ select [ value (intToMonth (model.month - 1)), onInput (SelectChanged Month) ] (months |> List.map (\m -> option [] [ text m ]))
+         , select [ value (model.year |> fromInt), onInput (SelectChanged Year) ]
             (List.range 2000 2026 |> reverse |> List.map (\e -> option [] [ text (fromInt e) ]))
-        , case model.readings of
-            NotAsked ->
-                p [] [ text "Loading..." ]
+         ]
+            ++ (case model.readings of
+                    NotAsked ->
+                        [ p [] [ text "Loading..." ] ]
 
-            Loading ->
-                p [] [ text "Loading..." ]
+                    Loading ->
+                        [ p [] [ text "Loading..." ] ]
 
-            Failure _ ->
-                p [] [ text "Couldn't load readings." ]
+                    Failure _ ->
+                        [ p [] [ text "Couldn't load readings." ] ]
 
-            Success readings ->
-                renderChart readings model
-        ]
+                    Success readings ->
+                        [ renderChart readings model, readingStats readings ]
+               )
+        )
     ]
 
 

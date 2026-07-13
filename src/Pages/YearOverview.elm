@@ -1,5 +1,6 @@
 module Pages.YearOverview exposing (Model, Msg, init, update, userOf, view)
 
+import Components.Stats exposing (readingStats)
 import Components.TemperatureProfileChart as Chart
 import Css exposing (center, marginLeft, marginTop, pct, px, textAlign, width)
 import Dates exposing (formatRataDie, parseDateToRataDie)
@@ -96,21 +97,22 @@ view model =
             , textAlign center
             ]
         ]
-        [ select [ value (model.year |> fromInt), onInput (SelectChanged Year) ]
+        (select [ value (model.year |> fromInt), onInput (SelectChanged Year) ]
             (List.range 2000 2026 |> reverse |> List.map (\e -> option [] [ text (fromInt e) ]))
-        , case model.readings of
-            NotAsked ->
-                p [] [ text "Loading..." ]
+            :: (case model.readings of
+                    NotAsked ->
+                        [ p [] [ text "Loading..." ] ]
 
-            Loading ->
-                p [] [ text "Loading..." ]
+                    Loading ->
+                        [ p [] [ text "Loading..." ] ]
 
-            Failure _ ->
-                p [] [ text "Couldn't load readings." ]
+                    Failure _ ->
+                        [ p [] [ text "Couldn't load readings." ] ]
 
-            Success readings ->
-                renderChart readings model
-        ]
+                    Success readings ->
+                        [ renderChart readings model, readingStats readings ]
+               )
+        )
     ]
 
 
