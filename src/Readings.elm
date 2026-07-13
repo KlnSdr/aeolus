@@ -1,4 +1,4 @@
-module Readings exposing (Reading, forMonth, forYear, last)
+module Readings exposing (Reading, forMonth, forYear, last, uploadValue)
 
 import Constants exposing (api_url, token)
 import Http exposing (header, jsonBody, request)
@@ -50,6 +50,44 @@ last toMsg =
         , timeout = Nothing
         , tracker = Nothing
         }
+
+
+uploadValue : String -> String -> (Result Http.Error () -> msg) -> Cmd msg
+uploadValue date value toMsg =
+    request
+        { method = "POST"
+        , url = api_url ++ "/rest/readings"
+        , headers = [ header "Hades-Login-Token" token, header "Content-Type" "application/json" ]
+        , body =
+            jsonBody
+                (Encode.object
+                    [ ( "value", Encode.string value )
+                    , ( "date", Encode.string date )
+                    ]
+                )
+        , expect = Http.expectStringResponse toMsg addResponseToResult
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+addResponseToResult : Http.Response String -> Result Http.Error ()
+addResponseToResult response =
+    case response of
+        Http.BadUrl_ url ->
+            Err (Http.BadUrl url)
+
+        Http.Timeout_ ->
+            Err Http.Timeout
+
+        Http.NetworkError_ ->
+            Err Http.NetworkError
+
+        Http.BadStatus_ metadata _ ->
+            Err (Http.BadStatus metadata.statusCode)
+
+        Http.GoodStatus_ _ _ ->
+            Ok ()
 
 
 listDecoder : Decoder (List Reading)
