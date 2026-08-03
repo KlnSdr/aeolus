@@ -11,6 +11,7 @@ type Route
     | Dashboard
     | MonthlyOverview
     | YearlyOverview
+    | CompareYears
 
 
 parser : Parser (Route -> a) a
@@ -21,6 +22,7 @@ parser =
         , Parser.map Signup (s "signup")
         , Parser.map MonthlyOverview (s "month")
         , Parser.map YearlyOverview (s "year")
+        , Parser.map CompareYears (s "compare")
         , Parser.map Dashboard top
         ]
 
@@ -50,3 +52,6 @@ toPath route =
 
         YearlyOverview ->
             "/year"
+
+        CompareYears ->
+            "/compare"

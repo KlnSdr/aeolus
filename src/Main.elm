@@ -6,6 +6,7 @@ import Css exposing (..)
 import Html.Styled exposing (Html, div, toUnstyled)
 import Html.Styled.Attributes exposing (css)
 import NavBar
+import Pages.CompareYears as CompareYears
 import Pages.Dashboard as Dashboard
 import Pages.Landing as Landing
 import Pages.Login as Login
@@ -24,6 +25,7 @@ type Page
     | DashboardPage Dashboard.Model
     | MonthlyOverviewPage MonthOverview.Model
     | YearlyOverviewPage YearOverview.Model
+    | CompareYearsPage CompareYears.Model
 
 
 type alias Model =
@@ -42,6 +44,7 @@ type Msg
     | DashboardMsg Dashboard.Msg
     | MonthOverviewMsg MonthOverview.Msg
     | YearOverviewMsg YearOverview.Msg
+    | CompareYearsMsg CompareYears.Msg
 
 
 main : Program () Model Msg
@@ -96,6 +99,13 @@ changeRouteTo maybeRoute model =
                     YearOverview.init
             in
             ( { model | page = YearlyOverviewPage yearOverview }, Cmd.map YearOverviewMsg yearCmd )
+
+        Just Route.CompareYears ->
+            let
+                ( yearOverview, yearCmd ) =
+                    CompareYears.init
+            in
+            ( { model | page = CompareYearsPage yearOverview }, Cmd.map CompareYearsMsg yearCmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -205,6 +215,20 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        CompareYearsMsg subMsg ->
+            case model.page of
+                CompareYearsPage subModel ->
+                    let
+                        ( newSubModel, subCmd ) =
+                            CompareYears.update subMsg subModel
+                    in
+                    ( { model | page = CompareYearsPage newSubModel, user = CompareYears.userOf newSubModel }
+                    , Cmd.map CompareYearsMsg subCmd
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 viewBody : Model -> Html Msg
 viewBody model =
@@ -251,3 +275,7 @@ mainContent model =
         YearlyOverviewPage subModel ->
             Html.Styled.map NavBarMsg (NavBar.navBar model.user)
                 :: List.map (Html.Styled.map YearOverviewMsg) (YearOverview.view subModel)
+
+        CompareYearsPage subModel ->
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+                :: List.map (Html.Styled.map CompareYearsMsg) (CompareYears.view subModel)

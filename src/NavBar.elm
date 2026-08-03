@@ -29,7 +29,7 @@ navBarElements =
     , { location = YearlyOverview
       , displayText = "Jahresübersicht"
       }
-    , { location = MonthlyOverview
+    , { location = CompareYears
       , displayText = "Vergleichen"
       }
     , { location = MonthlyOverview
