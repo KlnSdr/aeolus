@@ -1,4 +1,4 @@
-module Components.YearDifferenceChart exposing (temperatureBarChart)
+module Components.YearDifferenceChart exposing (temperatureBarChart, colorFor)
 
 import Chart as C
 import Chart.Attributes as CA

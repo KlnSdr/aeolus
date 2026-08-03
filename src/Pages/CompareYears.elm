@@ -1,15 +1,17 @@
 module Pages.CompareYears exposing (Model, Msg, init, update, userOf, view)
 
 import Components.TemperatureProfileChart as Chart
-import Components.YearDifferenceChart exposing (temperatureBarChart)
-import Css exposing (center, marginLeft, marginTop, pct, px, textAlign, width)
+import Components.YearDifferenceChart exposing (colorFor, temperatureBarChart)
+import Css exposing (auto, center, displayFlex, flexGrow, flexShrink, int, justifyContent, margin, marginLeft, marginTop, maxHeight, maxWidth, minWidth, pct, px, spaceAround, textAlign, width, zero)
+import Css.Global exposing (global, selector)
 import Dates exposing (formatRataDie, parseDateToRataDie)
 import Dict exposing (Dict)
-import Html.Styled exposing (Html, div, map, option, select, text)
-import Html.Styled.Attributes exposing (css, value)
+import Html.Styled exposing (Html, div, fromUnstyled, map, option, select, text)
+import Html.Styled.Attributes exposing (class, css, value)
 import Html.Styled.Events exposing (onInput)
 import Http
-import List exposing (reverse)
+import Lib.ElmChart.PieChart exposing (pie)
+import List exposing (filter, length, reverse)
 import Readings exposing (Reading)
 import RemoteData exposing (RemoteData(..), WebData)
 import String exposing (fromInt, toInt)
@@ -142,9 +144,8 @@ view : Model -> List (Html Msg)
 view model =
     [ div
         [ css
-            [ width (pct 50)
-            , Css.property "aspect-ratio" "2 / 1"
-            , marginLeft (pct 25)
+            [ width (pct 90)
+            , marginLeft (pct 5)
             , marginTop (px 50)
             , textAlign center
             ]
@@ -154,7 +155,19 @@ view model =
         , text " vergleichen mit "
         , select [ value (model.year2 |> Tuple.first |> fromInt), onInput (SelectChanged Year2) ]
             (List.range 2000 2026 |> reverse |> List.map (\e -> option [] [ text (fromInt e) ]))
-        , renderChart model.differences model
+        , div
+            [ css
+                [ displayFlex
+                , justifyContent spaceAround
+                ]
+            ]
+            [ div
+                [ css [ flexGrow (int 2), flexShrink (int 1), minWidth zero ] ]
+                [ renderChart model.differences model ]
+            , div
+                [ css [ flexGrow (int 1), flexShrink (int 1), minWidth zero ] ]
+                [ renderPieChart model.differences ]
+            ]
         ]
     ]
 
@@ -171,3 +184,27 @@ renderChart readings _ =
                     )
     in
     map ChartMsg (temperatureBarChart points (\x -> formatRataDie (round x)))
+
+
+renderPieChart : List Reading -> Html Msg
+renderPieChart readings =
+    div
+        [ class "chart-widget"
+        , css [ marginTop (px 50) ]
+        ]
+        [ global
+            [ selector ".chart-widget svg"
+                [ maxWidth (pct 100)
+                , maxHeight (pct 100)
+                , margin auto
+                , Css.property "display" "block"
+                ]
+            ]
+        , fromUnstyled
+            (pie 300
+                [ { color = colorFor 0, value = filter (\v -> v.value == 0) readings |> length |> toFloat }
+                , { color = colorFor -1, value = filter (\v -> v.value < 0) readings |> length |> toFloat }
+                , { color = colorFor 1, value = filter (\v -> v.value > 0) readings |> length |> toFloat }
+                ]
+            )
+        ]
