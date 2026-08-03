@@ -8,6 +8,7 @@ import Html.Styled.Attributes exposing (css)
 import NavBar
 import Pages.CompareYears as CompareYears
 import Pages.Dashboard as Dashboard
+import Pages.DataQuality as DataQuality
 import Pages.Landing as Landing
 import Pages.Login as Login
 import Pages.MonthOverview as MonthOverview
@@ -26,6 +27,7 @@ type Page
     | MonthlyOverviewPage MonthOverview.Model
     | YearlyOverviewPage YearOverview.Model
     | CompareYearsPage CompareYears.Model
+    | DataQualityPage DataQuality.Model
 
 
 type alias Model =
@@ -45,6 +47,7 @@ type Msg
     | MonthOverviewMsg MonthOverview.Msg
     | YearOverviewMsg YearOverview.Msg
     | CompareYearsMsg CompareYears.Msg
+    | DataQualityMsg DataQuality.Msg
 
 
 main : Program () Model Msg
@@ -106,6 +109,13 @@ changeRouteTo maybeRoute model =
                     CompareYears.init
             in
             ( { model | page = CompareYearsPage yearOverview }, Cmd.map CompareYearsMsg yearCmd )
+
+        Just Route.DataQuality ->
+            let
+                ( dq, dqCmd ) =
+                    DataQuality.init
+            in
+            ( { model | page = DataQualityPage dq }, Cmd.map DataQualityMsg dqCmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -229,6 +239,20 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        DataQualityMsg subMsg ->
+            case model.page of
+                DataQualityPage subModel ->
+                    let
+                        ( newSubModel, subCmd ) =
+                            DataQuality.update subMsg subModel
+                    in
+                    ( { model | page = DataQualityPage newSubModel, user = DataQuality.userOf newSubModel }
+                    , Cmd.map DataQualityMsg subCmd
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 viewBody : Model -> Html Msg
 viewBody model =
@@ -279,3 +303,7 @@ mainContent model =
         CompareYearsPage subModel ->
             Html.Styled.map NavBarMsg (NavBar.navBar model.user)
                 :: List.map (Html.Styled.map CompareYearsMsg) (CompareYears.view subModel)
+
+        DataQualityPage subModel ->
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+                :: List.map (Html.Styled.map DataQualityMsg) (DataQuality.view subModel)

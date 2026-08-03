@@ -32,7 +32,7 @@ navBarElements =
     , { location = CompareYears
       , displayText = "Vergleichen"
       }
-    , { location = MonthlyOverview
+    , { location = DataQuality
       , displayText = "Datenqualität"
       }
     , { location = MonthlyOverview
