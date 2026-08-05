@@ -97,8 +97,8 @@ popupStyle =
     , borderRadius (px 4)
     , minWidth (px 300)
     , maxWidth (pct 90)
-    , maxHeight (pct 90)
-    , overflowY auto
+    , maxHeight (pct 50)
+    , overflow scroll
     ]
 
 

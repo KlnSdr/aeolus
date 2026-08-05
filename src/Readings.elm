@@ -1,4 +1,4 @@
-module Readings exposing (Reading, forMonth, forYear, last, uploadValue)
+module Readings exposing (Reading, forMonth, forYear, last, uploadValue, decoder)
 
 import Constants exposing (api_url, token)
 import Http exposing (header, jsonBody, request)
