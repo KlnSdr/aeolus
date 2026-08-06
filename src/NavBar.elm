@@ -41,9 +41,6 @@ navBarElements =
     , { location = MonthlyOverview
       , displayText = "Berichte"
       }
-    , { location = MonthlyOverview
-      , displayText = "Temperaturdecke"
-      }
     ]
 
 

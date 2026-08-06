@@ -30,6 +30,34 @@ type Page
     | DataQualityPage DataQuality.Model
 
 
+pageToTitlePostFix : Page -> String
+pageToTitlePostFix page =
+    case page of
+        Landing ->
+            ""
+
+        LoginPage _ ->
+            " - Login"
+
+        SignupPage _ ->
+            " - Signup"
+
+        DashboardPage _ ->
+            ""
+
+        MonthlyOverviewPage _ ->
+            " - Monatsübersicht"
+
+        YearlyOverviewPage _ ->
+            " - Jahresübersicht"
+
+        CompareYearsPage _ ->
+            " - Vergleich"
+
+        DataQualityPage _ ->
+            " - Datenqualität"
+
+
 type alias Model =
     { key : Nav.Key
     , page : Page
@@ -271,7 +299,7 @@ viewBody model =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Aeolus"
+    { title = "Aeolus" ++ pageToTitlePostFix model.page
     , body = [ toUnstyled (viewBody model) ]
     }
 
