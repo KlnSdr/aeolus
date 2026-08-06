@@ -1,12 +1,15 @@
 module Pages.YearOverview exposing (Model, Msg, init, update, userOf, view)
 
+import CommonStyles exposing (buttonStyle)
 import Components.Stats exposing (readingStats)
 import Components.TemperatureProfileChart as Chart
-import Css exposing (center, marginLeft, marginTop, pct, px, textAlign, width)
+import Css exposing (backgroundColor, center, color, hex, hover, margin, marginTop, pct, property, px, textAlign, width)
 import Dates exposing (formatRataDie, parseDateToRataDie)
-import Html.Styled exposing (Html, div, map, option, p, select, text)
+import FeatherIcons exposing (download, toHtml)
+import File.Download as Download
+import Html.Styled exposing (Html, button, div, fromUnstyled, map, option, p, select, table, td, text, th, tr)
 import Html.Styled.Attributes exposing (css, value)
-import Html.Styled.Events exposing (onInput)
+import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import List exposing (reverse)
 import Readings exposing (Reading)
@@ -14,6 +17,12 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import String exposing (fromInt, toInt)
 import Users exposing (User)
+import Css exposing (overflow)
+import Css exposing (scroll)
+import Css exposing (maxHeight)
+import Css exposing (vh)
+import Css exposing (display)
+import Css exposing (block)
 
 
 type alias Model =
@@ -46,6 +55,8 @@ type Msg
     | ChartMsg Chart.Msg
     | LoadReadings Int
     | SelectChanged SelectElement String
+    | DownloadReadingsAsCSV
+    | CsvData (Result Http.Error String)
 
 
 toInt : String -> Int -> Int
@@ -85,35 +96,88 @@ update msg model =
                 Year ->
                     ( { model | year = toInt value 0 }, Readings.forYear ReadingResponded (toInt value 0) )
 
+        DownloadReadingsAsCSV ->
+            ( model, Readings.downloadCsvForYear CsvData model.year )
+
+        CsvData (Ok csv) ->
+            ( model, Download.string "readings.csv" "text/csv" csv )
+
+        CsvData (Err _) ->
+            ( model, Cmd.none )
+
 
 view : Model -> List (Html Msg)
 view model =
     [ div
         [ css
-            [ width (pct 50)
-            , Css.property "aspect-ratio" "2 / 1"
-            , marginLeft (pct 25)
+            [ property "display" "grid"
+            , property "grid-template-columns" "3fr 1fr"
+            , property "grid-template-rows" "1fr"
+            , property "grid-column-gap" "5px"
+            , property "grid-row-gap" "5px"
+            , width (pct 60)
+            , margin Css.auto
             , marginTop (px 50)
             , textAlign center
             ]
         ]
-        (select [ value (model.year |> fromInt), onInput (SelectChanged Year) ]
-            (List.range 2000 2026 |> reverse |> List.map (\e -> option [] [ text (fromInt e) ]))
-            :: (case model.readings of
-                    NotAsked ->
-                        [ p [] [ text "Loading..." ] ]
+        [ div
+            [ css
+                [ Css.property "aspect-ratio" "2 / 1"
+                ]
+            ]
+            ([ select [ value (model.year |> fromInt), onInput (SelectChanged Year) ]
+                (List.range 2000 2026 |> reverse |> List.map (\e -> option [] [ text (fromInt e) ]))
+             , button [ css buttonStyle, onClick DownloadReadingsAsCSV ] [ download |> FeatherIcons.withSize 12 |> toHtml [] |> fromUnstyled, text " herunterladen" ]
+             ]
+                ++ (case model.readings of
+                        NotAsked ->
+                            [ p [] [ text "Loading..." ] ]
 
-                    Loading ->
-                        [ p [] [ text "Loading..." ] ]
+                        Loading ->
+                            [ p [] [ text "Loading..." ] ]
 
-                    Failure _ ->
-                        [ p [] [ text "Couldn't load readings." ] ]
+                        Failure _ ->
+                            [ p [] [ text "Couldn't load readings." ] ]
 
-                    Success readings ->
-                        [ renderChart readings model, readingStats readings ]
+                        Success readings ->
+                            [ renderChart readings model, readingStats readings ]
+                   )
+            )
+        , case model.readings of
+            Success readings ->
+                valuesTable readings
+
+            _ ->
+                valuesTable []
+        ]
+    ]
+
+
+valuesTable : List Reading -> Html Msg
+valuesTable readings =
+    table [css [overflow scroll, maxHeight (vh 80), display block]]
+        (tr []
+            [ th [] [ text "Datum" ]
+            , th [] [ text "Temperatur" ]
+            ]
+            :: (readings
+                    |> List.map
+                        (\r ->
+                            tr
+                                [ css
+                                    [ hover
+                                        [ backgroundColor (hex "#00008b")
+                                        , color (hex "#f9f9f9")
+                                        ]
+                                    ]
+                                ]
+                                [ td [] [ r.date |> text ]
+                                , td [] [ r.value |> Round.round 2 |> text ]
+                                ]
+                        )
                )
         )
-    ]
 
 
 renderChart : List Reading -> Model -> Html Msg

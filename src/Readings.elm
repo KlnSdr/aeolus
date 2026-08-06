@@ -1,4 +1,4 @@
-module Readings exposing (Reading, forMonth, forYear, last, uploadValue, decoder)
+module Readings exposing (Reading, decoder, downloadCsvForMonth, downloadCsvForYear, forMonth, forYear, last, uploadValue)
 
 import Constants exposing (api_url, token)
 import Http exposing (header, jsonBody, request)
@@ -100,3 +100,35 @@ decoder =
     Decode.map2 Reading
         (Decode.field "value" Decode.float)
         (Decode.field "date" Decode.string)
+
+
+downloadCsvForMonth : (Result Http.Error String -> msg) -> Int -> Int -> Cmd msg
+downloadCsvForMonth toMsg year month =
+    request
+        { method = "GET"
+        , url = api_url ++ "/rest/readings/" ++ fromInt year ++ "/" ++ fromInt month
+        , headers =
+            [ header "Hades-Login-Token" token
+            , header "Accept" "text/csv"
+            ]
+        , expect = Http.expectString toMsg
+        , body = Http.emptyBody
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+downloadCsvForYear : (Result Http.Error String -> msg) -> Int -> Cmd msg
+downloadCsvForYear toMsg year =
+    request
+        { method = "GET"
+        , url = api_url ++ "/rest/readings/" ++ fromInt year
+        , headers =
+            [ header "Hades-Login-Token" token
+            , header "Accept" "text/csv"
+            ]
+        , expect = Http.expectString toMsg
+        , body = Http.emptyBody
+        , timeout = Nothing
+        , tracker = Nothing
+        }
