@@ -12,6 +12,7 @@ import Pages.DataQuality as DataQuality
 import Pages.Landing as Landing
 import Pages.Login as Login
 import Pages.MonthOverview as MonthOverview
+import Pages.Reports as Reports
 import Pages.Signup as Signup
 import Pages.YearOverview as YearOverview
 import Route exposing (Route(..))
@@ -28,6 +29,7 @@ type Page
     | YearlyOverviewPage YearOverview.Model
     | CompareYearsPage CompareYears.Model
     | DataQualityPage DataQuality.Model
+    | ReportsPage Reports.Model
 
 
 pageToTitlePostFix : Page -> String
@@ -57,6 +59,9 @@ pageToTitlePostFix page =
         DataQualityPage _ ->
             " - Datenqualität"
 
+        ReportsPage _ ->
+            " -  Berichte"
+
 
 type alias Model =
     { key : Nav.Key
@@ -76,6 +81,7 @@ type Msg
     | YearOverviewMsg YearOverview.Msg
     | CompareYearsMsg CompareYears.Msg
     | DataQualityMsg DataQuality.Msg
+    | ReportsMsg Reports.Msg
 
 
 main : Program () Model Msg
@@ -144,6 +150,13 @@ changeRouteTo maybeRoute model =
                     DataQuality.init
             in
             ( { model | page = DataQualityPage dq }, Cmd.map DataQualityMsg dqCmd )
+
+        Just Route.Reports ->
+            let
+                ( dq, dqCmd ) =
+                    Reports.init
+            in
+            ( { model | page = ReportsPage dq }, Cmd.map ReportsMsg dqCmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -281,6 +294,20 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        ReportsMsg subMsg ->
+            case model.page of
+                ReportsPage subModel ->
+                    let
+                        ( newSubModel, subCmd ) =
+                            Reports.update subMsg subModel
+                    in
+                    ( { model | page = ReportsPage newSubModel, user = Reports.userOf newSubModel }
+                    , Cmd.map ReportsMsg subCmd
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 viewBody : Model -> Html Msg
 viewBody model =
@@ -335,3 +362,7 @@ mainContent model =
         DataQualityPage subModel ->
             Html.Styled.map NavBarMsg (NavBar.navBar model.user)
                 :: List.map (Html.Styled.map DataQualityMsg) (DataQuality.view subModel)
+
+        ReportsPage subModel ->
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+                :: List.map (Html.Styled.map ReportsMsg) (Reports.view subModel)

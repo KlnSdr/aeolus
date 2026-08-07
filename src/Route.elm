@@ -13,6 +13,7 @@ type Route
     | YearlyOverview
     | CompareYears
     | DataQuality
+    | Reports
 
 
 parser : Parser (Route -> a) a
@@ -25,6 +26,7 @@ parser =
         , Parser.map YearlyOverview (s "year")
         , Parser.map CompareYears (s "compare")
         , Parser.map DataQuality (s "dataquality")
+        , Parser.map Reports (s "reports")
         , Parser.map Dashboard top
         ]
 
@@ -60,3 +62,6 @@ toPath route =
 
         DataQuality ->
             "/dataquality"
+
+        Reports ->
+            "/reports"

@@ -38,7 +38,7 @@ navBarElements =
     , { location = MonthlyOverview
       , displayText = "Monatswerte"
       }
-    , { location = MonthlyOverview
+    , { location = Route.Reports
       , displayText = "Berichte"
       }
     ]
