@@ -1,11 +1,15 @@
 module Pages.Reports exposing (Model, Msg, init, update, userOf, view)
 
+import CommonStyles exposing (buttonStyle)
+import Css exposing (absolute, backgroundColor, border3, bottom, color, displayFlex, flexFlow1, flexWrap, hex, hover, margin, marginBottom, marginTop, padding, position, property, px, relative, row, solid, width, wrap)
 import ErrorHelper
-import Html.Styled exposing (Html, div, text)
+import Html.Styled exposing (Html, button, div, h3, li, p, text, ul)
+import Html.Styled.Attributes exposing (css)
 import Http exposing (Error)
-import List exposing (map)
+import List exposing (map, sortWith)
 import RemoteData exposing (RemoteData(..), WebData)
-import Reports exposing (Report, getAllReports)
+import Reports exposing (Report, ReportTrigger, getAllReports, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
+import String exposing (fromInt, padLeft)
 import Users exposing (User)
 
 
@@ -56,7 +60,14 @@ view model =
                 text "lade Berichte..."
 
             Success reports ->
-                renderReports reports
+                div
+                    [ css
+                        [ margin (px 5)
+                        ]
+                    ]
+                    [ button [ css buttonStyle ] [ text "Bericht anlegen" ]
+                    , renderReports reports
+                    ]
 
             Failure reason ->
                 reason |> ErrorHelper.errorToString |> text
@@ -69,9 +80,86 @@ view model =
 
 renderReports : List Report -> Html Msg
 renderReports reports =
-    div [] (map renderReport reports)
+    div
+        [ css
+            [ displayFlex
+            , flexFlow1 row
+            , flexWrap wrap
+            , marginTop (px 5)
+            , property "gap" "5px"
+            ]
+        ]
+        (map renderReport <| sortWith (\a -> \b -> compare a.name b.name) <| reports)
 
 
 renderReport : Report -> Html Msg
 renderReport report =
-    text report.name
+    div
+        [ css
+            [ padding (px 5)
+            , border3 (px 2) solid (hex "#00008b")
+            , position relative
+            , padding (px 5)
+            , width (px 400)
+            ]
+        ]
+        [ h3 [] [ text report.name ]
+        , div
+            [ css
+                []
+            ]
+            [ div
+                [ css
+                    [ property "display" "grid"
+                    , property "grid-template-columns" "auto auto"
+                    , property "grid-template-rows" "auto"
+                    , property "grid-column-gap" "5px"
+                    , property "grid-row-gap" "5px"
+                    , Css.paddingBottom (px 15)
+                    ]
+                ]
+                [ p [] [ text "Typ:" ]
+                , p [] [ text <| reportTypeToDisplayString <| report.reportType ]
+                , p [] [ text "Auslöser:" ]
+                , p []
+                    [ text <|
+                        (reportTriggerToDisplayString report.trigger
+                            ++ (if report.trigger == Reports.Schedule then
+                                    " (" ++ reportScheduleToDisplayString report.scheduleDay ++ ", " ++ (report.scheduleHour |> fromInt |> padLeft 2 '0') ++ ":" ++ (report.scheduleMinute |> fromInt |> padLeft 2 '0') ++ ")"
+
+                                else
+                                    ""
+                               )
+                        )
+                    ]
+                , p [] [ text "Features:" ]
+                , ul [] (report.reportFeatures |> map (\f -> li [] [ text <| reportFeatureToDisplayString <| f ]))
+                ]
+            , div
+                [ css
+                    [ displayFlex
+                    , flexFlow1 row
+                    , flexWrap wrap
+                    , marginTop (px 5)
+                    , property "gap" "5px"
+                    , position absolute
+                    , bottom (px 0)
+                    , marginBottom (px 5)
+                    ]
+                ]
+                [ button
+                    [ css
+                        [ border3 (px 2) solid (hex "#8B0000FF")
+                        , backgroundColor (hex "#8B0000FF")
+                        , color (hex "#f9f9f9")
+                        , hover
+                            [ backgroundColor (hex "#f9f9f9")
+                            , color (hex "#8B0000FF")
+                            ]
+                        ]
+                    ]
+                    [ text "Löschen" ]
+                , button [ css buttonStyle ] [ text "Jetzt auslösen" ]
+                ]
+            ]
+        ]
