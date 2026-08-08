@@ -1,4 +1,4 @@
-module Reports exposing (Report, ReportFeature(..), ReportSchedule(..), ReportTrigger(..), ReportType(..), createNewReport, deleteReport, getAllReports, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
+module Reports exposing (Report, ReportFeature(..), ReportSchedule(..), ReportTrigger(..), ReportType(..), createNewReport, deleteReport, getAllReports, render, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
 
 import Constants exposing (api_url, token)
 import Http
@@ -6,6 +6,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import List exposing (map)
+import Ports exposing (openInNewTab)
 
 
 type alias Report =
@@ -354,3 +355,8 @@ decodeReportTrigger =
                     _ ->
                         Decode.fail ("Unknown ReportTrigger: " ++ str)
             )
+
+
+render : Report -> Cmd none
+render report =
+    openInNewTab <| api_url ++ "/rest/report/id/" ++ report.id ++ "/render"

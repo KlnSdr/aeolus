@@ -29,6 +29,10 @@
       var app = Elm.Main.init({
         node: document.getElementById("app"),
       });
+
+      app.ports.openInNewTab.subscribe((url) => {
+        window.open(url, "_blank").focus();
+      });
     </script>
   </body>
 </html>

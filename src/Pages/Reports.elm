@@ -5,12 +5,14 @@ import Css exposing (absolute, backgroundColor, border3, bottom, color, displayF
 import ErrorHelper
 import Html.Styled exposing (Html, button, div, h3, li, p, text, ul)
 import Html.Styled.Attributes exposing (css)
+import Html.Styled.Events exposing (onClick)
 import Http exposing (Error)
 import List exposing (map, sortWith)
 import RemoteData exposing (RemoteData(..), WebData)
-import Reports exposing (Report, ReportTrigger, getAllReports, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
+import Reports exposing (Report, deleteReport, getAllReports, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
 import String exposing (fromInt, padLeft)
 import Users exposing (User)
+import Reports exposing (render)
 
 
 userOf : Model -> Maybe User
@@ -27,6 +29,9 @@ type alias Model =
 type Msg
     = UserResponded (Result Error User)
     | ReportsResponse (Result Error (List Report))
+    | DeleteReport Report
+    | ReportDeleted (Result Error ())
+    | RenderReport Report
 
 
 init : ( Model, Cmd Msg )
@@ -50,6 +55,15 @@ update msg model =
 
         ReportsResponse (Err reason) ->
             ( { model | reports = Failure reason }, Cmd.none )
+
+        DeleteReport report ->
+            ( model, deleteReport ReportDeleted report.id )
+
+        ReportDeleted _ ->
+            ( model, getAllReports ReportsResponse )
+
+        RenderReport report ->
+            ( model, render report )
 
 
 view : Model -> List (Html Msg)
@@ -157,9 +171,10 @@ renderReport report =
                             , color (hex "#8B0000FF")
                             ]
                         ]
+                    , onClick (DeleteReport report)
                     ]
                     [ text "Löschen" ]
-                , button [ css buttonStyle ] [ text "Jetzt auslösen" ]
+                , button [ css buttonStyle, onClick (RenderReport report) ] [ text "Jetzt auslösen" ]
                 ]
             ]
         ]
