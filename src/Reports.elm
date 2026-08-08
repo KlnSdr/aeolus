@@ -1,4 +1,4 @@
-module Reports exposing (Report, ReportFeature(..), ReportSchedule(..), ReportTrigger(..), ReportType(..), createNewReport, deleteReport, getAllReports, render, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
+module Reports exposing (Report, ReportFeature(..), ReportSchedule(..), ReportTrigger(..), ReportType(..), allReportFeatures, allReportSchedules, allReportTrigger, allReportTypes, createNewReport, deleteReport, getAllReports, render, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
 
 import Constants exposing (api_url, token)
 import Http
@@ -27,6 +27,27 @@ type ReportType
     | Yearly
 
 
+allReportTypes : List ReportType
+allReportTypes =
+    let
+        list : List ReportType
+        list =
+            [ Monthly, Yearly ]
+
+        exhaustivenessCheck : ReportType -> ()
+        exhaustivenessCheck reportType =
+            case reportType of
+                Monthly ->
+                    ()
+
+                Yearly ->
+                    ()
+    in
+    list
+        |> map exhaustivenessCheck
+        |> always list
+
+
 reportTypeToString : ReportType -> String
 reportTypeToString reportType =
     case reportType of
@@ -52,6 +73,33 @@ type ReportSchedule
     | FirstDayOfMonth
     | FirstDayOfWeek
     | FirstDayOfYear
+
+
+allReportSchedules : List ReportSchedule
+allReportSchedules =
+    let
+        list : List ReportSchedule
+        list =
+            [ Unset, FirstDayOfWeek, FirstDayOfMonth, FirstDayOfYear ]
+
+        exhaustivenessCheck : ReportSchedule -> ()
+        exhaustivenessCheck reportSchedule =
+            case reportSchedule of
+                Unset ->
+                    ()
+
+                FirstDayOfMonth ->
+                    ()
+
+                FirstDayOfWeek ->
+                    ()
+
+                FirstDayOfYear ->
+                    ()
+    in
+    list
+        |> map exhaustivenessCheck
+        |> always list
 
 
 reportScheduleToString : ReportSchedule -> String
@@ -97,6 +145,61 @@ type ReportFeature
     | LowTariffPowerCurve
     | HouseholdPowerCurve
     | HouseholdWaterCurve
+
+
+allReportFeatures : List ReportFeature
+allReportFeatures =
+    let
+        exhaustivenessCheck : ReportFeature -> ()
+        exhaustivenessCheck feature =
+            case feature of
+                TemperatureCurve ->
+                    ()
+
+                Trend ->
+                    ()
+
+                Averages ->
+                    ()
+
+                OperatingHoursHeatingCurve ->
+                    ()
+
+                OperatingHoursWaterCurve ->
+                    ()
+
+                OperatingHoursTwoCurve ->
+                    ()
+
+                HighTariffPowerCurve ->
+                    ()
+
+                LowTariffPowerCurve ->
+                    ()
+
+                HouseholdPowerCurve ->
+                    ()
+
+                HouseholdWaterCurve ->
+                    ()
+
+        list : List ReportFeature
+        list =
+            [ TemperatureCurve
+            , Trend
+            , Averages
+            , OperatingHoursHeatingCurve
+            , OperatingHoursWaterCurve
+            , OperatingHoursTwoCurve
+            , HighTariffPowerCurve
+            , LowTariffPowerCurve
+            , HouseholdPowerCurve
+            , HouseholdWaterCurve
+            ]
+    in
+    list
+        |> map exhaustivenessCheck
+        |> always list
 
 
 reportFeatureToString : ReportFeature -> String
@@ -170,6 +273,27 @@ reportFeatureToDisplayString reportFeature =
 type ReportTrigger
     = Manual
     | Schedule
+
+
+allReportTrigger : List ReportTrigger
+allReportTrigger =
+    let
+        list : List ReportTrigger
+        list =
+            [ Manual, Schedule ]
+
+        exhaustivenessCheck : ReportTrigger -> ()
+        exhaustivenessCheck reportTrigger =
+            case reportTrigger of
+                Manual ->
+                    ()
+
+                Schedule ->
+                    ()
+    in
+    list
+        |> map exhaustivenessCheck
+        |> always list
 
 
 reportTriggerToString : ReportTrigger -> String

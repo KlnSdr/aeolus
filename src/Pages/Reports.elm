@@ -1,18 +1,18 @@
 module Pages.Reports exposing (Model, Msg, init, update, userOf, view)
 
 import CommonStyles exposing (buttonStyle)
+import Components.Popup
 import Css exposing (absolute, backgroundColor, border3, bottom, color, displayFlex, flexFlow1, flexWrap, hex, hover, margin, marginBottom, marginTop, padding, position, property, px, relative, row, solid, width, wrap)
 import ErrorHelper
-import Html.Styled exposing (Html, button, div, h3, li, p, text, ul)
-import Html.Styled.Attributes exposing (css)
+import Html.Styled exposing (Html, button, div, h2, h3, input, label, li, option, p, select, text, ul)
+import Html.Styled.Attributes exposing (css, type_)
 import Html.Styled.Events exposing (onClick)
 import Http exposing (Error)
 import List exposing (map, sortWith)
 import RemoteData exposing (RemoteData(..), WebData)
-import Reports exposing (Report, deleteReport, getAllReports, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
+import Reports exposing (Report, ReportType(..), allReportFeatures, allReportSchedules, allReportTrigger, allReportTypes, deleteReport, getAllReports, render, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
 import String exposing (fromInt, padLeft)
 import Users exposing (User)
-import Reports exposing (render)
 
 
 userOf : Model -> Maybe User
@@ -23,6 +23,7 @@ userOf model =
 type alias Model =
     { user : WebData User
     , reports : WebData (List Report)
+    , popup : Components.Popup.Model Msg
     }
 
 
@@ -32,11 +33,13 @@ type Msg
     | DeleteReport Report
     | ReportDeleted (Result Error ())
     | RenderReport Report
+    | PopupMsg (Components.Popup.Msg Msg)
+    | OpenCreateReportPopup
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { user = Loading, reports = NotAsked }
+    ( { user = Loading, reports = NotAsked, popup = Components.Popup.closed }
     , Users.info UserResponded
     )
 
@@ -65,6 +68,12 @@ update msg model =
         RenderReport report ->
             ( model, render report )
 
+        PopupMsg subMsg ->
+            ( { model | popup = Components.Popup.update subMsg model.popup }, Cmd.none )
+
+        OpenCreateReportPopup ->
+            ( { model | popup = Components.Popup.open createNewReportPopup }, Cmd.none )
+
 
 view : Model -> List (Html Msg)
 view model =
@@ -79,7 +88,7 @@ view model =
                         [ margin (px 5)
                         ]
                     ]
-                    [ button [ css buttonStyle ] [ text "Bericht anlegen" ]
+                    [ button [ css buttonStyle, onClick OpenCreateReportPopup ] [ text "Bericht anlegen" ]
                     , renderReports reports
                     ]
 
@@ -89,6 +98,7 @@ view model =
             _ ->
                 div [] []
         ]
+    , Html.Styled.map PopupMsg (Components.Popup.view model.popup)
     ]
 
 
@@ -178,3 +188,45 @@ renderReport report =
                 ]
             ]
         ]
+
+
+createNewReportPopup : Html Msg
+createNewReportPopup =
+    div []
+        [ h2 [] [ text "Neuer Bericht" ]
+        , div
+            [ css
+                [ property "display" "grid"
+                , property "grid-template-columns" "auto auto"
+                , property "grid-template-rows" "auto"
+                , property "grid-column-gap" "5px"
+                , property "grid-row-gap" "5px"
+                ]
+            ]
+            [ text "Name:"
+            , input [] []
+            , text "Typ:"
+            , select [] (allReportTypes |> map (\reportType -> option [] [ text (reportTypeToDisplayString reportType ++ " (" ++ reportTypeAddition reportType ++ ")") ]))
+            , p [] [ text "Auswertungen:" ]
+
+            -- TODO labels for checkboxes
+            , ul [] (allReportFeatures |> map (\feature -> div [] [ label [] [ input [ type_ "checkbox" ] [], text (reportFeatureToDisplayString feature) ] ]))
+            , text "Auslöser:"
+            , select [] (allReportTrigger |> map (\trigger -> option [] [ text (reportTriggerToDisplayString trigger) ]))
+            , text "Tag:"
+            , select [] (allReportSchedules |> map (\schedule -> option [] [ text (reportScheduleToDisplayString schedule) ]))
+            , text "Uhrzeit (nicht eher als):"
+            , input [ type_ "time" ] []
+            ]
+        , button [ css buttonStyle ] [ text "Speichern" ]
+        ]
+
+
+reportTypeAddition : ReportType -> String
+reportTypeAddition reportType =
+    case reportType of
+        Monthly ->
+            "Vormonat"
+
+        Yearly ->
+            "Vorjahr"
