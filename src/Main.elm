@@ -2,9 +2,14 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
+import CommonStyles exposing (buttonStyle)
+import Components.Popup
 import Css exposing (..)
-import Html.Styled exposing (Html, div, toUnstyled)
+import Dates exposing (formatEpochMillis)
+import Html.Styled exposing (Html, button, div, hr, p, td, text, th, toUnstyled, tr)
 import Html.Styled.Attributes exposing (css)
+import Html.Styled.Events exposing (onClick)
+import Http
 import Messages exposing (Message, messagesOf)
 import NavBar
 import Pages.CompareYears as CompareYears
@@ -16,6 +21,7 @@ import Pages.MonthOverview as MonthOverview
 import Pages.Reports as Reports
 import Pages.Signup as Signup
 import Pages.YearOverview as YearOverview
+import RemoteData exposing (RemoteData(..))
 import Route exposing (Route(..))
 import Url exposing (Url)
 import Users exposing (User)
@@ -69,6 +75,8 @@ type alias Model =
     , page : Page
     , user : Maybe User
     , messages : List Message
+    , messagesPopup : Components.Popup.Model Msg
+    , messageDetailPopup : Components.Popup.Model Msg
     }
 
 
@@ -84,6 +92,11 @@ type Msg
     | CompareYearsMsg CompareYears.Msg
     | DataQualityMsg DataQuality.Msg
     | ReportsMsg Reports.Msg
+    | MessagesPopupMsg (Components.Popup.Msg Msg)
+    | MessageDetailPopupMsg (Components.Popup.Msg Msg)
+    | OpenMessageDetail Message
+    | MarkMessageAsRead Message
+    | MessageMarkedAsRead String (Result Http.Error ())
 
 
 main : Program () Model Msg
@@ -100,7 +113,14 @@ main =
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
-    changeRouteTo (Route.fromUrl url) { key = key, page = Landing, user = Nothing, messages = [] }
+    changeRouteTo (Route.fromUrl url)
+        { key = key
+        , page = Landing
+        , user = Nothing
+        , messages = []
+        , messagesPopup = Components.Popup.closed
+        , messageDetailPopup = Components.Popup.closed
+        }
 
 
 changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -181,6 +201,9 @@ update msg model =
 
         NavBarMsg (NavBar.NavElementClicked location) ->
             ( model, Nav.pushUrl model.key (Route.toPath location) )
+
+        NavBarMsg NavBar.MessagesClicked ->
+            ( { model | messagesPopup = Components.Popup.openReactive }, Cmd.none )
 
         LoginMsg subMsg ->
             case model.page of
@@ -310,6 +333,70 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        MessagesPopupMsg subMsg ->
+            case subMsg of
+                Components.Popup.ContentMsg contentMsg ->
+                    update contentMsg { model | messagesPopup = Components.Popup.update subMsg model.messagesPopup }
+
+                _ ->
+                    ( { model | messagesPopup = Components.Popup.update subMsg model.messagesPopup }, Cmd.none )
+
+        MessageDetailPopupMsg subMsg ->
+            case subMsg of
+                Components.Popup.ContentMsg contentMsg ->
+                    update contentMsg { model | messageDetailPopup = Components.Popup.update subMsg model.messageDetailPopup }
+
+                _ ->
+                    ( { model | messageDetailPopup = Components.Popup.update subMsg model.messageDetailPopup }, Cmd.none )
+
+        OpenMessageDetail message ->
+            ( { model | messageDetailPopup = Components.Popup.open (messageDetailContent message) }, Cmd.none )
+
+        MarkMessageAsRead message ->
+            ( model, Messages.markAsRead message.id (MessageMarkedAsRead message.id) )
+
+        MessageMarkedAsRead messageId result ->
+            case result of
+                Ok () ->
+                    let
+                        updatedMessages =
+                            List.filter (\m -> m.id /= messageId) model.messages
+                    in
+                    ( { model
+                        | messages = updatedMessages
+                        , page = updatePageMessages updatedMessages model.page
+                      }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+
+updatePageMessages : List Message -> Page -> Page
+updatePageMessages messages page =
+    case page of
+        DashboardPage subModel ->
+            DashboardPage { subModel | messages = Success messages }
+
+        MonthlyOverviewPage subModel ->
+            MonthlyOverviewPage { subModel | messages = Success messages }
+
+        YearlyOverviewPage subModel ->
+            YearlyOverviewPage { subModel | messages = Success messages }
+
+        CompareYearsPage subModel ->
+            CompareYearsPage { subModel | messages = Success messages }
+
+        DataQualityPage subModel ->
+            DataQualityPage { subModel | messages = Success messages }
+
+        ReportsPage subModel ->
+            ReportsPage { subModel | messages = Success messages }
+
+        _ ->
+            page
+
 
 viewBody : Model -> Html Msg
 viewBody model =
@@ -346,25 +433,87 @@ mainContent model =
             List.map (Html.Styled.map SignupMsg) (Signup.view subModel)
 
         DashboardPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
-                :: List.map (Html.Styled.map DashboardMsg) (Dashboard.view subModel)
+            authenticatedNavbar model ++ List.map (Html.Styled.map DashboardMsg) (Dashboard.view subModel)
 
         MonthlyOverviewPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
-                :: List.map (Html.Styled.map MonthOverviewMsg) (MonthOverview.view subModel)
+            authenticatedNavbar model ++ List.map (Html.Styled.map MonthOverviewMsg) (MonthOverview.view subModel)
 
         YearlyOverviewPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
-                :: List.map (Html.Styled.map YearOverviewMsg) (YearOverview.view subModel)
+            authenticatedNavbar model ++ List.map (Html.Styled.map YearOverviewMsg) (YearOverview.view subModel)
 
         CompareYearsPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
-                :: List.map (Html.Styled.map CompareYearsMsg) (CompareYears.view subModel)
+            authenticatedNavbar model ++ List.map (Html.Styled.map CompareYearsMsg) (CompareYears.view subModel)
 
         DataQualityPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
-                :: List.map (Html.Styled.map DataQualityMsg) (DataQuality.view subModel)
+            authenticatedNavbar model ++ List.map (Html.Styled.map DataQualityMsg) (DataQuality.view subModel)
 
         ReportsPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
-                :: List.map (Html.Styled.map ReportsMsg) (Reports.view subModel)
+            authenticatedNavbar model ++ List.map (Html.Styled.map ReportsMsg) (Reports.view subModel)
+
+
+authenticatedNavbar : Model -> List (Html Msg)
+authenticatedNavbar model =
+    [ Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
+    , Html.Styled.map MessagesPopupMsg (Components.Popup.viewReactive (messagesPopupContent model.messages) model.messagesPopup)
+    , Html.Styled.map MessageDetailPopupMsg (Components.Popup.view model.messageDetailPopup)
+    ]
+
+
+messagesPopupContent : List Message -> Html Msg
+messagesPopupContent messages =
+    case messages of
+        [] ->
+            p [] [ text "Keine ungelesenen Nachrichten." ]
+
+        _ ->
+            Html.Styled.table [ css messagesTableStyle ]
+                (tr []
+                    [ th [ css messagesTableCellStyle ] [ text "Von" ]
+                    , th [ css messagesTableCellStyle ] [ text "Datum" ]
+                    , th [ css messagesTableCellStyle ] [ text "Nachricht" ]
+                    , th [ css messagesTableCellStyle ] []
+                    , th [ css messagesTableCellStyle ] []
+                    ]
+                    :: List.map messageRow messages
+                )
+
+
+messageRow : Message -> Html Msg
+messageRow message =
+    tr []
+        [ td [ css messagesTableCellStyle ] [ text message.from ]
+        , td [ css messagesTableCellStyle ] [ text (formatEpochMillis message.dateSend) ]
+        , td [ css messagesTableCellStyle ] [ text (truncateMessage message.message) ]
+        , td [ css messagesTableCellStyle ] [ button [ css buttonStyle, onClick (OpenMessageDetail message) ] [ text "Öffnen" ] ]
+        , td [ css messagesTableCellStyle ] [ button [ css buttonStyle, onClick (MarkMessageAsRead message) ] [ text "Als gelesen markieren" ] ]
+        ]
+
+
+truncateMessage : String -> String
+truncateMessage content =
+    String.left 6 content ++ "..."
+
+
+messageDetailContent : Message -> Html Msg
+messageDetailContent message =
+    div []
+        [ p [] [ text ("Von: " ++ message.from) ]
+        , p [] [ text ("Datum: " ++ formatEpochMillis message.dateSend) ]
+        , hr [] []
+        , p [] [ text message.message ]
+        ]
+
+
+messagesTableStyle : List Style
+messagesTableStyle =
+    [ borderCollapse collapse
+    , width (pct 100)
+    ]
+
+
+messagesTableCellStyle : List Style
+messagesTableCellStyle =
+    [ padding (px 6)
+    , textAlign left
+    , borderBottom3 (px 1) solid (hex "#dddddd")
+    ]

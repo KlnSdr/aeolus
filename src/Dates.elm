@@ -1,4 +1,4 @@
-module Dates exposing (formatRataDie, fromRataDie, parseDateToRataDie, toRataDie)
+module Dates exposing (formatEpochMillis, formatRataDie, fromRataDie, parseDateToRataDie, toRataDie)
 
 import String exposing (fromInt)
 
@@ -26,6 +26,23 @@ formatRataDie n =
             String.padLeft 2 '0' (fromInt x)
     in
     pad day ++ "." ++ pad month
+
+
+formatEpochMillis : String -> String
+formatEpochMillis epochMillisString =
+    case String.toInt epochMillisString of
+        Just millis ->
+            let
+                { year, month, day } =
+                    fromRataDie (millis // 86400000)
+
+                pad x =
+                    String.padLeft 2 '0' (fromInt x)
+            in
+            pad day ++ "." ++ pad month ++ "." ++ fromInt year
+
+        Nothing ->
+            "-"
 
 
 toRataDie : Int -> Int -> Int -> Int

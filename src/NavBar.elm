@@ -16,6 +16,7 @@ type Msg
     = LogoutClicked
     | LoginClicked
     | NavElementClicked Route
+    | MessagesClicked
 
 
 type alias NavigationLocation =
@@ -66,7 +67,7 @@ navBar user messages =
         , div []
             [ div [ css navBarButtonsStyle ] (List.map (\e -> button [ css buttonStyle, onClick (NavElementClicked e.location) ] [ text e.displayText ]) navBarElements)
             , div [ css navBarRight ]
-                [ button [ css buttonStyle ] [ text ("Nachrichten: " ++ (messages |> length |> fromInt)) ]
+                [ button [ css buttonStyle, onClick MessagesClicked ] [ text ("Nachrichten: " ++ (messages |> length |> fromInt)) ]
                 , label [] [ text ("(" ++ userToName user ++ ")") ]
                 , button [ css buttonStyle, onClick LogoutClicked ] [ text "abmelden" ]
                 ]
