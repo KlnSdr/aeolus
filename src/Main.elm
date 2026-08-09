@@ -231,7 +231,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             Dashboard.update subMsg subModel
                     in
-                    ( { model | page = DashboardPage newSubModel, user = Dashboard.userOf newSubModel }
+                    ( { model | page = DashboardPage newSubModel, user = Users.userOf newSubModel }
                     , Cmd.map DashboardMsg subCmd
                     )
 
@@ -245,7 +245,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             MonthOverview.update subMsg subModel
                     in
-                    ( { model | page = MonthlyOverviewPage newSubModel, user = MonthOverview.userOf newSubModel }
+                    ( { model | page = MonthlyOverviewPage newSubModel, user = Users.userOf newSubModel }
                     , Cmd.map MonthOverviewMsg subCmd
                     )
 
@@ -259,7 +259,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             YearOverview.update subMsg subModel
                     in
-                    ( { model | page = YearlyOverviewPage newSubModel, user = YearOverview.userOf newSubModel }
+                    ( { model | page = YearlyOverviewPage newSubModel, user = Users.userOf newSubModel }
                     , Cmd.map YearOverviewMsg subCmd
                     )
 
@@ -273,7 +273,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             CompareYears.update subMsg subModel
                     in
-                    ( { model | page = CompareYearsPage newSubModel, user = CompareYears.userOf newSubModel }
+                    ( { model | page = CompareYearsPage newSubModel, user = Users.userOf newSubModel }
                     , Cmd.map CompareYearsMsg subCmd
                     )
 
@@ -287,7 +287,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             DataQuality.update subMsg subModel
                     in
-                    ( { model | page = DataQualityPage newSubModel, user = DataQuality.userOf newSubModel }
+                    ( { model | page = DataQualityPage newSubModel, user = Users.userOf newSubModel }
                     , Cmd.map DataQualityMsg subCmd
                     )
 
@@ -301,7 +301,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             Reports.update subMsg subModel
                     in
-                    ( { model | page = ReportsPage newSubModel, user = Reports.userOf newSubModel }
+                    ( { model | page = ReportsPage newSubModel, user = Users.userOf newSubModel }
                     , Cmd.map ReportsMsg subCmd
                     )
 

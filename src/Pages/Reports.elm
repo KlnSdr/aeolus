@@ -1,4 +1,4 @@
-module Pages.Reports exposing (Model, Msg, init, update, userOf, view)
+module Pages.Reports exposing (Model, Msg, init, update, view)
 
 import CommonStyles exposing (buttonStyle)
 import Components.Popup
@@ -13,11 +13,6 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Reports exposing (Report, ReportSchedule(..), ReportTrigger(..), ReportType(..), allReportFeatures, allReportSchedules, allReportTrigger, allReportTypes, createNewReport, deleteReport, getAllReports, render, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
 import String exposing (fromInt, padLeft)
 import Users exposing (User)
-
-
-userOf : Model -> Maybe User
-userOf model =
-    RemoteData.toMaybe model.user
 
 
 type alias Model =
@@ -65,11 +60,15 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UserResponded (Ok user) ->
-            ( { model | user = Success user }, getAllReports ReportsResponse )
+        UserResponded result ->
+            ( Users.handleResponse result model
+            , case result of
+                Ok _ ->
+                    getAllReports ReportsResponse
 
-        UserResponded (Err _) ->
-            ( model, Cmd.none )
+                Err _ ->
+                    Cmd.none
+            )
 
         ReportsResponse (Ok reports) ->
             ( { model | reports = Success reports }, Cmd.none )
@@ -273,8 +272,6 @@ createNewReportPopup newReportDefinition =
                                 [ label []
                                     [ input
                                         [ type_ "checkbox"
-
-                                        -- , checked (member feature newReportDefinition.reportFeatures)
                                         , onCheck
                                             (\isChecked ->
                                                 ReportDefinitionChanged

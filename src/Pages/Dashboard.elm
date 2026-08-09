@@ -1,4 +1,4 @@
-module Pages.Dashboard exposing (Model, Msg, init, update, userOf, view)
+module Pages.Dashboard exposing (Model, Msg, init, update, view)
 
 import CommonStyles exposing (buttonStyle)
 import Components.Popup exposing (closed)
@@ -29,11 +29,6 @@ init =
     )
 
 
-userOf : Model -> Maybe User
-userOf model =
-    RemoteData.toMaybe model.user
-
-
 type Msg
     = UserResponded (Result Http.Error User)
     | LastReadingResponded (Result Http.Error Reading)
@@ -49,7 +44,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserResponded result ->
-            ( { model | user = RemoteData.fromResult result }
+            ( Users.handleResponse result model
             , case result of
                 Ok _ ->
                     Readings.last LastReadingResponded

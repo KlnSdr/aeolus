@@ -1,9 +1,10 @@
-module Users exposing (User, doLogin, info)
+module Users exposing (User, doLogin, handleResponse, info, userOf)
 
 import Constants exposing (api_url, token)
 import Http exposing (header, jsonBody, request)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 type alias User =
@@ -24,6 +25,16 @@ info toMsg =
         , timeout = Nothing
         , tracker = Nothing
         }
+
+
+userOf : { a | user : WebData User } -> Maybe User
+userOf model =
+    RemoteData.toMaybe model.user
+
+
+handleResponse : Result Http.Error User -> { a | user : WebData User } -> { a | user : WebData User }
+handleResponse result model =
+    { model | user = RemoteData.fromResult result }
 
 
 decoder : Decoder User

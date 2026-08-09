@@ -68,11 +68,6 @@ init =
     )
 
 
-userOf : Model -> Maybe User
-userOf model =
-    RemoteData.toMaybe model.user
-
-
 type Msg
     = UserResponded (Result Http.Error User)
     | ConfigResponse (Result Http.Error CheckerConfig)
@@ -95,7 +90,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserResponded result ->
-            ( { model | user = RemoteData.fromResult result }
+            ( Users.handleResponse result model
             , case result of
                 Result.Ok _ ->
                     getCheckerConfig ConfigResponse

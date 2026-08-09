@@ -1,4 +1,4 @@
-module Pages.CompareYears exposing (Model, Msg, init, update, userOf, view)
+module Pages.CompareYears exposing (Model, Msg, init, update, view)
 
 import Components.TemperatureProfileChart as Chart
 import Components.YearDifferenceChart exposing (colorFor, temperatureBarChart)
@@ -34,11 +34,6 @@ init =
     )
 
 
-userOf : Model -> Maybe User
-userOf model =
-    RemoteData.toMaybe model.user
-
-
 type SelectElement
     = Year1
     | Year2
@@ -69,7 +64,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserResponded result ->
-            update LoadInitial { model | user = RemoteData.fromResult result }
+            update LoadInitial (Users.handleResponse result model)
 
         ReadingResponded1 result ->
             update CalculateDifferences { model | year1 = ( Tuple.first model.year1, RemoteData.fromResult result ) }

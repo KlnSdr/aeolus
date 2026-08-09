@@ -1,4 +1,4 @@
-module Pages.MonthOverview exposing (Model, Msg, init, update, userOf, view)
+module Pages.MonthOverview exposing (Model, Msg, init, update, view)
 
 import CommonStyles exposing (buttonStyle)
 import Components.Stats exposing (readingStats)
@@ -36,11 +36,6 @@ init =
     )
 
 
-userOf : Model -> Maybe User
-userOf model =
-    RemoteData.toMaybe model.user
-
-
 type SelectElement
     = Year
     | Month
@@ -70,7 +65,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserResponded result ->
-            ( { model | user = RemoteData.fromResult result }
+            ( Users.handleResponse result model
             , case result of
                 Ok _ ->
                     Readings.forMonth ReadingResponded model.year model.month
