@@ -12,6 +12,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import List exposing (map)
+import Messages exposing (Message, getAllMessages)
 import Readings exposing (Reading)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -24,6 +25,7 @@ type alias Model =
     , checkerConfig : WebData CheckerConfig
     , interpolationResult : WebData InterpolationResult
     , popup : Components.Popup.Model Msg
+    , messages : WebData (List Message)
     }
 
 
@@ -63,7 +65,12 @@ emptyResult =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { user = Loading, checkerConfig = NotAsked, interpolationResult = NotAsked, popup = closed }
+    ( { user = Loading
+      , checkerConfig = NotAsked
+      , interpolationResult = NotAsked
+      , popup = closed
+      , messages = NotAsked
+      }
     , Users.info UserResponded
     )
 
@@ -84,20 +91,22 @@ type Msg
     | InterpolationFinished (Result Http.Error InterpolationResult)
     | PopupMsg (Components.Popup.Msg Msg)
     | ShowInterpolationPoup InterpolationResult
+    | MessagesResponse (Result Http.Error (List Message))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserResponded result ->
-            ( Users.handleResponse result model
-            , case result of
-                Result.Ok _ ->
-                    getCheckerConfig ConfigResponse
+            ( Users.handleResponse result model, getAllMessages MessagesResponse )
 
-                Err _ ->
-                    Cmd.none
-            )
+        MessagesResponse response ->
+            case response of
+                Result.Ok messages ->
+                    ( { model | messages = Success messages }, getCheckerConfig ConfigResponse )
+
+                Err err ->
+                    ( { model | messages = Failure err }, getCheckerConfig ConfigResponse )
 
         ConfigResponse result ->
             ( { model | checkerConfig = RemoteData.fromResult result }

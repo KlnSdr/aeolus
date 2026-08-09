@@ -7,17 +7,18 @@ import Constants exposing (intToMonth, monthToInt, months)
 import Css exposing (auto, backgroundColor, center, color, hex, hover, margin, marginTop, pct, property, px, textAlign, width)
 import Dates exposing (formatRataDie, parseDateToRataDie)
 import FeatherIcons exposing (download, toHtml)
+import File.Download as Download
 import Html.Styled exposing (Html, button, div, fromUnstyled, option, p, select, table, td, text, th, tr)
 import Html.Styled.Attributes exposing (css, value)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import List exposing (reverse)
+import Messages exposing (Message, getAllMessages)
 import Readings exposing (Reading)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import String exposing (fromInt, toInt)
 import Users exposing (User)
-import File.Download as Download
 
 
 type alias Model =
@@ -26,12 +27,19 @@ type alias Model =
     , chart : Chart.Model
     , year : Int
     , month : Int
+    , messages : WebData (List Message)
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { user = Loading, readings = NotAsked, chart = Chart.init, year = 2026, month = 1 }
+    ( { user = Loading
+      , readings = NotAsked
+      , chart = Chart.init
+      , year = 2026
+      , month = 1
+      , messages = NotAsked
+      }
     , Users.info UserResponded
     )
 
@@ -49,6 +57,7 @@ type Msg
     | SelectChanged SelectElement String
     | DownloadReadingsAsCSV
     | CsvData (Result Http.Error String)
+    | MessagesResponse (Result Http.Error (List Message))
 
 
 toInt : String -> Int -> Int
@@ -65,14 +74,15 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserResponded result ->
-            ( Users.handleResponse result model
-            , case result of
-                Ok _ ->
-                    Readings.forMonth ReadingResponded model.year model.month
+            ( Users.handleResponse result model, getAllMessages MessagesResponse )
 
-                Err _ ->
-                    Cmd.none
-            )
+        MessagesResponse response ->
+            case response of
+                Ok messages ->
+                    ( { model | messages = Success messages }, Readings.forMonth ReadingResponded model.year model.month )
+
+                Err err ->
+                    ( { model | messages = Failure err }, Readings.forMonth ReadingResponded model.year model.month )
 
         ReadingResponded result ->
             ( { model | readings = RemoteData.fromResult result }, Cmd.none )

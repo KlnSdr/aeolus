@@ -6,12 +6,14 @@ import Css exposing (auto, center, displayFlex, flexGrow, flexShrink, int, justi
 import Css.Global exposing (global, selector)
 import Dates exposing (formatRataDie, parseDateToRataDie)
 import Dict exposing (Dict)
+import ErrorHelper exposing (errorToString)
 import Html.Styled exposing (Html, div, fromUnstyled, map, option, select, text)
 import Html.Styled.Attributes exposing (class, css, value)
 import Html.Styled.Events exposing (onInput)
 import Http
 import Lib.ElmChart.PieChart exposing (pie)
 import List exposing (filter, length, reverse)
+import Messages exposing (Message, getAllMessages)
 import Readings exposing (Reading)
 import RemoteData exposing (RemoteData(..), WebData)
 import String exposing (fromInt, toInt)
@@ -24,12 +26,19 @@ type alias Model =
     , year2 : ( Int, WebData (List Reading) )
     , differences : List Reading
     , chart : Chart.Model
+    , messages : WebData (List Message)
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { user = Loading, year1 = ( 2026, NotAsked ), year2 = ( 2026, NotAsked ), chart = Chart.init, differences = [] }
+    ( { user = Loading
+      , year1 = ( 2026, NotAsked )
+      , year2 = ( 2026, NotAsked )
+      , chart = Chart.init
+      , differences = []
+      , messages = NotAsked
+      }
     , Users.info UserResponded
     )
 
@@ -48,6 +57,7 @@ type Msg
     | ChartMsg Chart.Msg
     | SelectChanged SelectElement String
     | CalculateDifferences
+    | MessagesResponse (Result Http.Error (List Message))
 
 
 toInt : String -> Int -> Int
@@ -64,7 +74,17 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserResponded result ->
-            update LoadInitial (Users.handleResponse result model)
+            ( Users.handleResponse result model, getAllMessages MessagesResponse )
+
+        MessagesResponse response ->
+            case response of
+                Ok messages ->
+                    update LoadInitial { model | messages = Success messages }
+
+                Err err ->
+                    update
+                        LoadInitial
+                        { model | messages = Failure err }
 
         ReadingResponded1 result ->
             update CalculateDifferences { model | year1 = ( Tuple.first model.year1, RemoteData.fromResult result ) }

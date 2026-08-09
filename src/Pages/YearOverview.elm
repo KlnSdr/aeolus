@@ -3,7 +3,7 @@ module Pages.YearOverview exposing (Model, Msg, init, update, view)
 import CommonStyles exposing (buttonStyle)
 import Components.Stats exposing (readingStats)
 import Components.TemperatureProfileChart as Chart
-import Css exposing (backgroundColor, center, color, hex, hover, margin, marginTop, pct, property, px, textAlign, width)
+import Css exposing (backgroundColor, block, center, color, display, hex, hover, margin, marginTop, maxHeight, overflow, pct, property, px, scroll, textAlign, vh, width)
 import Dates exposing (formatRataDie, parseDateToRataDie)
 import FeatherIcons exposing (download, toHtml)
 import File.Download as Download
@@ -12,17 +12,12 @@ import Html.Styled.Attributes exposing (css, value)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import List exposing (reverse)
-import Readings exposing (Reading)
+import Messages exposing (Message, getAllMessages)
+import Readings exposing (Reading, forYear)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import String exposing (fromInt, toInt)
 import Users exposing (User)
-import Css exposing (overflow)
-import Css exposing (scroll)
-import Css exposing (maxHeight)
-import Css exposing (vh)
-import Css exposing (display)
-import Css exposing (block)
 
 
 type alias Model =
@@ -30,12 +25,18 @@ type alias Model =
     , readings : WebData (List Reading)
     , chart : Chart.Model
     , year : Int
+    , messages : WebData (List Message)
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { user = Loading, readings = NotAsked, chart = Chart.init, year = 2026 }
+    ( { user = Loading
+      , readings = NotAsked
+      , chart = Chart.init
+      , year = 2026
+      , messages = NotAsked
+      }
     , Users.info UserResponded
     )
 
@@ -52,6 +53,7 @@ type Msg
     | SelectChanged SelectElement String
     | DownloadReadingsAsCSV
     | CsvData (Result Http.Error String)
+    | MessagesResponse (Result Http.Error (List Message))
 
 
 toInt : String -> Int -> Int
@@ -68,14 +70,15 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserResponded result ->
-            ( Users.handleResponse result model
-            , case result of
-                Ok _ ->
-                    Readings.forYear ReadingResponded model.year
+            ( Users.handleResponse result model, getAllMessages MessagesResponse )
 
-                Err _ ->
-                    Cmd.none
-            )
+        MessagesResponse response ->
+            case response of
+                Ok messages ->
+                    ( { model | messages = Success messages }, forYear ReadingResponded model.year )
+
+                Err err ->
+                    ( { model | messages = Failure err }, forYear ReadingResponded model.year )
 
         ReadingResponded result ->
             ( { model | readings = RemoteData.fromResult result }, Cmd.none )
@@ -151,7 +154,7 @@ view model =
 
 valuesTable : List Reading -> Html Msg
 valuesTable readings =
-    table [css [overflow scroll, maxHeight (vh 80), display block]]
+    table [ css [ overflow scroll, maxHeight (vh 80), display block ] ]
         (tr []
             [ th [] [ text "Datum" ]
             , th [] [ text "Temperatur" ]

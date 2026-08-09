@@ -5,6 +5,7 @@ import Browser.Navigation as Nav
 import Css exposing (..)
 import Html.Styled exposing (Html, div, toUnstyled)
 import Html.Styled.Attributes exposing (css)
+import Messages exposing (Message, messagesOf)
 import NavBar
 import Pages.CompareYears as CompareYears
 import Pages.Dashboard as Dashboard
@@ -67,6 +68,7 @@ type alias Model =
     { key : Nav.Key
     , page : Page
     , user : Maybe User
+    , messages : List Message
     }
 
 
@@ -98,7 +100,7 @@ main =
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
-    changeRouteTo (Route.fromUrl url) { key = key, page = Landing, user = Nothing }
+    changeRouteTo (Route.fromUrl url) { key = key, page = Landing, user = Nothing, messages = [] }
 
 
 changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -231,7 +233,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             Dashboard.update subMsg subModel
                     in
-                    ( { model | page = DashboardPage newSubModel, user = Users.userOf newSubModel }
+                    ( { model | page = DashboardPage newSubModel, user = Users.userOf newSubModel, messages = messagesOf newSubModel }
                     , Cmd.map DashboardMsg subCmd
                     )
 
@@ -245,7 +247,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             MonthOverview.update subMsg subModel
                     in
-                    ( { model | page = MonthlyOverviewPage newSubModel, user = Users.userOf newSubModel }
+                    ( { model | page = MonthlyOverviewPage newSubModel, user = Users.userOf newSubModel, messages = messagesOf newSubModel }
                     , Cmd.map MonthOverviewMsg subCmd
                     )
 
@@ -259,7 +261,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             YearOverview.update subMsg subModel
                     in
-                    ( { model | page = YearlyOverviewPage newSubModel, user = Users.userOf newSubModel }
+                    ( { model | page = YearlyOverviewPage newSubModel, user = Users.userOf newSubModel, messages = messagesOf newSubModel }
                     , Cmd.map YearOverviewMsg subCmd
                     )
 
@@ -273,7 +275,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             CompareYears.update subMsg subModel
                     in
-                    ( { model | page = CompareYearsPage newSubModel, user = Users.userOf newSubModel }
+                    ( { model | page = CompareYearsPage newSubModel, user = Users.userOf newSubModel, messages = messagesOf newSubModel }
                     , Cmd.map CompareYearsMsg subCmd
                     )
 
@@ -287,7 +289,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             DataQuality.update subMsg subModel
                     in
-                    ( { model | page = DataQualityPage newSubModel, user = Users.userOf newSubModel }
+                    ( { model | page = DataQualityPage newSubModel, user = Users.userOf newSubModel, messages = messagesOf newSubModel }
                     , Cmd.map DataQualityMsg subCmd
                     )
 
@@ -301,7 +303,7 @@ update msg model =
                         ( newSubModel, subCmd ) =
                             Reports.update subMsg subModel
                     in
-                    ( { model | page = ReportsPage newSubModel, user = Users.userOf newSubModel }
+                    ( { model | page = ReportsPage newSubModel, user = Users.userOf newSubModel, messages = messagesOf newSubModel }
                     , Cmd.map ReportsMsg subCmd
                     )
 
@@ -344,25 +346,25 @@ mainContent model =
             List.map (Html.Styled.map SignupMsg) (Signup.view subModel)
 
         DashboardPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
                 :: List.map (Html.Styled.map DashboardMsg) (Dashboard.view subModel)
 
         MonthlyOverviewPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
                 :: List.map (Html.Styled.map MonthOverviewMsg) (MonthOverview.view subModel)
 
         YearlyOverviewPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
                 :: List.map (Html.Styled.map YearOverviewMsg) (YearOverview.view subModel)
 
         CompareYearsPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
                 :: List.map (Html.Styled.map CompareYearsMsg) (CompareYears.view subModel)
 
         DataQualityPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
                 :: List.map (Html.Styled.map DataQualityMsg) (DataQuality.view subModel)
 
         ReportsPage subModel ->
-            Html.Styled.map NavBarMsg (NavBar.navBar model.user)
+            Html.Styled.map NavBarMsg (NavBar.navBar model.user model.messages)
                 :: List.map (Html.Styled.map ReportsMsg) (Reports.view subModel)

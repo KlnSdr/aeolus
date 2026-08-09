@@ -9,6 +9,7 @@ import Html.Styled.Attributes exposing (css, type_, value)
 import Html.Styled.Events exposing (onCheck, onClick, onInput)
 import Http exposing (Error)
 import List exposing (map, sortWith)
+import Messages exposing (Message, getAllMessages)
 import RemoteData exposing (RemoteData(..), WebData)
 import Reports exposing (Report, ReportSchedule(..), ReportTrigger(..), ReportType(..), allReportFeatures, allReportSchedules, allReportTrigger, allReportTypes, createNewReport, deleteReport, getAllReports, render, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
 import String exposing (fromInt, padLeft)
@@ -20,6 +21,7 @@ type alias Model =
     , reports : WebData (List Report)
     , popup : Components.Popup.Model Msg
     , newReportDefinition : Report
+    , messages : WebData (List Message)
     }
 
 
@@ -34,6 +36,7 @@ type Msg
     | ReportDefinitionChanged Report
     | SaveNewReport
     | CreateNewReportResponse (Result Error Report)
+    | MessagesResponse (Result Error (List Message))
 
 
 emptyReport : Report
@@ -52,7 +55,12 @@ emptyReport =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { user = Loading, reports = NotAsked, popup = Components.Popup.closed, newReportDefinition = emptyReport }
+    ( { user = Loading
+      , reports = NotAsked
+      , popup = Components.Popup.closed
+      , newReportDefinition = emptyReport
+      , messages = NotAsked
+      }
     , Users.info UserResponded
     )
 
@@ -61,14 +69,15 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserResponded result ->
-            ( Users.handleResponse result model
-            , case result of
-                Ok _ ->
-                    getAllReports ReportsResponse
+            ( Users.handleResponse result model, getAllMessages MessagesResponse )
 
-                Err _ ->
-                    Cmd.none
-            )
+        MessagesResponse response ->
+            case response of
+                Ok messages ->
+                    ( { model | messages = Success messages }, getAllReports ReportsResponse )
+
+                Err err ->
+                    ( { model | messages = Failure err }, getAllReports ReportsResponse )
 
         ReportsResponse (Ok reports) ->
             ( { model | reports = Success reports }, Cmd.none )

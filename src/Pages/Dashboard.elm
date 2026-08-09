@@ -7,6 +7,7 @@ import Html.Styled exposing (Html, button, div, h1, h3, input, p, table, td, tex
 import Html.Styled.Attributes exposing (css, type_)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
+import Messages exposing (Message, getAllMessages)
 import Readings exposing (Reading)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -19,12 +20,19 @@ type alias Model =
     , popup : Components.Popup.Model Msg
     , manualEntryDate : String
     , manualEntryValue : String
+    , messages : WebData (List Message)
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { user = Loading, lastReading = NotAsked, popup = closed, manualEntryDate = "", manualEntryValue = "" }
+    ( { user = Loading
+      , lastReading = NotAsked
+      , popup = closed
+      , manualEntryDate = ""
+      , manualEntryValue = ""
+      , messages = NotAsked
+      }
     , Users.info UserResponded
     )
 
@@ -38,6 +46,7 @@ type Msg
     | ValueChanged String
     | SubmitManualValue
     | ReadingAdded (Result Http.Error ())
+    | MessagesResponse (Result Http.Error (List Message))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -45,13 +54,16 @@ update msg model =
     case msg of
         UserResponded result ->
             ( Users.handleResponse result model
-            , case result of
-                Ok _ ->
-                    Readings.last LastReadingResponded
-
-                Err _ ->
-                    Cmd.none
+            , getAllMessages MessagesResponse
             )
+
+        MessagesResponse response ->
+            case response of
+                Ok messages ->
+                    ( { model | messages = Success messages }, Readings.last LastReadingResponded )
+
+                Err err ->
+                    ( { model | messages = Failure err }, Readings.last LastReadingResponded )
 
         LastReadingResponded result ->
             ( { model | lastReading = RemoteData.fromResult result }, Cmd.none )

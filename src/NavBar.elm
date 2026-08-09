@@ -5,7 +5,10 @@ import Css exposing (..)
 import Html.Styled exposing (Html, a, button, div, h1, label, nav, text)
 import Html.Styled.Attributes exposing (css, href)
 import Html.Styled.Events exposing (onClick)
+import List exposing (length)
+import Messages exposing (Message)
 import Route exposing (Route(..))
+import String exposing (fromInt)
 import Users exposing (User)
 
 
@@ -54,8 +57,8 @@ userToName user =
             "..."
 
 
-navBar : Maybe User -> Html Msg
-navBar user =
+navBar : Maybe User -> List Message -> Html Msg
+navBar user messages =
     nav
         [ css navBarStyle
         ]
@@ -63,7 +66,7 @@ navBar user =
         , div []
             [ div [ css navBarButtonsStyle ] (List.map (\e -> button [ css buttonStyle, onClick (NavElementClicked e.location) ] [ text e.displayText ]) navBarElements)
             , div [ css navBarRight ]
-                [ button [ css buttonStyle ] [ text "Nachrichten: 0" ]
+                [ button [ css buttonStyle ] [ text ("Nachrichten: " ++ (messages |> length |> fromInt)) ]
                 , label [] [ text ("(" ++ userToName user ++ ")") ]
                 , button [ css buttonStyle, onClick LogoutClicked ] [ text "abmelden" ]
                 ]
