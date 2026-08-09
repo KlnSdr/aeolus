@@ -4,7 +4,7 @@ import Components.TemperatureProfileChart as Chart
 import Components.YearDifferenceChart exposing (colorFor, temperatureBarChart)
 import Css exposing (auto, center, displayFlex, flexGrow, flexShrink, int, justifyContent, margin, marginLeft, marginTop, maxHeight, maxWidth, minWidth, pct, px, spaceAround, textAlign, width, zero)
 import Css.Global exposing (global, selector)
-import Dates exposing (formatRataDie, parseDateToRataDie)
+import Dates exposing (formatRataDie, getCurrentTime, parseDateToRataDie)
 import Dict exposing (Dict)
 import ErrorHelper exposing (errorToString)
 import Html.Styled exposing (Html, div, fromUnstyled, map, option, select, text)
@@ -17,6 +17,7 @@ import Messages exposing (Message, getAllMessages)
 import Readings exposing (Reading)
 import RemoteData exposing (RemoteData(..), WebData)
 import String exposing (fromInt, toInt)
+import Time exposing (Posix, toYear, utc)
 import Users exposing (User)
 
 
@@ -52,12 +53,12 @@ type Msg
     = UserResponded (Result Http.Error User)
     | ReadingResponded1 (Result Http.Error (List Reading))
     | ReadingResponded2 (Result Http.Error (List Reading))
-    | LoadInitial
     | InitialReadingResponse (Result Http.Error (List Reading))
     | ChartMsg Chart.Msg
     | SelectChanged SelectElement String
     | CalculateDifferences
     | MessagesResponse (Result Http.Error (List Message))
+    | CurrentDate Posix
 
 
 toInt : String -> Int -> Int
@@ -79,12 +80,13 @@ update msg model =
         MessagesResponse response ->
             case response of
                 Ok messages ->
-                    update LoadInitial { model | messages = Success messages }
+                    ( { model | messages = Success messages }, getCurrentTime CurrentDate )
 
                 Err err ->
-                    update
-                        LoadInitial
-                        { model | messages = Failure err }
+                    ( { model | messages = Failure err }, getCurrentTime CurrentDate )
+
+        CurrentDate timestamp ->
+            ( model, Readings.forYear InitialReadingResponse (toYear utc timestamp) )
 
         ReadingResponded1 result ->
             update CalculateDifferences { model | year1 = ( Tuple.first model.year1, RemoteData.fromResult result ) }
@@ -108,9 +110,6 @@ update msg model =
 
         CalculateDifferences ->
             ( { model | differences = differenceByDay (model.year1 |> Tuple.second |> getList) (model.year2 |> Tuple.second |> getList) }, Cmd.none )
-
-        LoadInitial ->
-            ( model, Readings.forYear InitialReadingResponse 2026 )
 
 
 getList : WebData (List Reading) -> List Reading

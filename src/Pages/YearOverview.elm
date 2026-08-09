@@ -4,7 +4,7 @@ import CommonStyles exposing (buttonStyle)
 import Components.Stats exposing (readingStats)
 import Components.TemperatureProfileChart as Chart
 import Css exposing (backgroundColor, block, center, color, display, hex, hover, margin, marginTop, maxHeight, overflow, pct, property, px, scroll, textAlign, vh, width)
-import Dates exposing (formatRataDie, parseDateToRataDie)
+import Dates exposing (formatRataDie, getCurrentTime, parseDateToRataDie)
 import FeatherIcons exposing (download, toHtml)
 import File.Download as Download
 import Html.Styled exposing (Html, button, div, fromUnstyled, map, option, p, select, table, td, text, th, tr)
@@ -13,10 +13,11 @@ import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import List exposing (reverse)
 import Messages exposing (Message, getAllMessages)
-import Readings exposing (Reading, forYear)
+import Readings exposing (Reading)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import String exposing (fromInt, toInt)
+import Time exposing (Posix, toYear, utc)
 import Users exposing (User)
 
 
@@ -54,6 +55,7 @@ type Msg
     | DownloadReadingsAsCSV
     | CsvData (Result Http.Error String)
     | MessagesResponse (Result Http.Error (List Message))
+    | CurrentDate Posix
 
 
 toInt : String -> Int -> Int
@@ -75,10 +77,13 @@ update msg model =
         MessagesResponse response ->
             case response of
                 Ok messages ->
-                    ( { model | messages = Success messages }, forYear ReadingResponded model.year )
+                    ( { model | messages = Success messages }, getCurrentTime CurrentDate )
 
                 Err err ->
-                    ( { model | messages = Failure err }, forYear ReadingResponded model.year )
+                    ( { model | messages = Failure err }, getCurrentTime CurrentDate )
+
+        CurrentDate timestamp ->
+            ( { model | year = toYear utc timestamp }, Readings.forYear ReadingResponded (toYear utc timestamp) )
 
         ReadingResponded result ->
             ( { model | readings = RemoteData.fromResult result }, Cmd.none )

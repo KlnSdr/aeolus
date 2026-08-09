@@ -5,7 +5,7 @@ import Components.Stats exposing (readingStats)
 import Components.TemperatureProfileChart as Chart
 import Constants exposing (intToMonth, monthToInt, months)
 import Css exposing (auto, backgroundColor, center, color, hex, hover, margin, marginTop, pct, property, px, textAlign, width)
-import Dates exposing (formatRataDie, parseDateToRataDie)
+import Dates exposing (elmMonthToInt, formatRataDie, getCurrentTime, parseDateToRataDie)
 import FeatherIcons exposing (download, toHtml)
 import File.Download as Download
 import Html.Styled exposing (Html, button, div, fromUnstyled, option, p, select, table, td, text, th, tr)
@@ -18,6 +18,7 @@ import Readings exposing (Reading)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import String exposing (fromInt, toInt)
+import Time exposing (toMonth, toYear, utc)
 import Users exposing (User)
 
 
@@ -58,6 +59,7 @@ type Msg
     | DownloadReadingsAsCSV
     | CsvData (Result Http.Error String)
     | MessagesResponse (Result Http.Error (List Message))
+    | CurrentDate Time.Posix
 
 
 toInt : String -> Int -> Int
@@ -79,10 +81,13 @@ update msg model =
         MessagesResponse response ->
             case response of
                 Ok messages ->
-                    ( { model | messages = Success messages }, Readings.forMonth ReadingResponded model.year model.month )
+                    ( { model | messages = Success messages }, getCurrentTime CurrentDate )
 
                 Err err ->
-                    ( { model | messages = Failure err }, Readings.forMonth ReadingResponded model.year model.month )
+                    ( { model | messages = Failure err }, getCurrentTime CurrentDate )
+
+        CurrentDate timestamp ->
+            ( { model | year = toYear utc timestamp, month = timestamp |> toMonth utc |> elmMonthToInt }, Readings.forMonth ReadingResponded (toYear utc timestamp) (timestamp |> toMonth utc |> elmMonthToInt) )
 
         ReadingResponded result ->
             ( { model | readings = RemoteData.fromResult result }, Cmd.none )
