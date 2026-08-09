@@ -7,6 +7,7 @@ import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import List exposing (map)
 import Ports exposing (openInNewTab)
+import String exposing (fromInt, padLeft)
 
 
 type alias Report =
@@ -347,7 +348,7 @@ createNewReport toMsg report =
     Http.request
         { method = "POST"
         , url = api_url ++ "/rest/report"
-        , headers = [ Http.header "Hades-Login-Token" token ]
+        , headers = [ Http.header "Hades-Login-Token" token, Http.header "Content-Type" "application/json" ]
         , expect = Http.expectJson toMsg decodeReport
         , body = Http.jsonBody <| encodeReport <| report
         , timeout = Nothing
@@ -372,14 +373,12 @@ decodeReport =
 encodeReport : Report -> Encode.Value
 encodeReport report =
     Encode.object
-        [ ( "owner", Encode.string report.owner )
-        , ( "reportType", Encode.string <| reportTypeToString <| report.reportType )
+        [ ( "reportType", Encode.string <| reportTypeToString <| report.reportType )
         , ( "name", Encode.string report.name )
         , ( "reportFeatures", Encode.list Encode.string <| map reportFeatureToString <| report.reportFeatures )
         , ( "trigger", Encode.string <| reportTriggerToString <| report.trigger )
         , ( "scheduleDay", Encode.string <| reportScheduleToString <| report.scheduleDay )
-        , ( "scheduleHour", Encode.int report.scheduleHour )
-        , ( "scheduleMinute", Encode.int report.scheduleMinute )
+        , ( "scheduleTime", Encode.string (fromInt report.scheduleHour ++ ":" ++ (report.scheduleMinute |> fromInt |> padLeft 2 '0')) )
         ]
 
 

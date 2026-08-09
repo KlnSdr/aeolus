@@ -5,12 +5,12 @@ import Components.Popup
 import Css exposing (absolute, backgroundColor, border3, bottom, color, displayFlex, flexFlow1, flexWrap, hex, hover, margin, marginBottom, marginTop, padding, position, property, px, relative, row, solid, width, wrap)
 import ErrorHelper
 import Html.Styled exposing (Html, button, div, h2, h3, input, label, li, option, p, select, text, ul)
-import Html.Styled.Attributes exposing (css, type_)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Attributes exposing (css, type_, value)
+import Html.Styled.Events exposing (onCheck, onClick, onInput)
 import Http exposing (Error)
 import List exposing (map, sortWith)
 import RemoteData exposing (RemoteData(..), WebData)
-import Reports exposing (Report, ReportType(..), allReportFeatures, allReportSchedules, allReportTrigger, allReportTypes, deleteReport, getAllReports, render, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
+import Reports exposing (Report, ReportSchedule(..), ReportTrigger(..), ReportType(..), allReportFeatures, allReportSchedules, allReportTrigger, allReportTypes, createNewReport, deleteReport, getAllReports, render, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
 import String exposing (fromInt, padLeft)
 import Users exposing (User)
 
@@ -24,6 +24,7 @@ type alias Model =
     { user : WebData User
     , reports : WebData (List Report)
     , popup : Components.Popup.Model Msg
+    , newReportDefinition : Report
     }
 
 
@@ -35,11 +36,28 @@ type Msg
     | RenderReport Report
     | PopupMsg (Components.Popup.Msg Msg)
     | OpenCreateReportPopup
+    | ReportDefinitionChanged Report
+    | SaveNewReport
+    | CreateNewReportResponse (Result Error Report)
+
+
+emptyReport : Report
+emptyReport =
+    { id = ""
+    , owner = ""
+    , reportType = Monthly
+    , name = ""
+    , reportFeatures = []
+    , trigger = Manual
+    , scheduleDay = Unset
+    , scheduleHour = 0
+    , scheduleMinute = 0
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { user = Loading, reports = NotAsked, popup = Components.Popup.closed }
+    ( { user = Loading, reports = NotAsked, popup = Components.Popup.closed, newReportDefinition = emptyReport }
     , Users.info UserResponded
     )
 
@@ -69,10 +87,27 @@ update msg model =
             ( model, render report )
 
         PopupMsg subMsg ->
-            ( { model | popup = Components.Popup.update subMsg model.popup }, Cmd.none )
+            case subMsg of
+                Components.Popup.ContentMsg contentMsg ->
+                    update contentMsg { model | popup = Components.Popup.update subMsg model.popup }
+
+                _ ->
+                    ( { model | popup = Components.Popup.update subMsg model.popup }, Cmd.none )
 
         OpenCreateReportPopup ->
-            ( { model | popup = Components.Popup.open createNewReportPopup }, Cmd.none )
+            ( { model | newReportDefinition = emptyReport, popup = Components.Popup.openReactive }, Cmd.none )
+
+        ReportDefinitionChanged report ->
+            ( { model | newReportDefinition = report }, Cmd.none )
+
+        SaveNewReport ->
+            ( model, createNewReport CreateNewReportResponse model.newReportDefinition )
+
+        CreateNewReportResponse (Ok _) ->
+            ( { model | reports = Loading, popup = Components.Popup.closed }, getAllReports ReportsResponse )
+
+        CreateNewReportResponse (Err _) ->
+            ( model, Cmd.none )
 
 
 view : Model -> List (Html Msg)
@@ -98,7 +133,7 @@ view model =
             _ ->
                 div [] []
         ]
-    , Html.Styled.map PopupMsg (Components.Popup.view model.popup)
+    , Html.Styled.map PopupMsg (Components.Popup.viewReactive (createNewReportPopup model.newReportDefinition) model.popup)
     ]
 
 
@@ -190,8 +225,8 @@ renderReport report =
         ]
 
 
-createNewReportPopup : Html Msg
-createNewReportPopup =
+createNewReportPopup : Report -> Html Msg
+createNewReportPopup newReportDefinition =
     div []
         [ h2 [] [ text "Neuer Bericht" ]
         , div
@@ -203,22 +238,115 @@ createNewReportPopup =
                 , property "grid-row-gap" "5px"
                 ]
             ]
-            [ text "Name:"
-            , input [] []
-            , text "Typ:"
-            , select [] (allReportTypes |> map (\reportType -> option [] [ text (reportTypeToDisplayString reportType ++ " (" ++ reportTypeAddition reportType ++ ")") ]))
-            , p [] [ text "Auswertungen:" ]
+            ([ text "Name:"
+             , input
+                [ onInput
+                    (\v ->
+                        ReportDefinitionChanged
+                            { newReportDefinition
+                                | name = v
+                            }
+                    )
+                ]
+                []
+             , text "Typ:"
+             , select
+                [ onInput
+                    (\v ->
+                        ReportDefinitionChanged
+                            { newReportDefinition
+                                | reportType =
+                                    allReportTypes
+                                        |> List.filter (\t -> reportTypeToDisplayString t == v)
+                                        |> List.head
+                                        |> Maybe.withDefault newReportDefinition.reportType
+                            }
+                    )
+                ]
+                (allReportTypes |> map (\reportType -> option [ value <| reportTypeToDisplayString <| reportType ] [ text (reportTypeToDisplayString reportType ++ " (" ++ reportTypeAddition reportType ++ ")") ]))
+             , p [] [ text "Auswertungen:" ]
+             , ul []
+                (allReportFeatures
+                    |> map
+                        (\feature ->
+                            div []
+                                [ label []
+                                    [ input
+                                        [ type_ "checkbox"
 
-            -- TODO labels for checkboxes
-            , ul [] (allReportFeatures |> map (\feature -> div [] [ label [] [ input [ type_ "checkbox" ] [], text (reportFeatureToDisplayString feature) ] ]))
-            , text "Auslöser:"
-            , select [] (allReportTrigger |> map (\trigger -> option [] [ text (reportTriggerToDisplayString trigger) ]))
-            , text "Tag:"
-            , select [] (allReportSchedules |> map (\schedule -> option [] [ text (reportScheduleToDisplayString schedule) ]))
-            , text "Uhrzeit (nicht eher als):"
-            , input [ type_ "time" ] []
-            ]
-        , button [ css buttonStyle ] [ text "Speichern" ]
+                                        -- , checked (member feature newReportDefinition.reportFeatures)
+                                        , onCheck
+                                            (\isChecked ->
+                                                ReportDefinitionChanged
+                                                    { newReportDefinition
+                                                        | reportFeatures =
+                                                            if isChecked then
+                                                                feature :: newReportDefinition.reportFeatures
+
+                                                            else
+                                                                List.filter ((/=) feature) newReportDefinition.reportFeatures
+                                                    }
+                                            )
+                                        ]
+                                        []
+                                    , text (reportFeatureToDisplayString feature)
+                                    ]
+                                ]
+                        )
+                )
+             , text "Auslöser:"
+             , select
+                [ onInput
+                    (\value ->
+                        ReportDefinitionChanged
+                            { newReportDefinition
+                                | trigger =
+                                    allReportTrigger
+                                        |> List.filter (\t -> reportTriggerToDisplayString t == value)
+                                        |> List.head
+                                        |> Maybe.withDefault newReportDefinition.trigger
+                            }
+                    )
+                ]
+                (allReportTrigger |> map (\trigger -> option [] [ text (reportTriggerToDisplayString trigger) ]))
+             ]
+                ++ (if newReportDefinition.trigger == Schedule then
+                        [ text "Tag:"
+                        , select
+                            [ onInput
+                                (\v ->
+                                    ReportDefinitionChanged
+                                        { newReportDefinition
+                                            | scheduleDay =
+                                                allReportSchedules
+                                                    |> List.filter (\s -> reportScheduleToDisplayString s == v)
+                                                    |> List.head
+                                                    |> Maybe.withDefault Unset
+                                        }
+                                )
+                            ]
+                            (allReportSchedules |> map (\schedule -> option [] [ text (reportScheduleToDisplayString schedule) ]))
+                        , text "Uhrzeit (nicht eher als):"
+                        , input
+                            [ type_ "time"
+                            , value (formatTime newReportDefinition.scheduleHour newReportDefinition.scheduleMinute)
+                            , onInput
+                                (\v ->
+                                    ReportDefinitionChanged
+                                        { newReportDefinition
+                                            | scheduleHour = updateHour v newReportDefinition.scheduleHour
+                                            , scheduleMinute = updateMinute v newReportDefinition.scheduleMinute
+                                        }
+                                )
+                            ]
+                            []
+                        ]
+
+                    else
+                        []
+                   )
+            )
+        , button [ css buttonStyle, onClick SaveNewReport ] [ text "Speichern" ]
         ]
 
 
@@ -230,3 +358,38 @@ reportTypeAddition reportType =
 
         Yearly ->
             "Vorjahr"
+
+
+parseTime : String -> Maybe ( Int, Int )
+parseTime rawValue =
+    case String.split ":" rawValue of
+        [ hourStr, minuteStr ] ->
+            Maybe.map2 Tuple.pair (String.toInt hourStr) (String.toInt minuteStr)
+
+        _ ->
+            Nothing
+
+
+formatTime : Int -> Int -> String
+formatTime hour minute =
+    padLeft 2 '0' (fromInt hour) ++ ":" ++ padLeft 2 '0' (fromInt minute)
+
+
+updateHour : String -> Int -> Int
+updateHour rawValue default =
+    case parseTime rawValue of
+        Just ( hour, _ ) ->
+            hour
+
+        Nothing ->
+            default
+
+
+updateMinute : String -> Int -> Int
+updateMinute rawValue default =
+    case parseTime rawValue of
+        Just ( _, minute ) ->
+            minute
+
+        Nothing ->
+            default
