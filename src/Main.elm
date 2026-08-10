@@ -18,6 +18,7 @@ import Pages.DataQuality as DataQuality
 import Pages.Landing as Landing
 import Pages.Login as Login
 import Pages.MonthOverview as MonthOverview
+import Pages.MonthlyValues as MonthlyValues
 import Pages.Reports as Reports
 import Pages.Signup as Signup
 import Pages.YearOverview as YearOverview
@@ -37,6 +38,7 @@ type Page
     | CompareYearsPage CompareYears.Model
     | DataQualityPage DataQuality.Model
     | ReportsPage Reports.Model
+    | MonthlyValuesPage MonthlyValues.Model
 
 
 pageToTitlePostFix : Page -> String
@@ -69,6 +71,9 @@ pageToTitlePostFix page =
         ReportsPage _ ->
             " -  Berichte"
 
+        MonthlyValuesPage _ ->
+            " - Monatswerte"
+
 
 type alias Model =
     { key : Nav.Key
@@ -92,6 +97,7 @@ type Msg
     | CompareYearsMsg CompareYears.Msg
     | DataQualityMsg DataQuality.Msg
     | ReportsMsg Reports.Msg
+    | MonthlyValuesMsg MonthlyValues.Msg
     | MessagesPopupMsg (Components.Popup.Msg Msg)
     | MessageDetailPopupMsg (Components.Popup.Msg Msg)
     | OpenMessageDetail Message
@@ -179,6 +185,13 @@ changeRouteTo maybeRoute model =
                     Reports.init
             in
             ( { model | page = ReportsPage dq }, Cmd.map ReportsMsg dqCmd )
+
+        Just Route.MonthlyValues ->
+            let
+                ( monthlyValues, monthlyValuesCmd ) =
+                    MonthlyValues.init
+            in
+            ( { model | page = MonthlyValuesPage monthlyValues }, Cmd.map MonthlyValuesMsg monthlyValuesCmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -333,6 +346,20 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        MonthlyValuesMsg subMsg ->
+            case model.page of
+                MonthlyValuesPage subModel ->
+                    let
+                        ( newSubModel, subCmd ) =
+                            MonthlyValues.update subMsg subModel
+                    in
+                    ( { model | page = MonthlyValuesPage newSubModel, user = Users.userOf newSubModel, messages = messagesOf newSubModel }
+                    , Cmd.map MonthlyValuesMsg subCmd
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
         MessagesPopupMsg subMsg ->
             case subMsg of
                 Components.Popup.ContentMsg contentMsg ->
@@ -394,6 +421,9 @@ updatePageMessages messages page =
         ReportsPage subModel ->
             ReportsPage { subModel | messages = Success messages }
 
+        MonthlyValuesPage subModel ->
+            MonthlyValuesPage { subModel | messages = Success messages }
+
         _ ->
             page
 
@@ -449,6 +479,9 @@ mainContent model =
 
         ReportsPage subModel ->
             authenticatedNavbar model ++ List.map (Html.Styled.map ReportsMsg) (Reports.view subModel)
+
+        MonthlyValuesPage subModel ->
+            authenticatedNavbar model ++ List.map (Html.Styled.map MonthlyValuesMsg) (MonthlyValues.view subModel)
 
 
 authenticatedNavbar : Model -> List (Html Msg)

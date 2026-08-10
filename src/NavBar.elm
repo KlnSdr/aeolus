@@ -39,7 +39,7 @@ navBarElements =
     , { location = DataQuality
       , displayText = "Datenqualität"
       }
-    , { location = MonthlyOverview
+    , { location = MonthlyValues
       , displayText = "Monatswerte"
       }
     , { location = Route.Reports
