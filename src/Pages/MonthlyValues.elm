@@ -734,7 +734,7 @@ sumRow yearData field =
 
 yearChartPopupContent : String -> List MonthlyValue -> Html Msg
 yearChartPopupContent year yearData =
-    div []
+    div [ css [ padding (px 30) ] ]
         [ h2 [] [ text ("Monatswerte " ++ year) ]
         , Chart.view (yearData |> List.indexedMap toChartPoint)
         ]
@@ -743,7 +743,7 @@ yearChartPopupContent year yearData =
 toChartPoint : Int -> MonthlyValue -> Chart.Point
 toChartPoint index monthlyValue =
     { index = toFloat (index + 1)
-    , label = monthlyValue.date
+    , label = monthlyValue.date |> String.slice 5 7
     , highTariffPower = toFloat monthlyValue.highTariffPower
     , lowTariffPower = toFloat monthlyValue.lowTariffPower
     , householdPower = toFloat monthlyValue.householdPower
@@ -754,7 +754,7 @@ toChartPoint index monthlyValue =
 
 trendPopupContent : List MonthlyValue -> Html Msg
 trendPopupContent readings =
-    div []
+    div [ css [ padding (px 35) ] ]
         [ h2 [] [ text "Jahrestrend" ]
         , Chart.view (yearlyAggregates readings)
         ]
