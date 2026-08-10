@@ -6,7 +6,6 @@ import Css exposing (auto, center, displayFlex, flexGrow, flexShrink, int, justi
 import Css.Global exposing (global, selector)
 import Dates exposing (formatRataDie, getCurrentTime, parseDateToRataDie)
 import Dict exposing (Dict)
-import ErrorHelper exposing (errorToString)
 import Html.Styled exposing (Html, div, fromUnstyled, map, option, select, text)
 import Html.Styled.Attributes exposing (class, css, value)
 import Html.Styled.Events exposing (onInput)
@@ -86,7 +85,7 @@ update msg model =
                     ( { model | messages = Failure err }, getCurrentTime CurrentDate )
 
         CurrentDate timestamp ->
-            ( model, Readings.forYear InitialReadingResponse (toYear utc timestamp) )
+            ( { model | year1 = ( toYear utc timestamp, NotAsked ), year2 = ( toYear utc timestamp, NotAsked ) }, Readings.forYear InitialReadingResponse (toYear utc timestamp) )
 
         ReadingResponded1 result ->
             update CalculateDifferences { model | year1 = ( Tuple.first model.year1, RemoteData.fromResult result ) }
