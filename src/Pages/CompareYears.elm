@@ -1,4 +1,4 @@
-module Pages.CompareYears exposing (Model, Msg, init, update, view)
+module Pages.CompareYears exposing (Model, Msg, differenceByDay, init, monthDay, update, view)
 
 import Components.TemperatureProfileChart as Chart
 import Components.YearDifferenceChart exposing (colorFor, temperatureBarChart)

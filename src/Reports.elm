@@ -1,4 +1,4 @@
-module Reports exposing (Report, ReportFeature(..), ReportSchedule(..), ReportTrigger(..), ReportType(..), allReportFeatures, allReportSchedules, allReportTrigger, allReportTypes, createNewReport, deleteReport, getAllReports, render, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
+module Reports exposing (Report, ReportFeature(..), ReportSchedule(..), ReportTrigger(..), ReportType(..), allReportFeatures, allReportSchedules, allReportTrigger, allReportTypes, createNewReport, decodeReport, deleteReport, encodeReport, getAllReports, render, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
 
 import Constants exposing (api_url, token)
 import Http

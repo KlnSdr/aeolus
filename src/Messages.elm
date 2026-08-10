@@ -1,4 +1,4 @@
-module Messages exposing (Message, getAllMessages, markAsRead, messagesOf)
+module Messages exposing (Message, decoder, getAllMessages, markAsRead, messagesOf)
 
 import Constants exposing (api_url, token)
 import Http
@@ -34,7 +34,7 @@ getAllMessages toMsg =
         { method = "GET"
         , url = api_url ++ "/rest/messages/unread"
         , headers = [ Http.header "Hades-Login-Token" token ]
-        , expect = Http.expectJson toMsg (Decode.field "messages" (Decode.list messageDecoder))
+        , expect = Http.expectJson toMsg (Decode.field "messages" (Decode.list decoder))
         , body = Http.jsonBody (Encode.object [])
         , timeout = Nothing
         , tracker = Nothing
@@ -54,8 +54,8 @@ markAsRead messageId toMsg =
         }
 
 
-messageDecoder : Decoder Message
-messageDecoder =
+decoder : Decoder Message
+decoder =
     Decode.succeed Message
         |> required "id" Decode.string
         |> required "message" Decode.string

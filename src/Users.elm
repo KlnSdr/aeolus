@@ -1,4 +1,4 @@
-module Users exposing (User, doLogin, handleResponse, info, userOf)
+module Users exposing (User, decoder, doLogin, handleResponse, info, userOf)
 
 import Constants exposing (api_url, token)
 import Http exposing (header, jsonBody, request)
