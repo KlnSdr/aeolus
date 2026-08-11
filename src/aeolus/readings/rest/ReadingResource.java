@@ -9,6 +9,7 @@ import common.inject.api.RegisterFor;
 import common.logger.Logger;
 import dobby.annotations.Get;
 import dobby.annotations.Post;
+import dobby.files.StaticFile;
 import dobby.io.HttpContext;
 import dobby.io.response.ResponseCodes;
 import dobby.util.json.NewJson;
@@ -21,6 +22,7 @@ import hades.common.ErrorResponses;
 import hades.user.User;
 import hades.user.service.UserService;
 
+import java.text.DecimalFormat;
 import java.time.Year;
 import java.util.*;
 
@@ -96,13 +98,7 @@ public class ReadingResource {
         }
 
         Reading[] readings = readingService.find(getUserId(context), year);
-        Arrays.sort(readings, Comparator.comparing(Reading::getDate));
-
-        final NewJson json = new NewJson();
-        List<Object> readingsList = List.of(Arrays.stream(readings).map(this::map).toArray(NewJson[]::new));
-        json.setList("readings", readingsList);
-
-        context.getResponse().setBody(json);
+        sendReadings(readings, context);
     }
 
     @AuthorizedOnly
@@ -126,12 +122,28 @@ public class ReadingResource {
         Reading[] readings;
         try {
             readings = readingService.find(getUserId(context), year, month);
-            Arrays.sort(readings, Comparator.comparing(Reading::getDate));
+            sendReadings(readings, context);
         } catch (IllegalArgumentException e) {
             sendBadRequest(context, "Invalid month: " + month);
-            return;
         }
+    }
 
+    private void sendReadings(Reading[] readings, HttpContext context) {
+        Arrays.sort(readings, Comparator.comparing(Reading::getDate));
+
+        if (context.getRequest().getHeader("Accept") != null && context.getRequest().getHeader("Accept").equalsIgnoreCase("text/csv")) {
+            DecimalFormat df = new DecimalFormat("#.##");
+
+            StringBuilder csv = new StringBuilder();
+            csv.append("date,value\n");
+            for (Reading reading : readings) {
+                csv.append(IsoDate.toIsoDateString(reading.getDate())).append(",").append(df.format(reading.getValue())).append("\n");
+            }
+            context.getResponse().setHeader("Content-Type", "text/csv");
+            context.getResponse().setBody(csv.toString());
+            return;
+
+        }
         final NewJson json = new NewJson();
         List<Object> readingsList = List.of(Arrays.stream(readings).map(this::map).toArray(NewJson[]::new));
         json.setList("readings", readingsList);
