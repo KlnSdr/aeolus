@@ -8,7 +8,7 @@
     "dependencies": [
       {
         "name": "hades",
-        "version": "2.6-snapshot",
+        "version": "2.5",
         "group": "dobby"
       },
       {
