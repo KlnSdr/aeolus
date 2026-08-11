@@ -1,6 +1,6 @@
 module Messages exposing (Message, decoder, getAllMessages, markAsRead, messagesOf)
 
-import Constants exposing (api_url, token)
+import Constants exposing (api_url)
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
@@ -33,7 +33,7 @@ getAllMessages toMsg =
     Http.request
         { method = "GET"
         , url = api_url ++ "/rest/messages/unread"
-        , headers = [ Http.header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectJson toMsg (Decode.field "messages" (Decode.list decoder))
         , body = Http.jsonBody (Encode.object [])
         , timeout = Nothing
@@ -46,7 +46,7 @@ markAsRead messageId toMsg =
     Http.request
         { method = "PUT"
         , url = api_url ++ "/rest/messages/read/" ++ messageId
-        , headers = [ Http.header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectWhatever toMsg
         , body = Http.jsonBody (Encode.object [])
         , timeout = Nothing

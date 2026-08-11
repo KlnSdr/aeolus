@@ -18,7 +18,7 @@ module MonthlyValues exposing
     , tariffFields
     )
 
-import Constants exposing (api_url, token)
+import Constants exposing (api_url)
 import Http exposing (header, jsonBody, request)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
@@ -218,7 +218,7 @@ getAll toMsg =
     request
         { method = "GET"
         , url = api_url ++ "/rest/monthly-values"
-        , headers = [ header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectJson toMsg listDecoder
         , body = jsonBody (Encode.object [])
         , timeout = Nothing
@@ -231,7 +231,7 @@ save toMsg year month entry =
     request
         { method = "PUT"
         , url = api_url ++ "/rest/monthly-values/" ++ fromInt year ++ "/" ++ fromInt month
-        , headers = [ header "Hades-Login-Token" token, header "Content-Type" "application/json" ]
+        , headers = [ header "Content-Type" "application/json" ]
         , body = jsonBody (encodeEntry entry)
         , expect = Http.expectStringResponse toMsg addResponseToResult
         , timeout = Nothing
@@ -244,7 +244,7 @@ saveMaintenance toMsg entry =
     request
         { method = "PUT"
         , url = api_url ++ "/rest/monthly-values/temporary"
-        , headers = [ header "Hades-Login-Token" token, header "Content-Type" "application/json" ]
+        , headers = [ header "Content-Type" "application/json" ]
         , body = jsonBody (encodeMaintenanceEntry entry)
         , expect = Http.expectStringResponse toMsg addResponseToResult
         , timeout = Nothing
@@ -257,7 +257,7 @@ saveTariffPrices toMsg year prices =
     request
         { method = "PUT"
         , url = api_url ++ "/rest/tariff-prices/" ++ year
-        , headers = [ header "Hades-Login-Token" token, header "Content-Type" "application/json" ]
+        , headers = [ header "Content-Type" "application/json" ]
         , body = jsonBody (encodeTariffPrices prices)
         , expect = Http.expectStringResponse toMsg addResponseToResult
         , timeout = Nothing

@@ -5,6 +5,8 @@ import Css exposing (backgroundColor, block, border3, center, color, display, he
 import Html.Styled exposing (Html, a, button, div, h1, input, table, td, text, tr)
 import Html.Styled.Attributes exposing (css, href, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
+import Http
+import Users exposing (doSignup)
 
 
 type alias Model =
@@ -27,6 +29,7 @@ type Msg
     | PasswordChanged String
     | RepeatPasswordChanged String
     | SubmitClicked
+    | SignupResponse (Result Http.Error ())
 
 
 type OutMsg
@@ -55,10 +58,13 @@ update msg model =
                 ( { model | error = Just "Passwords do not match." }, Cmd.none, NoOp )
 
             else
-                -- TODO: wire up the real signup endpoint once it exists.
-                -- This mirrors the original code's placeholder behavior
-                -- (there was no actual signup request before either).
-                ( model, Cmd.none, SignedUp )
+                ( model, doSignup model.username model.email model.password model.repeatPassword SignupResponse, NoOp )
+
+        SignupResponse (Ok _) ->
+            ( model, Cmd.none, SignedUp )
+
+        SignupResponse (Err _) ->
+            ( { model | error = Just "User could not be created" }, Cmd.none, NoOp )
 
 
 view : Model -> List (Html Msg)

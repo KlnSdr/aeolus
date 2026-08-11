@@ -3,6 +3,7 @@ out/
 build/
 !**/src/main/**/out/
 !**/src/test/**/out/
+src/aeolus/application/resource/static
 
 ### Eclipse ###
 .apt_generated

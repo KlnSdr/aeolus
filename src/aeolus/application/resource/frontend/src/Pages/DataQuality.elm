@@ -2,7 +2,7 @@ module Pages.DataQuality exposing (..)
 
 import CommonStyles exposing (buttonStyle)
 import Components.Popup exposing (closed, open)
-import Constants exposing (api_url, token)
+import Constants exposing (api_url)
 import Css exposing (backgroundColor, borderRadius, center, display, displayFlex, height, hex, inlineBlock, left, marginTop, maxWidth, pct, property, px, textAlign, width)
 import Html.Styled exposing (Html, button, div, h3, input, label, span, text)
 import Html.Styled.Attributes exposing (css, type_, value)
@@ -423,7 +423,7 @@ getCheckerConfig toMsg =
     Http.request
         { method = "GET"
         , url = api_url ++ "/rest/data-quality-checker-config"
-        , headers = [ header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectJson toMsg decodeCheckerConfig
         , body = jsonBody (Encode.object [])
         , timeout = Nothing
@@ -474,7 +474,7 @@ enableCheckerForUser toMsg =
     Http.request
         { method = "POST"
         , url = api_url ++ "/rest/data-quality-checker-config/enable"
-        , headers = [ header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectWhatever toMsg
         , body = jsonBody (Encode.object [])
         , timeout = Nothing
@@ -487,7 +487,7 @@ disableCheckerForUser toMsg =
     Http.request
         { method = "POST"
         , url = api_url ++ "/rest/data-quality-checker-config/disable"
-        , headers = [ header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectWhatever toMsg
         , body = jsonBody (Encode.object [])
         , timeout = Nothing
@@ -500,7 +500,7 @@ runChecker toMsg =
     Http.request
         { method = "POST"
         , url = api_url ++ "/rest/data-quality-checker-config/run"
-        , headers = [ header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectWhatever toMsg
         , body = jsonBody (Encode.object [])
         , timeout = Nothing
@@ -512,7 +512,7 @@ updateStartTime : Int -> Int -> (Result Http.Error () -> msg) -> Cmd msg
 updateStartTime hour minute toMsg =
     Http.request
         { method = "POST"
-        , headers = [ header "Content-Type" "application/json", header "Hades-Login-Token" token ]
+        , headers = [ header "Content-Type" "application/json" ]
         , url = api_url ++ "/rest/data-quality-checker-config/start-time"
         , body =
             jsonBody
@@ -539,7 +539,7 @@ getInterpolation toMsg =
     Http.request
         { method = "POST"
         , url = api_url ++ "/rest/interpolation"
-        , headers = [ header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectJson toMsg decodeInterpolationResult
         , body = jsonBody (Encode.object [])
         , timeout = Nothing

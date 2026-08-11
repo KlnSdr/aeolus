@@ -1,6 +1,6 @@
 module Readings exposing (Reading, decoder, downloadCsvForMonth, downloadCsvForYear, forMonth, forYear, last, uploadValue)
 
-import Constants exposing (api_url, token)
+import Constants exposing (api_url)
 import Http exposing (header, jsonBody, request)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
@@ -18,7 +18,7 @@ forYear toMsg year =
     request
         { method = "GET"
         , url = api_url ++ "/rest/readings/" ++ fromInt year
-        , headers = [ header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectJson toMsg listDecoder
         , body = jsonBody (Encode.object [])
         , timeout = Nothing
@@ -31,7 +31,7 @@ forMonth toMsg year month =
     request
         { method = "GET"
         , url = api_url ++ "/rest/readings/" ++ fromInt year ++ "/" ++ fromInt month
-        , headers = [ header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectJson toMsg listDecoder
         , body = jsonBody (Encode.object [])
         , timeout = Nothing
@@ -44,7 +44,7 @@ last toMsg =
     request
         { method = "GET"
         , url = api_url ++ "/rest/readings/last"
-        , headers = [ header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectJson toMsg decoder
         , body = jsonBody (Encode.object [])
         , timeout = Nothing
@@ -57,7 +57,7 @@ uploadValue date value toMsg =
     request
         { method = "POST"
         , url = api_url ++ "/rest/readings"
-        , headers = [ header "Hades-Login-Token" token, header "Content-Type" "application/json" ]
+        , headers = [ header "Content-Type" "application/json" ]
         , body =
             jsonBody
                 (Encode.object
@@ -108,8 +108,7 @@ downloadCsvForMonth toMsg year month =
         { method = "GET"
         , url = api_url ++ "/rest/readings/" ++ fromInt year ++ "/" ++ fromInt month
         , headers =
-            [ header "Hades-Login-Token" token
-            , header "Accept" "text/csv"
+            [ header "Accept" "text/csv"
             ]
         , expect = Http.expectString toMsg
         , body = Http.emptyBody
@@ -124,8 +123,7 @@ downloadCsvForYear toMsg year =
         { method = "GET"
         , url = api_url ++ "/rest/readings/" ++ fromInt year
         , headers =
-            [ header "Hades-Login-Token" token
-            , header "Accept" "text/csv"
+            [ header "Accept" "text/csv"
             ]
         , expect = Http.expectString toMsg
         , body = Http.emptyBody

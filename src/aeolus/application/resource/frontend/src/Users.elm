@@ -1,6 +1,6 @@
-module Users exposing (User, decoder, doLogin, handleResponse, info, userOf)
+module Users exposing (User, decoder, doLogin, doLogout, doSignup, handleResponse, info, userOf)
 
-import Constants exposing (api_url, token)
+import Constants exposing (api_url)
 import Http exposing (header, jsonBody, request)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
@@ -19,7 +19,7 @@ info toMsg =
     request
         { method = "GET"
         , url = api_url ++ "/rest/users/loginuserinfo"
-        , headers = [ header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectJson toMsg decoder
         , body = jsonBody (Encode.object [])
         , timeout = Nothing
@@ -59,6 +59,44 @@ doLogin username password toMsg =
                     ]
                 )
         , expect = Http.expectJson toMsg redirectToDecoder
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+doSignup : String -> String -> String -> String -> (Result Http.Error () -> msg) -> Cmd msg
+doSignup username mail password passwordRepeat toMsg =
+    Http.request
+        { method = "POST"
+        , headers = [ header "Content-Type" "application/json" ]
+        , url = api_url ++ "/rest/users"
+        , body =
+            jsonBody
+                (Encode.object
+                    [ ( "displayName", Encode.string username )
+                    , ( "mail", Encode.string mail )
+                    , ( "password", Encode.string password )
+                    , ( "passwordRepeat", Encode.string passwordRepeat )
+                    ]
+                )
+        , expect = Http.expectWhatever toMsg
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+doLogout : (Result Http.Error () -> msg) -> Cmd msg
+doLogout toMsg =
+    Http.request
+        { method = "GET"
+        , headers = []
+        , url = api_url ++ "/rest/users/logout"
+        , body =
+            jsonBody
+                (Encode.object
+                    []
+                )
+        , expect = Http.expectWhatever toMsg
         , timeout = Nothing
         , tracker = Nothing
         }

@@ -1,6 +1,6 @@
 module Reports exposing (Report, ReportFeature(..), ReportSchedule(..), ReportTrigger(..), ReportType(..), allReportFeatures, allReportSchedules, allReportTrigger, allReportTypes, createNewReport, decodeReport, deleteReport, encodeReport, getAllReports, render, reportFeatureToDisplayString, reportScheduleToDisplayString, reportTriggerToDisplayString, reportTypeToDisplayString)
 
-import Constants exposing (api_url, token)
+import Constants exposing (api_url)
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
@@ -322,7 +322,7 @@ getAllReports toMsg =
     Http.request
         { method = "GET"
         , url = api_url ++ "/rest/report"
-        , headers = [ Http.header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectJson toMsg (Decode.field "reports" (Decode.list decodeReport))
         , body = Http.jsonBody (Encode.object [])
         , timeout = Nothing
@@ -335,7 +335,7 @@ deleteReport toMsg id =
     Http.request
         { method = "DELETE"
         , url = api_url ++ "/rest/report/id/" ++ id
-        , headers = [ Http.header "Hades-Login-Token" token ]
+        , headers = []
         , expect = Http.expectWhatever toMsg
         , body = Http.jsonBody (Encode.object [])
         , timeout = Nothing
@@ -348,7 +348,7 @@ createNewReport toMsg report =
     Http.request
         { method = "POST"
         , url = api_url ++ "/rest/report"
-        , headers = [ Http.header "Hades-Login-Token" token, Http.header "Content-Type" "application/json" ]
+        , headers = [ Http.header "Content-Type" "application/json" ]
         , expect = Http.expectJson toMsg decodeReport
         , body = Http.jsonBody <| encodeReport <| report
         , timeout = Nothing

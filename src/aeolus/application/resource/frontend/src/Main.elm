@@ -25,7 +25,7 @@ import Pages.YearOverview as YearOverview
 import RemoteData exposing (RemoteData(..))
 import Route exposing (Route(..))
 import Url exposing (Url)
-import Users exposing (User)
+import Users exposing (User, doLogout)
 
 
 type Page
@@ -103,6 +103,7 @@ type Msg
     | OpenMessageDetail Message
     | MarkMessageAsRead Message
     | MessageMarkedAsRead String (Result Http.Error ())
+    | LogoutResponse (Result Http.Error ())
 
 
 main : Program () Model Msg
@@ -207,6 +208,9 @@ update msg model =
             ( model, Nav.load href )
 
         NavBarMsg NavBar.LogoutClicked ->
+            ( model, doLogout LogoutResponse )
+
+        LogoutResponse _ ->
             ( model, Nav.pushUrl model.key (Route.toPath Route.Landing) )
 
         NavBarMsg NavBar.LoginClicked ->
@@ -236,10 +240,6 @@ update msg model =
                             ( model, Nav.pushUrl model.key (Route.toPath Route.Dashboard) )
 
                 _ ->
-                    -- A LoginMsg arriving while we're not on the login page
-                    -- would mean a stale Cmd fired after the user navigated
-                    -- away. Ignoring it is correct; logging would help spot
-                    -- if it ever actually happens.
                     ( model, Cmd.none )
 
         SignupMsg subMsg ->
@@ -257,7 +257,7 @@ update msg model =
                             ( model, Nav.pushUrl model.key (Route.toPath Route.Login) )
 
                         Signup.SignedUp ->
-                            ( model, Nav.pushUrl model.key (Route.toPath Route.Login) )
+                            ( model, Nav.pushUrl model.key (Route.toPath Route.Dashboard) )
 
                 _ ->
                     ( model, Cmd.none )
