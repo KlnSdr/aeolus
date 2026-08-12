@@ -1,7 +1,14 @@
 {
-  "image": "docker.klnsdr.com/nyx-cli:1.5",
+  "image": "docker.klnsdr.com/nyx-cli-elm:1.5-0.19.1",
   "pipeline": {
     "default": [
+      "cd src/aeolus/application/resource/frontend",
+      "elm-test",
+      "elm make src/Main.elm --optimize --output=elm.js",
+      "cp index.html ../static/index.html",
+      "cp elm.js ../static/elm.js",
+      "cp favicon.png ../static/favicon.png",
+      "cd -",
       "nyx build",
       "printf 'https://repo.klnsdr.com\\n${NYX_REPO_KLNSDR_COM_PASSWORD}' | nyx login",
       "nyx push"
