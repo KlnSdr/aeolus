@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/aeolus/application/resource/static/favicon.png" width="80" alt="Aeolus logo">
+  <img src="src/aeolus/application/resource/frontend/favicon.png" width="80" alt="Aeolus logo">
 </p>
 
 <h1 align="center">Aeolus</h1>
