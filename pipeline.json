@@ -17,6 +17,13 @@
       "mkdir ~/.nyx",
       "printf 'https://repo.klnsdr.com\\n${NYX_REPO_KLNSDR_COM_PASSWORD}' | nyx login",
       "nyx release",
+      "cd src/aeolus/application/resource/frontend",
+      "elm-test",
+      "elm make src/Main.elm --optimize --output=elm.js",
+      "cp index.html ../static/index.html",
+      "cp elm.js ../static/elm.js",
+      "cp favicon.png ../static/favicon.png",
+      "cd -",
       "nyx build",
       "nyx push",
       "nyx snapshot"
