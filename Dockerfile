@@ -15,7 +15,7 @@ RUN set -eux; \
 FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
 WORKDIR /app/frontend
 
-ARG ELM_VERSION=0.19.1
+ARG ELM_VERSION=0.19.2
 RUN npm install -g "elm@${ELM_VERSION}" terser
 
 COPY src/aeolus/application/resource/frontend .
