@@ -16,7 +16,7 @@ FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
 WORKDIR /app/frontend
 
 ARG ELM_VERSION=0.19.2
-RUN npm install -g "elm@${ELM_VERSION}" terser
+RUN npm install -g "elm@latest-${ELM_VERSION}" terser
 
 COPY src/aeolus/application/resource/frontend .
 RUN elm make src/Main.elm --optimize --output=elm.js
