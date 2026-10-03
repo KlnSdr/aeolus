@@ -15,6 +15,7 @@ import NavBar
 import Pages.CompareYears as CompareYears
 import Pages.Dashboard as Dashboard
 import Pages.DataQuality as DataQuality
+import Pages.Export as Export
 import Pages.Landing as Landing
 import Pages.Login as Login
 import Pages.MonthOverview as MonthOverview
@@ -39,6 +40,7 @@ type Page
     | DataQualityPage DataQuality.Model
     | ReportsPage Reports.Model
     | MonthlyValuesPage MonthlyValues.Model
+    | ExportPage Export.Model
 
 
 pageToTitlePostFix : Page -> String
@@ -74,6 +76,9 @@ pageToTitlePostFix page =
         MonthlyValuesPage _ ->
             " - Monatswerte"
 
+        ExportPage _ ->
+            " - Datenexport"
+
 
 type alias Model =
     { key : Nav.Key
@@ -104,6 +109,7 @@ type Msg
     | MarkMessageAsRead Message
     | MessageMarkedAsRead String (Result Http.Error ())
     | LogoutResponse (Result Http.Error ())
+    | ExportMsg Export.Msg
 
 
 main : Program () Model Msg
@@ -193,6 +199,13 @@ changeRouteTo maybeRoute model =
                     MonthlyValues.init
             in
             ( { model | page = MonthlyValuesPage monthlyValues }, Cmd.map MonthlyValuesMsg monthlyValuesCmd )
+
+        Just Route.Export ->
+            let
+                ( exportModel, exportCmd ) =
+                    Export.init
+            in
+            ( { model | page = ExportPage exportModel }, Cmd.map ExportMsg exportCmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -360,6 +373,20 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        ExportMsg subMsg ->
+            case model.page of
+                ExportPage subModel ->
+                    let
+                        ( newSubModel, subCmd ) =
+                            Export.update subMsg subModel
+                    in
+                    ( { model | page = ExportPage newSubModel, user = Users.userOf newSubModel, messages = messagesOf newSubModel }
+                    , Cmd.map ExportMsg subCmd
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
         MessagesPopupMsg subMsg ->
             case subMsg of
                 Components.Popup.ContentMsg contentMsg ->
@@ -482,6 +509,9 @@ mainContent model =
 
         MonthlyValuesPage subModel ->
             authenticatedNavbar model ++ List.map (Html.Styled.map MonthlyValuesMsg) (MonthlyValues.view subModel)
+
+        ExportPage subModel ->
+            authenticatedNavbar model ++ List.map (Html.Styled.map ExportMsg) (Export.view subModel)
 
 
 authenticatedNavbar : Model -> List (Html Msg)

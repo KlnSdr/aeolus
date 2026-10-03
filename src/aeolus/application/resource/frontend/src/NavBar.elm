@@ -48,6 +48,9 @@ navBarElements =
     , { location = Route.Reports
       , displayText = "Berichte"
       }
+    , { location = Route.Export
+      , displayText = "Datenexport"
+      }
     ]
 
 

@@ -15,6 +15,7 @@ type Route
     | DataQuality
     | Reports
     | MonthlyValues
+    | Export
 
 
 parser : Parser (Route -> a) a
@@ -29,6 +30,7 @@ parser =
         , Parser.map DataQuality (s "dataquality")
         , Parser.map Reports (s "reports")
         , Parser.map MonthlyValues (s "monthly-values")
+        , Parser.map Export (s "exports")
         , Parser.map Dashboard top
         ]
 
@@ -70,3 +72,6 @@ toPath route =
 
         MonthlyValues ->
             "/monthly-values"
+
+        Export ->
+            "/exports"

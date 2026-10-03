@@ -1,6 +1,5 @@
 package aeolus.application;
 
-import aeolus.mail.service.MailService;
 import aeolus.readings.quality.DataQualityCheckerDispatcher;
 import aeolus.reports.dispatcher.ReportDispatcher;
 import common.inject.api.RegisterFor;
@@ -16,7 +15,7 @@ public class Main extends Hades {
     private final DataQualityCheckerDispatcher dataQualityCheckerDispatcher;
     private final ReportDispatcher reportDispatcher;
 
-    public Main(HadesDependencyProvider hadesDependencyProvider, ISchedulerService schedulerService, DataQualityCheckerDispatcher dataQualityCheckerDispatcher, ReportDispatcher reportDispatcher, MailService mailService) {
+    public Main(HadesDependencyProvider hadesDependencyProvider, ISchedulerService schedulerService, DataQualityCheckerDispatcher dataQualityCheckerDispatcher, ReportDispatcher reportDispatcher) {
         super(hadesDependencyProvider);
         this.schedulerService = schedulerService;
         this.dataQualityCheckerDispatcher = dataQualityCheckerDispatcher;
